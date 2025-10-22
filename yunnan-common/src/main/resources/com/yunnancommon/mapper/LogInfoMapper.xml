@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunnancommon.mapper.LogInfoMapper">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.yunnancommon.entity.po.LogInfo">
+		<!--日志ID-->
+		<id column="log_id" property="logId" />
+		<!--操作用户名-->
+		<result column="username" property="username" />
+		<!--用户类型: 1-企业账号 2-市账号 3-省账号-->
+		<result column="user_type" property="userType" />
+		<!--企业ID-->
+		<result column="enterprise_id" property="enterpriseId" />
+		<!--操作模块-->
+		<result column="operation_module" property="operationModule" />
+		<!--操作描述-->
+		<result column="operation_desc" property="operationDesc" />
+		<!--请求URL-->
+		<result column="request_url" property="requestUrl" />
+		<!--请求方法-->
+		<result column="request_method" property="requestMethod" />
+		<!--请求参数-->
+		<result column="request_params" property="requestParams" />
+		<!--响应状态-->
+		<result column="response_status" property="responseStatus" />
+		<!--执行时间(毫秒)-->
+		<result column="execution_time" property="executionTime" />
+		<!--错误信息-->
+		<result column="error_message" property="errorMessage" />
+		<!--操作时间-->
+		<result column="operation_time" property="operationTime" />
+	</resultMap>
+
+	<!--通用查询结果-->
+	<sql id="base_column_list">
+		log_id,username,user_type,enterprise_id,operation_module,operation_desc,request_url,request_method,request_params,response_status,execution_time,error_message,operation_time
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.logId != null">
+			and log_id = #{query.logId}
+		</if>
+		<if test="query.username != null and query.username != ''">
+			and username = #{query.username}
+		</if>
+		<if test="query.userType != null">
+			and user_type = #{query.userType}
+		</if>
+		<if test="query.enterpriseId != null and query.enterpriseId != ''">
+			and enterprise_id = #{query.enterpriseId}
+		</if>
+		<if test="query.operationModule != null and query.operationModule != ''">
+			and operation_module = #{query.operationModule}
+		</if>
+		<if test="query.operationDesc != null and query.operationDesc != ''">
+			and operation_desc = #{query.operationDesc}
+		</if>
+		<if test="query.requestUrl != null and query.requestUrl != ''">
+			and request_url = #{query.requestUrl}
+		</if>
+		<if test="query.requestMethod != null and query.requestMethod != ''">
+			and request_method = #{query.requestMethod}
+		</if>
+		<if test="query.requestParams != null and query.requestParams != ''">
+			and request_params = #{query.requestParams}
+		</if>
+		<if test="query.responseStatus != null">
+			and response_status = #{query.responseStatus}
+		</if>
+		<if test="query.executionTime != null">
+			and execution_time = #{query.executionTime}
+		</if>
+		<if test="query.errorMessage != null and query.errorMessage != ''">
+			and error_message = #{query.errorMessage}
+		</if>
+		<if test="query.operationTime != null">
+			and operation_time = #{query.operationTime}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.usernameFuzzy != null and query.usernameFuzzy != ''">
+			 and username like concat('%',#{query.usernameFuzzy},'%')
+		</if>
+		<if test="query.enterpriseIdFuzzy != null and query.enterpriseIdFuzzy != ''">
+			 and enterprise_id like concat('%',#{query.enterpriseIdFuzzy},'%')
+		</if>
+		<if test="query.operationModuleFuzzy != null and query.operationModuleFuzzy != ''">
+			 and operation_module like concat('%',#{query.operationModuleFuzzy},'%')
+		</if>
+		<if test="query.operationDescFuzzy != null and query.operationDescFuzzy != ''">
+			 and operation_desc like concat('%',#{query.operationDescFuzzy},'%')
+		</if>
+		<if test="query.requestUrlFuzzy != null and query.requestUrlFuzzy != ''">
+			 and request_url like concat('%',#{query.requestUrlFuzzy},'%')
+		</if>
+		<if test="query.requestMethodFuzzy != null and query.requestMethodFuzzy != ''">
+			 and request_method like concat('%',#{query.requestMethodFuzzy},'%')
+		</if>
+		<if test="query.requestParamsFuzzy != null and query.requestParamsFuzzy != ''">
+			 and request_params like concat('%',#{query.requestParamsFuzzy},'%')
+		</if>
+		<if test="query.errorMessageFuzzy != null and query.errorMessageFuzzy != ''">
+			 and error_message like concat('%',#{query.errorMessageFuzzy},'%')
+		</if>
+		<if test="query.operationTimeStart != null and query.operationTimeStart != ''">
+			<![CDATA[ and operation_time >= str_to_date(#{query.operationTimeStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.operationTimeEnd != null and query.operationTimeEnd != ''">
+			<![CDATA[ and operation_time < str_to_date(#{query.operationTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+		</if>
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="query_condition">
+	<where>
+		<include refid="base_query_condition" />
+		<include refid="base_query_condition_extend" />
+	</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		select
+		<include refid="base_column_list" />
+		from log_info
+		<include refid="query_condition" />
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		select count(1)
+		from log_info
+		<include refid="query_condition" />
+	</select>
+
+
+	<!--单条插入-->
+	<insert id="insert" parameterType="com.yunnancommon.entity.po.LogInfo">
+		<selectKey keyProperty="bean.logId" resultType="Long" order="AFTER">
+			select last_insert_id()
+		</selectKey>
+		insert into log_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.logId != null">
+				log_id,
+			</if>
+			<if test="bean.username != null">
+				username,
+			</if>
+			<if test="bean.userType != null">
+				user_type,
+			</if>
+			<if test="bean.enterpriseId != null">
+				enterprise_id,
+			</if>
+			<if test="bean.operationModule != null">
+				operation_module,
+			</if>
+			<if test="bean.operationDesc != null">
+				operation_desc,
+			</if>
+			<if test="bean.requestUrl != null">
+				request_url,
+			</if>
+			<if test="bean.requestMethod != null">
+				request_method,
+			</if>
+			<if test="bean.requestParams != null">
+				request_params,
+			</if>
+			<if test="bean.responseStatus != null">
+				response_status,
+			</if>
+			<if test="bean.executionTime != null">
+				execution_time,
+			</if>
+			<if test="bean.errorMessage != null">
+				error_message,
+			</if>
+			<if test="bean.operationTime != null">
+				operation_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.logId != null">
+				#{bean.logId},
+			</if>
+			<if test="bean.username != null">
+				#{bean.username},
+			</if>
+			<if test="bean.userType != null">
+				#{bean.userType},
+			</if>
+			<if test="bean.enterpriseId != null">
+				#{bean.enterpriseId},
+			</if>
+			<if test="bean.operationModule != null">
+				#{bean.operationModule},
+			</if>
+			<if test="bean.operationDesc != null">
+				#{bean.operationDesc},
+			</if>
+			<if test="bean.requestUrl != null">
+				#{bean.requestUrl},
+			</if>
+			<if test="bean.requestMethod != null">
+				#{bean.requestMethod},
+			</if>
+			<if test="bean.requestParams != null">
+				#{bean.requestParams},
+			</if>
+			<if test="bean.responseStatus != null">
+				#{bean.responseStatus},
+			</if>
+			<if test="bean.executionTime != null">
+				#{bean.executionTime},
+			</if>
+			<if test="bean.errorMessage != null">
+				#{bean.errorMessage},
+			</if>
+			<if test="bean.operationTime != null">
+				#{bean.operationTime},
+			</if>
+		</trim>
+	</insert>
+
+	<!--插入或更新-->
+	<insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.LogInfo">
+		insert into log_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.logId != null">
+				log_id,
+			</if>
+			<if test="bean.username != null">
+				username,
+			</if>
+			<if test="bean.userType != null">
+				user_type,
+			</if>
+			<if test="bean.enterpriseId != null">
+				enterprise_id,
+			</if>
+			<if test="bean.operationModule != null">
+				operation_module,
+			</if>
+			<if test="bean.operationDesc != null">
+				operation_desc,
+			</if>
+			<if test="bean.requestUrl != null">
+				request_url,
+			</if>
+			<if test="bean.requestMethod != null">
+				request_method,
+			</if>
+			<if test="bean.requestParams != null">
+				request_params,
+			</if>
+			<if test="bean.responseStatus != null">
+				response_status,
+			</if>
+			<if test="bean.executionTime != null">
+				execution_time,
+			</if>
+			<if test="bean.errorMessage != null">
+				error_message,
+			</if>
+			<if test="bean.operationTime != null">
+				operation_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.logId != null">
+				#{bean.logId},
+			</if>
+			<if test="bean.username != null">
+				#{bean.username},
+			</if>
+			<if test="bean.userType != null">
+				#{bean.userType},
+			</if>
+			<if test="bean.enterpriseId != null">
+				#{bean.enterpriseId},
+			</if>
+			<if test="bean.operationModule != null">
+				#{bean.operationModule},
+			</if>
+			<if test="bean.operationDesc != null">
+				#{bean.operationDesc},
+			</if>
+			<if test="bean.requestUrl != null">
+				#{bean.requestUrl},
+			</if>
+			<if test="bean.requestMethod != null">
+				#{bean.requestMethod},
+			</if>
+			<if test="bean.requestParams != null">
+				#{bean.requestParams},
+			</if>
+			<if test="bean.responseStatus != null">
+				#{bean.responseStatus},
+			</if>
+			<if test="bean.executionTime != null">
+				#{bean.executionTime},
+			</if>
+			<if test="bean.errorMessage != null">
+				#{bean.errorMessage},
+			</if>
+			<if test="bean.operationTime != null">
+				#{bean.operationTime},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.username != null">
+				username = VALUES(username),
+			</if>
+			<if test="bean.userType != null">
+				user_type = VALUES(user_type),
+			</if>
+			<if test="bean.enterpriseId != null">
+				enterprise_id = VALUES(enterprise_id),
+			</if>
+			<if test="bean.operationModule != null">
+				operation_module = VALUES(operation_module),
+			</if>
+			<if test="bean.operationDesc != null">
+				operation_desc = VALUES(operation_desc),
+			</if>
+			<if test="bean.requestUrl != null">
+				request_url = VALUES(request_url),
+			</if>
+			<if test="bean.requestMethod != null">
+				request_method = VALUES(request_method),
+			</if>
+			<if test="bean.requestParams != null">
+				request_params = VALUES(request_params),
+			</if>
+			<if test="bean.responseStatus != null">
+				response_status = VALUES(response_status),
+			</if>
+			<if test="bean.executionTime != null">
+				execution_time = VALUES(execution_time),
+			</if>
+			<if test="bean.errorMessage != null">
+				error_message = VALUES(error_message),
+			</if>
+			<if test="bean.operationTime != null">
+				operation_time = VALUES(operation_time),
+			</if>
+		</trim>
+	</insert>
+
+	<!--添加（批量插入）-->
+	<insert id="insertBatch" parameterType="com.yunnancommon.entity.po.LogInfo">
+		insert into log_info(username,user_type,enterprise_id,operation_module,operation_desc,request_url,request_method,request_params,response_status,execution_time,error_message,operation_time) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.username},#{item.userType},#{item.enterpriseId},#{item.operationModule},#{item.operationDesc},#{item.requestUrl},#{item.requestMethod},#{item.requestParams},#{item.responseStatus},#{item.executionTime},#{item.errorMessage},#{item.operationTime})
+			</foreach>
+	</insert>
+
+
+	<!--添加（批量插入或更新）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.yunnancommon.entity.po.LogInfo">
+		insert into log_info(username,user_type,enterprise_id,operation_module,operation_desc,request_url,request_method,request_params,response_status,execution_time,error_message,operation_time) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.username},#{item.userType},#{item.enterpriseId},#{item.operationModule},#{item.operationDesc},#{item.requestUrl},#{item.requestMethod},#{item.requestParams},#{item.responseStatus},#{item.executionTime},#{item.errorMessage},#{item.operationTime})
+			</foreach>
+		on DUPLICATE key update
+			log_id = VALUES(log_id),username = VALUES(username),user_type = VALUES(user_type),enterprise_id = VALUES(enterprise_id),operation_module = VALUES(operation_module),operation_desc = VALUES(operation_desc),request_url = VALUES(request_url),request_method = VALUES(request_method),request_params = VALUES(request_params),response_status = VALUES(response_status),execution_time = VALUES(execution_time),error_message = VALUES(error_message),operation_time = VALUES(operation_time)
+	</insert>
+
+	<!--根据LogId查询-->
+	<select id="selectByLogId" resultMap="base_result_map">
+		select <include refid="base_column_list" /> from log_info where log_id = #{logId}
+	</select>
+
+	<!--根据LogId更新-->
+	<update id="updateByLogId" parameterType="com.yunnancommon.entity.po.LogInfo">
+		update log_info
+		<set>
+			<if test="bean.logId != null">
+				log_id = #{bean.logId},
+			</if>
+			<if test="bean.username != null">
+				username = #{bean.username},
+			</if>
+			<if test="bean.userType != null">
+				user_type = #{bean.userType},
+			</if>
+			<if test="bean.enterpriseId != null">
+				enterprise_id = #{bean.enterpriseId},
+			</if>
+			<if test="bean.operationModule != null">
+				operation_module = #{bean.operationModule},
+			</if>
+			<if test="bean.operationDesc != null">
+				operation_desc = #{bean.operationDesc},
+			</if>
+			<if test="bean.requestUrl != null">
+				request_url = #{bean.requestUrl},
+			</if>
+			<if test="bean.requestMethod != null">
+				request_method = #{bean.requestMethod},
+			</if>
+			<if test="bean.requestParams != null">
+				request_params = #{bean.requestParams},
+			</if>
+			<if test="bean.responseStatus != null">
+				response_status = #{bean.responseStatus},
+			</if>
+			<if test="bean.executionTime != null">
+				execution_time = #{bean.executionTime},
+			</if>
+			<if test="bean.errorMessage != null">
+				error_message = #{bean.errorMessage},
+			</if>
+			<if test="bean.operationTime != null">
+				operation_time = #{bean.operationTime},
+			</if>
+		</set>
+		where log_id = #{logId}
+	</update>
+
+	<!--根据LogId删除-->
+	<delete id="deleteByLogId">
+		delete from log_info where log_id = #{logId}
+	</delete>
+
+
+</mapper>

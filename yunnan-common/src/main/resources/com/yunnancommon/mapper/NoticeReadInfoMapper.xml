@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunnancommon.mapper.NoticeReadInfoMapper">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.yunnancommon.entity.po.NoticeReadInfo">
+		<!--记录ID-->
+		<id column="id" property="id" />
+		<!--通知ID-->
+		<result column="notice_id" property="noticeId" />
+		<!--阅读用户-->
+		<result column="username" property="username" />
+		<!--阅读时间-->
+		<result column="read_time" property="readTime" />
+		<!--企业ID-->
+		<result column="enterprise_id" property="enterpriseId" />
+		<!--用户类型-->
+		<result column="user_type" property="userType" />
+	</resultMap>
+
+	<!--通用查询结果-->
+	<sql id="base_column_list">
+		id,notice_id,username,read_time,enterprise_id,user_type
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.id != null">
+			and id = #{query.id}
+		</if>
+		<if test="query.noticeId != null">
+			and notice_id = #{query.noticeId}
+		</if>
+		<if test="query.username != null and query.username != ''">
+			and username = #{query.username}
+		</if>
+		<if test="query.readTime != null">
+			and read_time = #{query.readTime}
+		</if>
+		<if test="query.enterpriseId != null and query.enterpriseId != ''">
+			and enterprise_id = #{query.enterpriseId}
+		</if>
+		<if test="query.userType != null">
+			and user_type = #{query.userType}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.usernameFuzzy != null and query.usernameFuzzy != ''">
+			 and username like concat('%',#{query.usernameFuzzy},'%')
+		</if>
+		<if test="query.readTimeStart != null and query.readTimeStart != ''">
+			<![CDATA[ and read_time >= str_to_date(#{query.readTimeStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.readTimeEnd != null and query.readTimeEnd != ''">
+			<![CDATA[ and read_time < str_to_date(#{query.readTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+		</if>
+		<if test="query.enterpriseIdFuzzy != null and query.enterpriseIdFuzzy != ''">
+			 and enterprise_id like concat('%',#{query.enterpriseIdFuzzy},'%')
+		</if>
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="query_condition">
+	<where>
+		<include refid="base_query_condition" />
+		<include refid="base_query_condition_extend" />
+	</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		select
+		<include refid="base_column_list" />
+		from notice_read_info
+		<include refid="query_condition" />
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		select count(1)
+		from notice_read_info
+		<include refid="query_condition" />
+	</select>
+
+
+	<!--单条插入-->
+	<insert id="insert" parameterType="com.yunnancommon.entity.po.NoticeReadInfo">
+		<selectKey keyProperty="bean.id" resultType="Long" order="AFTER">
+			select last_insert_id()
+		</selectKey>
+		insert into notice_read_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.noticeId != null">
+				notice_id,
+			</if>
+			<if test="bean.username != null">
+				username,
+			</if>
+			<if test="bean.readTime != null">
+				read_time,
+			</if>
+			<if test="bean.enterpriseId != null">
+				enterprise_id,
+			</if>
+			<if test="bean.userType != null">
+				user_type,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.noticeId != null">
+				#{bean.noticeId},
+			</if>
+			<if test="bean.username != null">
+				#{bean.username},
+			</if>
+			<if test="bean.readTime != null">
+				#{bean.readTime},
+			</if>
+			<if test="bean.enterpriseId != null">
+				#{bean.enterpriseId},
+			</if>
+			<if test="bean.userType != null">
+				#{bean.userType},
+			</if>
+		</trim>
+	</insert>
+
+	<!--插入或更新-->
+	<insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.NoticeReadInfo">
+		insert into notice_read_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.noticeId != null">
+				notice_id,
+			</if>
+			<if test="bean.username != null">
+				username,
+			</if>
+			<if test="bean.readTime != null">
+				read_time,
+			</if>
+			<if test="bean.enterpriseId != null">
+				enterprise_id,
+			</if>
+			<if test="bean.userType != null">
+				user_type,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.noticeId != null">
+				#{bean.noticeId},
+			</if>
+			<if test="bean.username != null">
+				#{bean.username},
+			</if>
+			<if test="bean.readTime != null">
+				#{bean.readTime},
+			</if>
+			<if test="bean.enterpriseId != null">
+				#{bean.enterpriseId},
+			</if>
+			<if test="bean.userType != null">
+				#{bean.userType},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.readTime != null">
+				read_time = VALUES(read_time),
+			</if>
+			<if test="bean.enterpriseId != null">
+				enterprise_id = VALUES(enterprise_id),
+			</if>
+			<if test="bean.userType != null">
+				user_type = VALUES(user_type),
+			</if>
+		</trim>
+	</insert>
+
+	<!--添加（批量插入）-->
+	<insert id="insertBatch" parameterType="com.yunnancommon.entity.po.NoticeReadInfo">
+		insert into notice_read_info(notice_id,username,read_time,enterprise_id,user_type) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.noticeId},#{item.username},#{item.readTime},#{item.enterpriseId},#{item.userType})
+			</foreach>
+	</insert>
+
+
+	<!--添加（批量插入或更新）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.yunnancommon.entity.po.NoticeReadInfo">
+		insert into notice_read_info(notice_id,username,read_time,enterprise_id,user_type) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.noticeId},#{item.username},#{item.readTime},#{item.enterpriseId},#{item.userType})
+			</foreach>
+		on DUPLICATE key update
+			id = VALUES(id),notice_id = VALUES(notice_id),username = VALUES(username),read_time = VALUES(read_time),enterprise_id = VALUES(enterprise_id),user_type = VALUES(user_type)
+	</insert>
+
+	<!--根据Id查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list" /> from notice_read_info where id = #{id}
+	</select>
+
+	<!--根据Id更新-->
+	<update id="updateById" parameterType="com.yunnancommon.entity.po.NoticeReadInfo">
+		update notice_read_info
+		<set>
+			<if test="bean.id != null">
+				id = #{bean.id},
+			</if>
+			<if test="bean.noticeId != null">
+				notice_id = #{bean.noticeId},
+			</if>
+			<if test="bean.username != null">
+				username = #{bean.username},
+			</if>
+			<if test="bean.readTime != null">
+				read_time = #{bean.readTime},
+			</if>
+			<if test="bean.enterpriseId != null">
+				enterprise_id = #{bean.enterpriseId},
+			</if>
+			<if test="bean.userType != null">
+				user_type = #{bean.userType},
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<!--根据Id删除-->
+	<delete id="deleteById">
+		delete from notice_read_info where id = #{id}
+	</delete>
+
+	<!--根据NoticeIdAndUsername查询-->
+	<select id="selectByNoticeIdAndUsername" resultMap="base_result_map">
+		select <include refid="base_column_list" /> from notice_read_info where notice_id = #{noticeId} and username = #{username}
+	</select>
+
+	<!--根据NoticeIdAndUsername更新-->
+	<update id="updateByNoticeIdAndUsername" parameterType="com.yunnancommon.entity.po.NoticeReadInfo">
+		update notice_read_info
+		<set>
+			<if test="bean.id != null">
+				id = #{bean.id},
+			</if>
+			<if test="bean.noticeId != null">
+				notice_id = #{bean.noticeId},
+			</if>
+			<if test="bean.username != null">
+				username = #{bean.username},
+			</if>
+			<if test="bean.readTime != null">
+				read_time = #{bean.readTime},
+			</if>
+			<if test="bean.enterpriseId != null">
+				enterprise_id = #{bean.enterpriseId},
+			</if>
+			<if test="bean.userType != null">
+				user_type = #{bean.userType},
+			</if>
+		</set>
+		where notice_id = #{noticeId} and username = #{username}
+	</update>
+
+	<!--根据NoticeIdAndUsername删除-->
+	<delete id="deleteByNoticeIdAndUsername">
+		delete from notice_read_info where notice_id = #{noticeId} and username = #{username}
+	</delete>
+
+
+</mapper>

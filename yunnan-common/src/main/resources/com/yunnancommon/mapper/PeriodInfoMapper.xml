@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunnancommon.mapper.PeriodInfoMapper">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.yunnancommon.entity.po.PeriodInfo">
+		<!--调查期ID(月)(时间戳)-->
+		<id column="period_id" property="periodId" />
+		<!--此调查期之前的企业总数-->
+		<result column="enterprise_count" property="enterpriseCount" />
+	</resultMap>
+
+	<!--通用查询结果-->
+	<sql id="base_column_list">
+		period_id,enterprise_count
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.periodId != null">
+			and period_id = #{query.periodId}
+		</if>
+		<if test="query.enterpriseCount != null">
+			and enterprise_count = #{query.enterpriseCount}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="query_condition">
+	<where>
+		<include refid="base_query_condition" />
+		<include refid="base_query_condition_extend" />
+	</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		select
+		<include refid="base_column_list" />
+		from period_info
+		<include refid="query_condition" />
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		select count(1)
+		from period_info
+		<include refid="query_condition" />
+	</select>
+
+
+	<!--单条插入-->
+	<insert id="insert" parameterType="com.yunnancommon.entity.po.PeriodInfo">
+
+		insert into period_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.periodId != null">
+				period_id,
+			</if>
+			<if test="bean.enterpriseCount != null">
+				enterprise_count,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.periodId != null">
+				#{bean.periodId},
+			</if>
+			<if test="bean.enterpriseCount != null">
+				#{bean.enterpriseCount},
+			</if>
+		</trim>
+	</insert>
+
+	<!--插入或更新-->
+	<insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.PeriodInfo">
+		insert into period_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.periodId != null">
+				period_id,
+			</if>
+			<if test="bean.enterpriseCount != null">
+				enterprise_count,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.periodId != null">
+				#{bean.periodId},
+			</if>
+			<if test="bean.enterpriseCount != null">
+				#{bean.enterpriseCount},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.enterpriseCount != null">
+				enterprise_count = VALUES(enterprise_count),
+			</if>
+		</trim>
+	</insert>
+
+	<!--添加（批量插入）-->
+	<insert id="insertBatch" parameterType="com.yunnancommon.entity.po.PeriodInfo">
+		insert into period_info(period_id,enterprise_count) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.periodId},#{item.enterpriseCount})
+			</foreach>
+	</insert>
+
+
+	<!--添加（批量插入或更新）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.yunnancommon.entity.po.PeriodInfo">
+		insert into period_info(period_id,enterprise_count) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.periodId},#{item.enterpriseCount})
+			</foreach>
+		on DUPLICATE key update
+			period_id = VALUES(period_id),enterprise_count = VALUES(enterprise_count)
+	</insert>
+
+	<!--根据PeriodId查询-->
+	<select id="selectByPeriodId" resultMap="base_result_map">
+		select <include refid="base_column_list" /> from period_info where period_id = #{periodId}
+	</select>
+
+	<!--根据PeriodId更新-->
+	<update id="updateByPeriodId" parameterType="com.yunnancommon.entity.po.PeriodInfo">
+		update period_info
+		<set>
+			<if test="bean.periodId != null">
+				period_id = #{bean.periodId},
+			</if>
+			<if test="bean.enterpriseCount != null">
+				enterprise_count = #{bean.enterpriseCount},
+			</if>
+		</set>
+		where period_id = #{periodId}
+	</update>
+
+	<!--根据PeriodId删除-->
+	<delete id="deleteByPeriodId">
+		delete from period_info where period_id = #{periodId}
+	</delete>
+
+
+</mapper>

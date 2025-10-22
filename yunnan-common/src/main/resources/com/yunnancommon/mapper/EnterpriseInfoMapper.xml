@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunnancommon.mapper.EnterpriseInfoMapper">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.yunnancommon.entity.po.EnterpriseInfo">
+		<!--企业ID-->
+		<id column="enterprise_id" property="enterpriseId" />
+		<!--组织机构代码-->
+		<result column="org_code" property="orgCode" />
+		<!--企业名称-->
+		<result column="name" property="name" />
+		<!--所属地区-->
+		<result column="region" property="region" />
+		<!--所属性质-->
+		<result column="nature" property="nature" />
+		<!--所属行业-->
+		<result column="industry" property="industry" />
+		<!--主要经营业务详情-->
+		<result column="industry_desc" property="industryDesc" />
+		<!--联系人名称-->
+		<result column="contact_name" property="contactName" />
+		<!--联系人地址-->
+		<result column="address" property="address" />
+		<!--邮政编码-->
+		<result column="postal_code" property="postalCode" />
+		<!--联系电话-->
+		<result column="phone_num" property="phoneNum" />
+		<!--传真号-->
+		<result column="fax_num" property="faxNum" />
+		<!--邮箱-->
+		<result column="email" property="email" />
+		<!--状态: 0-创建未备案 1-已备案未审核 2-已退回 3-正常(已备案已审核) 4-倒闭-->
+		<result column="status" property="status" />
+		<!--企业创建时间-->
+		<result column="created_at" property="createdAt" />
+		<!--企业信息修改时间-->
+		<result column="updated_at" property="updatedAt" />
+	</resultMap>
+
+	<!--通用查询结果-->
+	<sql id="base_column_list">
+		enterprise_id,org_code,name,region,nature,industry,industry_desc,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.enterpriseId != null and query.enterpriseId != ''">
+			and enterprise_id = #{query.enterpriseId}
+		</if>
+		<if test="query.orgCode != null and query.orgCode != ''">
+			and org_code = #{query.orgCode}
+		</if>
+		<if test="query.name != null and query.name != ''">
+			and name = #{query.name}
+		</if>
+		<if test="query.region != null">
+			and region = #{query.region}
+		</if>
+		<if test="query.nature != null">
+			and nature = #{query.nature}
+		</if>
+		<if test="query.industry != null">
+			and industry = #{query.industry}
+		</if>
+		<if test="query.industryDesc != null and query.industryDesc != ''">
+			and industry_desc = #{query.industryDesc}
+		</if>
+		<if test="query.contactName != null and query.contactName != ''">
+			and contact_name = #{query.contactName}
+		</if>
+		<if test="query.address != null and query.address != ''">
+			and address = #{query.address}
+		</if>
+		<if test="query.postalCode != null and query.postalCode != ''">
+			and postal_code = #{query.postalCode}
+		</if>
+		<if test="query.phoneNum != null and query.phoneNum != ''">
+			and phone_num = #{query.phoneNum}
+		</if>
+		<if test="query.faxNum != null and query.faxNum != ''">
+			and fax_num = #{query.faxNum}
+		</if>
+		<if test="query.email != null and query.email != ''">
+			and email = #{query.email}
+		</if>
+		<if test="query.status != null">
+			and status = #{query.status}
+		</if>
+		<if test="query.createdAt != null">
+			and created_at = #{query.createdAt}
+		</if>
+		<if test="query.updatedAt != null">
+			and updated_at = #{query.updatedAt}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.enterpriseIdFuzzy != null and query.enterpriseIdFuzzy != ''">
+			 and enterprise_id like concat('%',#{query.enterpriseIdFuzzy},'%')
+		</if>
+		<if test="query.orgCodeFuzzy != null and query.orgCodeFuzzy != ''">
+			 and org_code like concat('%',#{query.orgCodeFuzzy},'%')
+		</if>
+		<if test="query.nameFuzzy != null and query.nameFuzzy != ''">
+			 and name like concat('%',#{query.nameFuzzy},'%')
+		</if>
+		<if test="query.industryDescFuzzy != null and query.industryDescFuzzy != ''">
+			 and industry_desc like concat('%',#{query.industryDescFuzzy},'%')
+		</if>
+		<if test="query.contactNameFuzzy != null and query.contactNameFuzzy != ''">
+			 and contact_name like concat('%',#{query.contactNameFuzzy},'%')
+		</if>
+		<if test="query.addressFuzzy != null and query.addressFuzzy != ''">
+			 and address like concat('%',#{query.addressFuzzy},'%')
+		</if>
+		<if test="query.postalCodeFuzzy != null and query.postalCodeFuzzy != ''">
+			 and postal_code like concat('%',#{query.postalCodeFuzzy},'%')
+		</if>
+		<if test="query.phoneNumFuzzy != null and query.phoneNumFuzzy != ''">
+			 and phone_num like concat('%',#{query.phoneNumFuzzy},'%')
+		</if>
+		<if test="query.faxNumFuzzy != null and query.faxNumFuzzy != ''">
+			 and fax_num like concat('%',#{query.faxNumFuzzy},'%')
+		</if>
+		<if test="query.emailFuzzy != null and query.emailFuzzy != ''">
+			 and email like concat('%',#{query.emailFuzzy},'%')
+		</if>
+		<if test="query.createdAtStart != null and query.createdAtStart != ''">
+			<![CDATA[ and created_at >= str_to_date(#{query.createdAtStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
+			<![CDATA[ and created_at < str_to_date(#{query.createdAtEnd}, '%Y-%m-%d', interval -1 day) ]]>
+		</if>
+		<if test="query.updatedAtStart != null and query.updatedAtStart != ''">
+			<![CDATA[ and updated_at >= str_to_date(#{query.updatedAtStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
+			<![CDATA[ and updated_at < str_to_date(#{query.updatedAtEnd}, '%Y-%m-%d', interval -1 day) ]]>
+		</if>
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="query_condition">
+	<where>
+		<include refid="base_query_condition" />
+		<include refid="base_query_condition_extend" />
+	</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		select
+		<include refid="base_column_list" />
+		from enterprise_info
+		<include refid="query_condition" />
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		select count(1)
+		from enterprise_info
+		<include refid="query_condition" />
+	</select>
+
+
+	<!--单条插入-->
+	<insert id="insert" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
+
+		insert into enterprise_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.enterpriseId != null">
+				enterprise_id,
+			</if>
+			<if test="bean.orgCode != null">
+				org_code,
+			</if>
+			<if test="bean.name != null">
+				name,
+			</if>
+			<if test="bean.region != null">
+				region,
+			</if>
+			<if test="bean.nature != null">
+				nature,
+			</if>
+			<if test="bean.industry != null">
+				industry,
+			</if>
+			<if test="bean.industryDesc != null">
+				industry_desc,
+			</if>
+			<if test="bean.contactName != null">
+				contact_name,
+			</if>
+			<if test="bean.address != null">
+				address,
+			</if>
+			<if test="bean.postalCode != null">
+				postal_code,
+			</if>
+			<if test="bean.phoneNum != null">
+				phone_num,
+			</if>
+			<if test="bean.faxNum != null">
+				fax_num,
+			</if>
+			<if test="bean.email != null">
+				email,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.enterpriseId != null">
+				#{bean.enterpriseId},
+			</if>
+			<if test="bean.orgCode != null">
+				#{bean.orgCode},
+			</if>
+			<if test="bean.name != null">
+				#{bean.name},
+			</if>
+			<if test="bean.region != null">
+				#{bean.region},
+			</if>
+			<if test="bean.nature != null">
+				#{bean.nature},
+			</if>
+			<if test="bean.industry != null">
+				#{bean.industry},
+			</if>
+			<if test="bean.industryDesc != null">
+				#{bean.industryDesc},
+			</if>
+			<if test="bean.contactName != null">
+				#{bean.contactName},
+			</if>
+			<if test="bean.address != null">
+				#{bean.address},
+			</if>
+			<if test="bean.postalCode != null">
+				#{bean.postalCode},
+			</if>
+			<if test="bean.phoneNum != null">
+				#{bean.phoneNum},
+			</if>
+			<if test="bean.faxNum != null">
+				#{bean.faxNum},
+			</if>
+			<if test="bean.email != null">
+				#{bean.email},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+	</insert>
+
+	<!--插入或更新-->
+	<insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
+		insert into enterprise_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.enterpriseId != null">
+				enterprise_id,
+			</if>
+			<if test="bean.orgCode != null">
+				org_code,
+			</if>
+			<if test="bean.name != null">
+				name,
+			</if>
+			<if test="bean.region != null">
+				region,
+			</if>
+			<if test="bean.nature != null">
+				nature,
+			</if>
+			<if test="bean.industry != null">
+				industry,
+			</if>
+			<if test="bean.industryDesc != null">
+				industry_desc,
+			</if>
+			<if test="bean.contactName != null">
+				contact_name,
+			</if>
+			<if test="bean.address != null">
+				address,
+			</if>
+			<if test="bean.postalCode != null">
+				postal_code,
+			</if>
+			<if test="bean.phoneNum != null">
+				phone_num,
+			</if>
+			<if test="bean.faxNum != null">
+				fax_num,
+			</if>
+			<if test="bean.email != null">
+				email,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.enterpriseId != null">
+				#{bean.enterpriseId},
+			</if>
+			<if test="bean.orgCode != null">
+				#{bean.orgCode},
+			</if>
+			<if test="bean.name != null">
+				#{bean.name},
+			</if>
+			<if test="bean.region != null">
+				#{bean.region},
+			</if>
+			<if test="bean.nature != null">
+				#{bean.nature},
+			</if>
+			<if test="bean.industry != null">
+				#{bean.industry},
+			</if>
+			<if test="bean.industryDesc != null">
+				#{bean.industryDesc},
+			</if>
+			<if test="bean.contactName != null">
+				#{bean.contactName},
+			</if>
+			<if test="bean.address != null">
+				#{bean.address},
+			</if>
+			<if test="bean.postalCode != null">
+				#{bean.postalCode},
+			</if>
+			<if test="bean.phoneNum != null">
+				#{bean.phoneNum},
+			</if>
+			<if test="bean.faxNum != null">
+				#{bean.faxNum},
+			</if>
+			<if test="bean.email != null">
+				#{bean.email},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.orgCode != null">
+				org_code = VALUES(org_code),
+			</if>
+			<if test="bean.name != null">
+				name = VALUES(name),
+			</if>
+			<if test="bean.region != null">
+				region = VALUES(region),
+			</if>
+			<if test="bean.nature != null">
+				nature = VALUES(nature),
+			</if>
+			<if test="bean.industry != null">
+				industry = VALUES(industry),
+			</if>
+			<if test="bean.industryDesc != null">
+				industry_desc = VALUES(industry_desc),
+			</if>
+			<if test="bean.contactName != null">
+				contact_name = VALUES(contact_name),
+			</if>
+			<if test="bean.address != null">
+				address = VALUES(address),
+			</if>
+			<if test="bean.postalCode != null">
+				postal_code = VALUES(postal_code),
+			</if>
+			<if test="bean.phoneNum != null">
+				phone_num = VALUES(phone_num),
+			</if>
+			<if test="bean.faxNum != null">
+				fax_num = VALUES(fax_num),
+			</if>
+			<if test="bean.email != null">
+				email = VALUES(email),
+			</if>
+			<if test="bean.status != null">
+				status = VALUES(status),
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = VALUES(created_at),
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = VALUES(updated_at),
+			</if>
+		</trim>
+	</insert>
+
+	<!--添加（批量插入）-->
+	<insert id="insertBatch" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
+		insert into enterprise_info(enterprise_id,org_code,name,region,nature,industry,industry_desc,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.nature},#{item.industry},#{item.industryDesc},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
+			</foreach>
+	</insert>
+
+
+	<!--添加（批量插入或更新）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
+		insert into enterprise_info(enterprise_id,org_code,name,region,nature,industry,industry_desc,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.nature},#{item.industry},#{item.industryDesc},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
+			</foreach>
+		on DUPLICATE key update
+			enterprise_id = VALUES(enterprise_id),org_code = VALUES(org_code),name = VALUES(name),region = VALUES(region),nature = VALUES(nature),industry = VALUES(industry),industry_desc = VALUES(industry_desc),contact_name = VALUES(contact_name),address = VALUES(address),postal_code = VALUES(postal_code),phone_num = VALUES(phone_num),fax_num = VALUES(fax_num),email = VALUES(email),status = VALUES(status),created_at = VALUES(created_at),updated_at = VALUES(updated_at)
+	</insert>
+
+	<!--根据EnterpriseId查询-->
+	<select id="selectByEnterpriseId" resultMap="base_result_map">
+		select <include refid="base_column_list" /> from enterprise_info where enterprise_id = #{enterpriseId}
+	</select>
+
+	<!--根据EnterpriseId更新-->
+	<update id="updateByEnterpriseId" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
+		update enterprise_info
+		<set>
+			<if test="bean.enterpriseId != null">
+				enterprise_id = #{bean.enterpriseId},
+			</if>
+			<if test="bean.orgCode != null">
+				org_code = #{bean.orgCode},
+			</if>
+			<if test="bean.name != null">
+				name = #{bean.name},
+			</if>
+			<if test="bean.region != null">
+				region = #{bean.region},
+			</if>
+			<if test="bean.nature != null">
+				nature = #{bean.nature},
+			</if>
+			<if test="bean.industry != null">
+				industry = #{bean.industry},
+			</if>
+			<if test="bean.industryDesc != null">
+				industry_desc = #{bean.industryDesc},
+			</if>
+			<if test="bean.contactName != null">
+				contact_name = #{bean.contactName},
+			</if>
+			<if test="bean.address != null">
+				address = #{bean.address},
+			</if>
+			<if test="bean.postalCode != null">
+				postal_code = #{bean.postalCode},
+			</if>
+			<if test="bean.phoneNum != null">
+				phone_num = #{bean.phoneNum},
+			</if>
+			<if test="bean.faxNum != null">
+				fax_num = #{bean.faxNum},
+			</if>
+			<if test="bean.email != null">
+				email = #{bean.email},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+		</set>
+		where enterprise_id = #{enterpriseId}
+	</update>
+
+	<!--根据EnterpriseId删除-->
+	<delete id="deleteByEnterpriseId">
+		delete from enterprise_info where enterprise_id = #{enterpriseId}
+	</delete>
+
+
+</mapper>

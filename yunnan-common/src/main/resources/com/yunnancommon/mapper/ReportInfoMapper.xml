@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunnancommon.mapper.ReportInfoMapper">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.yunnancommon.entity.po.ReportInfo">
+		<!--数据填报ID-->
+		<id column="report_id" property="reportId" />
+		<!--建档期就业人数-->
+		<result column="construction_count" property="constructionCount" />
+		<!--调查期就业人数-->
+		<result column="investigation_count" property="investigationCount" />
+		<!--就业人数减少类型-->
+		<result column="reduction_type" property="reductionType" />
+		<!--减少原因类型1-->
+		<result column="reason1" property="reason1" />
+		<!--减少原因说明1-->
+		<result column="reason1_desc" property="reason1Desc" />
+		<!--减少原因类型2-->
+		<result column="reason2" property="reason2" />
+		<!--减少原因说明2-->
+		<result column="reason2_desc" property="reason2Desc" />
+		<!--减少原因类型3-->
+		<result column="reason3" property="reason3" />
+		<!--减少原因说明3-->
+		<result column="reason3_desc" property="reason3Desc" />
+		<!--其他原因-->
+		<result column="other_reason" property="otherReason" />
+	</resultMap>
+
+	<!--通用查询结果-->
+	<sql id="base_column_list">
+		report_id,construction_count,investigation_count,reduction_type,reason1,reason1_desc,reason2,reason2_desc,reason3,reason3_desc,other_reason
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.reportId != null and query.reportId != ''">
+			and report_id = #{query.reportId}
+		</if>
+		<if test="query.constructionCount != null">
+			and construction_count = #{query.constructionCount}
+		</if>
+		<if test="query.investigationCount != null">
+			and investigation_count = #{query.investigationCount}
+		</if>
+		<if test="query.reductionType != null">
+			and reduction_type = #{query.reductionType}
+		</if>
+		<if test="query.reason1 != null">
+			and reason1 = #{query.reason1}
+		</if>
+		<if test="query.reason1Desc != null and query.reason1Desc != ''">
+			and reason1_desc = #{query.reason1Desc}
+		</if>
+		<if test="query.reason2 != null">
+			and reason2 = #{query.reason2}
+		</if>
+		<if test="query.reason2Desc != null and query.reason2Desc != ''">
+			and reason2_desc = #{query.reason2Desc}
+		</if>
+		<if test="query.reason3 != null">
+			and reason3 = #{query.reason3}
+		</if>
+		<if test="query.reason3Desc != null and query.reason3Desc != ''">
+			and reason3_desc = #{query.reason3Desc}
+		</if>
+		<if test="query.otherReason != null and query.otherReason != ''">
+			and other_reason = #{query.otherReason}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.reportIdFuzzy != null and query.reportIdFuzzy != ''">
+			 and report_id like concat('%',#{query.reportIdFuzzy},'%')
+		</if>
+		<if test="query.reason1DescFuzzy != null and query.reason1DescFuzzy != ''">
+			 and reason1_desc like concat('%',#{query.reason1DescFuzzy},'%')
+		</if>
+		<if test="query.reason2DescFuzzy != null and query.reason2DescFuzzy != ''">
+			 and reason2_desc like concat('%',#{query.reason2DescFuzzy},'%')
+		</if>
+		<if test="query.reason3DescFuzzy != null and query.reason3DescFuzzy != ''">
+			 and reason3_desc like concat('%',#{query.reason3DescFuzzy},'%')
+		</if>
+		<if test="query.otherReasonFuzzy != null and query.otherReasonFuzzy != ''">
+			 and other_reason like concat('%',#{query.otherReasonFuzzy},'%')
+		</if>
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="query_condition">
+	<where>
+		<include refid="base_query_condition" />
+		<include refid="base_query_condition_extend" />
+	</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		select
+		<include refid="base_column_list" />
+		from report_info
+		<include refid="query_condition" />
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		select count(1)
+		from report_info
+		<include refid="query_condition" />
+	</select>
+
+
+	<!--单条插入-->
+	<insert id="insert" parameterType="com.yunnancommon.entity.po.ReportInfo">
+
+		insert into report_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.reportId != null">
+				report_id,
+			</if>
+			<if test="bean.constructionCount != null">
+				construction_count,
+			</if>
+			<if test="bean.investigationCount != null">
+				investigation_count,
+			</if>
+			<if test="bean.reductionType != null">
+				reduction_type,
+			</if>
+			<if test="bean.reason1 != null">
+				reason1,
+			</if>
+			<if test="bean.reason1Desc != null">
+				reason1_desc,
+			</if>
+			<if test="bean.reason2 != null">
+				reason2,
+			</if>
+			<if test="bean.reason2Desc != null">
+				reason2_desc,
+			</if>
+			<if test="bean.reason3 != null">
+				reason3,
+			</if>
+			<if test="bean.reason3Desc != null">
+				reason3_desc,
+			</if>
+			<if test="bean.otherReason != null">
+				other_reason,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.reportId != null">
+				#{bean.reportId},
+			</if>
+			<if test="bean.constructionCount != null">
+				#{bean.constructionCount},
+			</if>
+			<if test="bean.investigationCount != null">
+				#{bean.investigationCount},
+			</if>
+			<if test="bean.reductionType != null">
+				#{bean.reductionType},
+			</if>
+			<if test="bean.reason1 != null">
+				#{bean.reason1},
+			</if>
+			<if test="bean.reason1Desc != null">
+				#{bean.reason1Desc},
+			</if>
+			<if test="bean.reason2 != null">
+				#{bean.reason2},
+			</if>
+			<if test="bean.reason2Desc != null">
+				#{bean.reason2Desc},
+			</if>
+			<if test="bean.reason3 != null">
+				#{bean.reason3},
+			</if>
+			<if test="bean.reason3Desc != null">
+				#{bean.reason3Desc},
+			</if>
+			<if test="bean.otherReason != null">
+				#{bean.otherReason},
+			</if>
+		</trim>
+	</insert>
+
+	<!--插入或更新-->
+	<insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.ReportInfo">
+		insert into report_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.reportId != null">
+				report_id,
+			</if>
+			<if test="bean.constructionCount != null">
+				construction_count,
+			</if>
+			<if test="bean.investigationCount != null">
+				investigation_count,
+			</if>
+			<if test="bean.reductionType != null">
+				reduction_type,
+			</if>
+			<if test="bean.reason1 != null">
+				reason1,
+			</if>
+			<if test="bean.reason1Desc != null">
+				reason1_desc,
+			</if>
+			<if test="bean.reason2 != null">
+				reason2,
+			</if>
+			<if test="bean.reason2Desc != null">
+				reason2_desc,
+			</if>
+			<if test="bean.reason3 != null">
+				reason3,
+			</if>
+			<if test="bean.reason3Desc != null">
+				reason3_desc,
+			</if>
+			<if test="bean.otherReason != null">
+				other_reason,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.reportId != null">
+				#{bean.reportId},
+			</if>
+			<if test="bean.constructionCount != null">
+				#{bean.constructionCount},
+			</if>
+			<if test="bean.investigationCount != null">
+				#{bean.investigationCount},
+			</if>
+			<if test="bean.reductionType != null">
+				#{bean.reductionType},
+			</if>
+			<if test="bean.reason1 != null">
+				#{bean.reason1},
+			</if>
+			<if test="bean.reason1Desc != null">
+				#{bean.reason1Desc},
+			</if>
+			<if test="bean.reason2 != null">
+				#{bean.reason2},
+			</if>
+			<if test="bean.reason2Desc != null">
+				#{bean.reason2Desc},
+			</if>
+			<if test="bean.reason3 != null">
+				#{bean.reason3},
+			</if>
+			<if test="bean.reason3Desc != null">
+				#{bean.reason3Desc},
+			</if>
+			<if test="bean.otherReason != null">
+				#{bean.otherReason},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.constructionCount != null">
+				construction_count = VALUES(construction_count),
+			</if>
+			<if test="bean.investigationCount != null">
+				investigation_count = VALUES(investigation_count),
+			</if>
+			<if test="bean.reductionType != null">
+				reduction_type = VALUES(reduction_type),
+			</if>
+			<if test="bean.reason1 != null">
+				reason1 = VALUES(reason1),
+			</if>
+			<if test="bean.reason1Desc != null">
+				reason1_desc = VALUES(reason1_desc),
+			</if>
+			<if test="bean.reason2 != null">
+				reason2 = VALUES(reason2),
+			</if>
+			<if test="bean.reason2Desc != null">
+				reason2_desc = VALUES(reason2_desc),
+			</if>
+			<if test="bean.reason3 != null">
+				reason3 = VALUES(reason3),
+			</if>
+			<if test="bean.reason3Desc != null">
+				reason3_desc = VALUES(reason3_desc),
+			</if>
+			<if test="bean.otherReason != null">
+				other_reason = VALUES(other_reason),
+			</if>
+		</trim>
+	</insert>
+
+	<!--添加（批量插入）-->
+	<insert id="insertBatch" parameterType="com.yunnancommon.entity.po.ReportInfo">
+		insert into report_info(report_id,construction_count,investigation_count,reduction_type,reason1,reason1_desc,reason2,reason2_desc,reason3,reason3_desc,other_reason) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.reportId},#{item.constructionCount},#{item.investigationCount},#{item.reductionType},#{item.reason1},#{item.reason1Desc},#{item.reason2},#{item.reason2Desc},#{item.reason3},#{item.reason3Desc},#{item.otherReason})
+			</foreach>
+	</insert>
+
+
+	<!--添加（批量插入或更新）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.yunnancommon.entity.po.ReportInfo">
+		insert into report_info(report_id,construction_count,investigation_count,reduction_type,reason1,reason1_desc,reason2,reason2_desc,reason3,reason3_desc,other_reason) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.reportId},#{item.constructionCount},#{item.investigationCount},#{item.reductionType},#{item.reason1},#{item.reason1Desc},#{item.reason2},#{item.reason2Desc},#{item.reason3},#{item.reason3Desc},#{item.otherReason})
+			</foreach>
+		on DUPLICATE key update
+			report_id = VALUES(report_id),construction_count = VALUES(construction_count),investigation_count = VALUES(investigation_count),reduction_type = VALUES(reduction_type),reason1 = VALUES(reason1),reason1_desc = VALUES(reason1_desc),reason2 = VALUES(reason2),reason2_desc = VALUES(reason2_desc),reason3 = VALUES(reason3),reason3_desc = VALUES(reason3_desc),other_reason = VALUES(other_reason)
+	</insert>
+
+	<!--根据ReportId查询-->
+	<select id="selectByReportId" resultMap="base_result_map">
+		select <include refid="base_column_list" /> from report_info where report_id = #{reportId}
+	</select>
+
+	<!--根据ReportId更新-->
+	<update id="updateByReportId" parameterType="com.yunnancommon.entity.po.ReportInfo">
+		update report_info
+		<set>
+			<if test="bean.reportId != null">
+				report_id = #{bean.reportId},
+			</if>
+			<if test="bean.constructionCount != null">
+				construction_count = #{bean.constructionCount},
+			</if>
+			<if test="bean.investigationCount != null">
+				investigation_count = #{bean.investigationCount},
+			</if>
+			<if test="bean.reductionType != null">
+				reduction_type = #{bean.reductionType},
+			</if>
+			<if test="bean.reason1 != null">
+				reason1 = #{bean.reason1},
+			</if>
+			<if test="bean.reason1Desc != null">
+				reason1_desc = #{bean.reason1Desc},
+			</if>
+			<if test="bean.reason2 != null">
+				reason2 = #{bean.reason2},
+			</if>
+			<if test="bean.reason2Desc != null">
+				reason2_desc = #{bean.reason2Desc},
+			</if>
+			<if test="bean.reason3 != null">
+				reason3 = #{bean.reason3},
+			</if>
+			<if test="bean.reason3Desc != null">
+				reason3_desc = #{bean.reason3Desc},
+			</if>
+			<if test="bean.otherReason != null">
+				other_reason = #{bean.otherReason},
+			</if>
+		</set>
+		where report_id = #{reportId}
+	</update>
+
+	<!--根据ReportId删除-->
+	<delete id="deleteByReportId">
+		delete from report_info where report_id = #{reportId}
+	</delete>
+
+
+</mapper>
