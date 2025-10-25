@@ -1,0 +1,8 @@
+**/target/
+**/.mvn/
+**/node_modules/
+**/.idea/
+**/.vscode/
+*.jar
+*.class
+
