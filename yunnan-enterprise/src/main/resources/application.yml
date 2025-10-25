@@ -6,9 +6,9 @@ spring:
       max-file-size: 10MB
       max-request-size: 15MB
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/project1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/yunnan_system
     username: root
-    password: 1234567890
+    password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       pool-name: HikariCPDatasource
