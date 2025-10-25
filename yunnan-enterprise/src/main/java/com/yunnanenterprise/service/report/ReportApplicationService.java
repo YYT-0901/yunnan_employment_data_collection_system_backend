@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -116,5 +117,35 @@ public class ReportApplicationService {
         EnterpriseReportInfo submit = assembler.toEnterpriseReportInfoForSubmit(cmd, latest.getReportId(), now);
         enterpriseReportInfoService.updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(
                 submit, submit.getEnterpriseId(), submit.getPeriodId(), submit.getReportId());
+    }
+
+    /**
+     * 获取企业的所有报表列表
+     * @param enterpriseId 企业ID
+     * @param pageNo 页码
+     * @param pageSize 每页数量
+     * @return 报表列表
+     */
+    public List<ReportV0> getReportList(String enterpriseId, Integer pageNo, Integer pageSize) {
+        EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
+        q.setEnterpriseId(enterpriseId);
+        q.setOrderBy("updated_at desc");  // 按更新时间倒序
+        q.setPageNo(pageNo);
+        q.setPageSize(pageSize);
+        
+        List<EnterpriseReportInfo> list = enterpriseReportInfoService.findListByParam(q);
+        
+        if (list == null || list.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // 转换为 VO 对象
+        List<ReportV0> result = new ArrayList<>();
+        for (EnterpriseReportInfo e : list) {
+            ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
+            result.add(assembler.toVO(e, r));
+        }
+        
+        return result;
     }
 }
