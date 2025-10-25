@@ -1,0 +1,13 @@
+[
+  { "value": "closure_bankruptcy", "label": "关闭破产", "description": "企业经营持续亏损或资不抵债，依法关闭或申请破产导致人员减少", "tags": ["经营风险", "停产"] },
+  { "value": "business_suspension", "label": "停业整顿", "description": "因安全、环保、质量或行政处罚被责令停业整顿，暂时停产压减人员", "tags": ["行政监管", "临时停工"] },
+  { "value": "economic_layoff", "label": "经济性裁员", "description": "企业按《劳动合同法》实施经济性裁员以降低用工成本", "tags": ["成本控制"] },
+  { "value": "business_transfer", "label": "业务转移", "description": "业务、资产或生产线整体迁移至异地或其他主体，原岗位不再保留", "tags": ["产业转移"] },
+  { "value": "natural_attrition", "label": "自然减员", "description": "退休、离世等自然流动未补员形成的人员减少", "tags": ["自然流动"] },
+  { "value": "contract_termination", "label": "正常解除或终止劳动合同", "description": "合同到期或协商解除后不再续签导致的减员", "tags": ["合同管理"] },
+  { "value": "policy_retirement", "label": "政策性退岗安置", "description": "因产业政策、环保限产等被要求压减岗位，并按政策安排退岗", "tags": ["政策性措施", "环保"] },
+  { "value": "international_factors", "label": "国际因素变化影响", "description": "国际订单减少、贸易摩擦、汇率波动等对就业的负面影响", "tags": ["外贸", "国际环境"] },
+  { "value": "natural_disaster", "label": "自然灾害", "description": "地震、洪涝、干旱等自然灾害造成生产停滞或设施损毁", "tags": ["灾害"] },
+  { "value": "major_incident", "label": "重大事件影响", "description": "重大公共卫生事件、重大安全事故等突发事件导致的减员", "tags": ["突发事件"] },
+  { "value": "other", "label": "其他", "description": "上述未涵盖的其他情况，需说明具体原因", "tags": ["补充说明"] }
+]
