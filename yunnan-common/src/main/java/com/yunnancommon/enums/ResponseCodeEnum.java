@@ -2,6 +2,7 @@ package com.yunnancommon.enums;
 
 public enum ResponseCodeEnum {
     CODE_200(200, "请求成功"),
+    CODE_400(400, "请求失败"),
     CODE_404(404, "请求路径不存在"),
     CODE_600(600, "请求参数错误"),
     CODE_601(601, "信息已经存在"),
