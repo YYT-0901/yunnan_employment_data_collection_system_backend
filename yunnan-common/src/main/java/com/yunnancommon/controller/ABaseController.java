@@ -14,4 +14,13 @@ public class ABaseController {
         responseVO.setData(t);
         return responseVO;
     }
+
+    protected <T> ResponseVO getErrorResponseVO(T t) {
+        ResponseVO<T> responseVO = new ResponseVO<T>();
+        responseVO.setStatus(STATUC_ERROR);
+        responseVO.setCode(ResponseCodeEnum.CODE_400.getCode());
+        responseVO.setInfo(ResponseCodeEnum.CODE_400.getMsg());
+        responseVO.setData(t);
+        return responseVO;
+    }
 }
