@@ -83,7 +83,6 @@ public class NoticeInfo implements Serializable {
 	/**
 	 * 状态: 0-删除 1-正常 2-草稿
 	 */
-	@JsonIgnore
 	private Integer status;
 
 	/**

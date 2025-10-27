@@ -1,6 +1,7 @@
 package com.yunnancommon.service;
 
 
+import com.yunnancommon.entity.vo.CreatedAccountVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
@@ -59,4 +60,7 @@ public interface EnterpriseInfoService {
 	Integer deleteEnterpriseInfoByEnterpriseId(String enterpriseId);
 
 
+    CreatedAccountVO createEnterpriseAccount(EnterpriseInfo enterpriseInfo);
+
+	CreatedAccountVO createCityAccount(Integer cityCode);
 }

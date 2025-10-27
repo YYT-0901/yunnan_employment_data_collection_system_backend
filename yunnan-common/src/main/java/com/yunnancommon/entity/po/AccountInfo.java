@@ -49,7 +49,6 @@ public class AccountInfo implements Serializable {
 	/**
 	 * 状态: 0-正常 1-停用
 	 */
-	@JsonIgnore
 	private Integer status;
 
 	/**

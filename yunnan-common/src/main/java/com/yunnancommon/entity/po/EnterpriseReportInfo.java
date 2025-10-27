@@ -42,7 +42,6 @@ public class EnterpriseReportInfo implements Serializable {
 	/**
 	 * 状态: -1-未填报 0-已暂存 1-待市级审核 2-待省级审核 3-审核通过 4-已归档 5-驳回
 	 */
-	@JsonIgnore
 	private Integer status;
 
 	/**
