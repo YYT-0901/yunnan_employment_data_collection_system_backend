@@ -4,6 +4,8 @@ package com.yunnancommon.service;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.AccountInfo;
 import com.yunnancommon.entity.query.AccountInfoQuery;
+import com.yunnancommon.entity.vo.TokenInfoVO;
+import com.yunnancommon.exception.BusinessException;
 
 import java.util.List;
 /**
@@ -58,5 +60,6 @@ public interface AccountInfoService {
 	 */
 	Integer deleteAccountInfoByUsername(String username);
 
+    TokenInfoVO login(String account, String password) throws BusinessException;
 
 }

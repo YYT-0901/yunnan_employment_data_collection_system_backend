@@ -1,17 +1,26 @@
 package com.yunnancommon.service.impl;
 
 
+import com.yunnancommon.component.RedisComponent;
+import com.yunnancommon.entity.po.EnterpriseInfo;
+import com.yunnancommon.entity.query.EnterpriseInfoQuery;
 import com.yunnancommon.entity.query.SimplePage;
+import com.yunnancommon.entity.vo.TokenInfoVO;
+import com.yunnancommon.enums.AccountStatusEnum;
 import com.yunnancommon.enums.PageSize;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.AccountInfo;
 import com.yunnancommon.entity.query.AccountInfoQuery;
+import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.mapper.AccountInfoMapper;
+import com.yunnancommon.mapper.EnterpriseInfoMapper;
 import com.yunnancommon.service.AccountInfoService;
+import com.yunnancommon.utils.TokenUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
+import java.util.Date;
 import java.util.List;
 /**
  * @Description:账号信息表ServiceImpl
@@ -23,6 +32,12 @@ public class AccountInfoServiceImpl implements AccountInfoService {
 
 	@Resource
 	private AccountInfoMapper<AccountInfo, AccountInfoQuery> accountInfoMapper;
+
+	@Resource
+	private EnterpriseInfoMapper<EnterpriseInfo, EnterpriseInfoQuery> enterpriseInfoMapper;
+
+	@Resource
+	private RedisComponent redisComponent;
 
 	/**
 	 * 根据条件查询列表
@@ -107,6 +122,32 @@ public class AccountInfoServiceImpl implements AccountInfoService {
 	public Integer deleteAccountInfoByUsername(String username) {
 		return this.accountInfoMapper.deleteByUsername(username);
 	}
+
+	@Override
+	public TokenInfoVO login(String account, String password) throws BusinessException {
+		AccountInfo accountInfo = accountInfoMapper.selectByUsername(account);
+		if(accountInfo == null || !accountInfo.getPassword().equals(password)) {
+			throw new BusinessException("账号或密码错误");
+		}
+		if(AccountStatusEnum.DISABLE.getCode().equals(accountInfo.getStatus())) {
+			throw new BusinessException("账号被禁用");
+		}
+
+		EnterpriseInfo enterpriseInfo = enterpriseInfoMapper.selectByEnterpriseId(accountInfo.getEnterpriseId());
+
+		String token = TokenUtils.generateToken();
+		TokenInfoVO tokenInfoVO = new TokenInfoVO();
+		tokenInfoVO.setToken(token);
+		tokenInfoVO.setEnterpriseInfo(enterpriseInfo);
+
+		redisComponent.saveEnterpriseTokenInfo(tokenInfoVO);
+
+		accountInfo.setLastLoginTime(new Date());
+		accountInfoMapper.updateByUsername(accountInfo, account);
+
+		return tokenInfoVO;
+	}
+
 
 
 }
