@@ -41,7 +41,7 @@ spring:
       timeout: 2000
 
 project:
-  folder: D:\\STUDY\\beijing_universiti_folder7\\excellent_engineering_code\\yunnan\\
+  folder: ./yunnan
 
 log:
   root:
