@@ -36,6 +36,23 @@ public class ReportAssembler {
         r.setReportId(cmd.getId()); // 可能为空，服务层会补
         r.setConstructionCount(cmd.getInitialEmployees());
         r.setInvestigationCount(cmd.getCurrentEmployees());
+
+        boolean hasReduction = cmd.getInitialEmployees() != null && cmd.getCurrentEmployees() != null
+                && cmd.getCurrentEmployees() < cmd.getInitialEmployees();
+
+        if (!hasReduction) {
+            r.setReductionType(null);
+            r.setReason1(null);
+            r.setReason2(null);
+            r.setReason3(null);
+            r.setOtherReason(null);
+            r.setReason1Desc(null);
+            r.setReason2Desc(null);
+            r.setReason3Desc(null);
+            return r;
+        }
+
+        // 有减员
         r.setReductionType(dict.typeCodeToId(cmd.getReductionTypeCode()));
         r.setReason1(dict.causeCodeToId(cmd.getPrimaryReasonCode()));
         r.setReason2(dict.causeCodeToId(cmd.getSecondaryReasonCode()));
@@ -49,9 +66,15 @@ public class ReportAssembler {
         } else {
             r.setOtherReason(null);
         }
-        r.setReason1Desc(ReportConstants.OTHER_CODE.equals(cmd.getPrimaryReasonCode()) ? nullIfBlank(cmd.getPrimaryReasonDesc()) : null);
-        r.setReason2Desc(ReportConstants.OTHER_CODE.equals(cmd.getSecondaryReasonCode()) ? nullIfBlank(cmd.getSecondaryReasonDesc()) : null);
-        r.setReason3Desc(ReportConstants.OTHER_CODE.equals(cmd.getTertiaryReasonCode()) ? nullIfBlank(cmd.getTertiaryReasonDesc()) : null);
+        r.setReason1Desc(
+                ReportConstants.OTHER_CODE.equals(cmd.getPrimaryReasonCode()) ? nullIfBlank(cmd.getPrimaryReasonDesc())
+                        : null);
+        r.setReason2Desc(ReportConstants.OTHER_CODE.equals(cmd.getSecondaryReasonCode())
+                ? nullIfBlank(cmd.getSecondaryReasonDesc())
+                : null);
+        r.setReason3Desc(ReportConstants.OTHER_CODE.equals(cmd.getTertiaryReasonCode())
+                ? nullIfBlank(cmd.getTertiaryReasonDesc())
+                : null);
 
         return r;
     }
@@ -106,8 +129,13 @@ public class ReportAssembler {
 
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         v.setSubmittedAt(e != null && e.getStatus() != null && e.getStatus() >= 1 && e.getCreatedAt() != null
-                ? fmt.format(e.getCreatedAt()) : "");
+                ? fmt.format(e.getCreatedAt())
+                : "");
         v.setUpdatedAt(e != null && e.getUpdatedAt() != null ? fmt.format(e.getUpdatedAt()) : "");
+        if (e != null) {
+            v.setPeriodStartTime(e.getPeriodStartTime() != null ? fmt.format(e.getPeriodStartTime()) : null);
+            v.setPeriodEndTime(e.getPeriodEndTime() != null ? fmt.format(e.getPeriodEndTime()) : null);
+        }
         return v;
     }
 

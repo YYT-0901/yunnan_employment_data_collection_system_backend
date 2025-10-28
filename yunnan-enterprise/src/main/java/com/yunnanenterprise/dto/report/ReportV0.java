@@ -58,7 +58,11 @@ public class ReportV0 {
     @JsonProperty("updated_at")
     private String updatedAt;
 
-    // getters/setters below...
+    @JsonProperty("period_start_time")
+    private String periodStartTime;
+
+    @JsonProperty("period_end_time")
+    private String periodEndTime;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -107,4 +111,11 @@ public class ReportV0 {
 
     public String getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getPeriodStartTime() {return periodStartTime;}
+    public void setPeriodStartTime(String periodStartTime) { this.periodStartTime = periodStartTime;}
+
+    public String getPeriodEndTime() {return periodEndTime;}
+    public void setPeriodEndTime(String periodEndTime) { this.periodEndTime = periodEndTime;}
+
 }

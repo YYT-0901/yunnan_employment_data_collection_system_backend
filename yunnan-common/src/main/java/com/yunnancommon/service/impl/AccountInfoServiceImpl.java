@@ -138,6 +138,7 @@ public class AccountInfoServiceImpl implements AccountInfoService {
 		String token = TokenUtils.generateToken();
 		TokenInfoVO tokenInfoVO = new TokenInfoVO();
 		tokenInfoVO.setToken(token);
+		tokenInfoVO.setUsername(accountInfo.getUsername());  // 设置用户名
 		tokenInfoVO.setEnterpriseInfo(enterpriseInfo);
 
 		redisComponent.saveEnterpriseTokenInfo(tokenInfoVO);
