@@ -64,6 +64,10 @@ public class ReportV0 {
     @JsonProperty("period_end_time")
     private String periodEndTime;
 
+    // 新增字段：标识建档期就业人数是否被锁定（来自历史数据）
+    @JsonProperty("is_initial_employees_locked")
+    private Boolean isInitialEmployeesLocked;
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -118,4 +122,8 @@ public class ReportV0 {
     public String getPeriodEndTime() {return periodEndTime;}
     public void setPeriodEndTime(String periodEndTime) { this.periodEndTime = periodEndTime;}
 
+    public Boolean getIsInitialEmployeesLocked() { return isInitialEmployeesLocked; }
+    public void setIsInitialEmployeesLocked(Boolean isInitialEmployeesLocked) { 
+        this.isInitialEmployeesLocked = isInitialEmployeesLocked; 
+    }
 }
