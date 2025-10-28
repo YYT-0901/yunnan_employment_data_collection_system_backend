@@ -39,7 +39,7 @@
         <commons.csv.version>1.2</commons.csv.version>
         <commons.codec.version>1.9</commons.codec.version>
         <commons.io.version>2.5</commons.io.version>
-        <lombok.version>1.18.22</lombok.version>
+        <lombok.version>1.18.28</lombok.version>
         <captcha.verion>1.6.2</captcha.verion>
     </properties>
 
@@ -114,4 +114,16 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

@@ -37,6 +37,11 @@
             <artifactId>yunnan-common</artifactId>
             <version>1.0</version>
         </dependency>
+        <!-- Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
         <!-- Dev runtime DB -->
         <dependency>
             <groupId>com.h2database</groupId>

@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunnancommon.mapper.ReportAuditHistoryMapper">
+    
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="com.yunnancommon.entity.po.ReportAuditHistory">
+        <!--审核记录ID-->
+        <id column="audit_id" property="auditId" />
+        <!--企业ID-->
+        <result column="enterprise_id" property="enterpriseId" />
+        <!--调查期ID-->
+        <result column="period_id" property="periodId" />
+        <!--被审核的报表ID-->
+        <result column="report_id" property="reportId" />
+        <!--审核层级-->
+        <result column="audit_level" property="auditLevel" />
+        <!--审核人-->
+        <result column="auditor" property="auditor" />
+        <!--审核结果-->
+        <result column="audit_result" property="auditResult" />
+        <!--审核意见-->
+        <result column="audit_opinion" property="auditOpinion" />
+        <!--审核时间-->
+        <result column="audit_time" property="auditTime" />
+    </resultMap>
+    
+    <!--通用查询结果列-->
+    <sql id="base_column_list">
+        audit_id,enterprise_id,period_id,report_id,audit_level,auditor,audit_result,audit_opinion,audit_time
+    </sql>
+    
+    <!--基础查询条件-->
+    <sql id="base_query_condition">
+        <if test="query.auditId != null">
+            and audit_id = #{query.auditId}
+        </if>
+        <if test="query.enterpriseId != null and query.enterpriseId != ''">
+            and enterprise_id = #{query.enterpriseId}
+        </if>
+        <if test="query.periodId != null">
+            and period_id = #{query.periodId}
+        </if>
+        <if test="query.reportId != null and query.reportId != ''">
+            and report_id = #{query.reportId}
+        </if>
+        <if test="query.auditLevel != null">
+            and audit_level = #{query.auditLevel}
+        </if>
+        <if test="query.auditor != null and query.auditor != ''">
+            and auditor = #{query.auditor}
+        </if>
+        <if test="query.auditResult != null">
+            and audit_result = #{query.auditResult}
+        </if>
+    </sql>
+    
+    <!--扩展查询条件-->
+    <sql id="base_query_condition_extend">
+        <if test="query.enterpriseIdFuzzy != null and query.enterpriseIdFuzzy != ''">
+            and enterprise_id like concat('%',#{query.enterpriseIdFuzzy},'%')
+        </if>
+        <if test="query.reportIdFuzzy != null and query.reportIdFuzzy != ''">
+            and report_id like concat('%',#{query.reportIdFuzzy},'%')
+        </if>
+        <if test="query.auditorFuzzy != null and query.auditorFuzzy != ''">
+            and auditor like concat('%',#{query.auditorFuzzy},'%')
+        </if>
+        <if test="query.auditTimeStart != null and query.auditTimeStart != ''">
+            <![CDATA[ and audit_time >= str_to_date(#{query.auditTimeStart},'%Y-%m-%d') ]]>
+        </if>
+        <if test="query.auditTimeEnd != null and query.auditTimeEnd != ''">
+            <![CDATA[ and audit_time < date_sub(str_to_date(#{query.auditTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+        </if>
+    </sql>
+    
+    <!--通用查询条件-->
+    <sql id="query_condition">
+        <where>
+            <include refid="base_query_condition" />
+            <include refid="base_query_condition_extend" />
+        </where>
+    </sql>
+    
+    <!--查询列表-->
+    <select id="selectList" resultMap="base_result_map">
+        SELECT
+        <include refid="base_column_list" />
+        FROM report_audit_history
+        <include refid="query_condition" />
+        <if test="query.orderBy != null and query.orderBy != ''">
+            order by ${query.orderBy}
+        </if>
+        <if test="query.simplePage != null">
+            limit #{query.simplePage.start},#{query.simplePage.end}
+        </if>
+    </select>
+    
+    <!--查询数量-->
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT count(1)
+        FROM report_audit_history
+        <include refid="query_condition" />
+    </select>
+    
+    <!--插入（匹配有值的字段）-->
+    <insert id="insert" parameterType="com.yunnancommon.entity.po.ReportAuditHistory" useGeneratedKeys="true" keyProperty="bean.auditId">
+        INSERT INTO report_audit_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.enterpriseId != null">
+                enterprise_id,
+            </if>
+            <if test="bean.periodId != null">
+                period_id,
+            </if>
+            <if test="bean.reportId != null">
+                report_id,
+            </if>
+            <if test="bean.auditLevel != null">
+                audit_level,
+            </if>
+            <if test="bean.auditor != null">
+                auditor,
+            </if>
+            <if test="bean.auditResult != null">
+                audit_result,
+            </if>
+            <if test="bean.auditOpinion != null">
+                audit_opinion,
+            </if>
+            <if test="bean.auditTime != null">
+                audit_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.enterpriseId != null">
+                #{bean.enterpriseId},
+            </if>
+            <if test="bean.periodId != null">
+                #{bean.periodId},
+            </if>
+            <if test="bean.reportId != null">
+                #{bean.reportId},
+            </if>
+            <if test="bean.auditLevel != null">
+                #{bean.auditLevel},
+            </if>
+            <if test="bean.auditor != null">
+                #{bean.auditor},
+            </if>
+            <if test="bean.auditResult != null">
+                #{bean.auditResult},
+            </if>
+            <if test="bean.auditOpinion != null">
+                #{bean.auditOpinion},
+            </if>
+            <if test="bean.auditTime != null">
+                #{bean.auditTime},
+            </if>
+        </trim>
+    </insert>
+    
+    <!--插入或更新（匹配有值的字段）-->
+    <insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.ReportAuditHistory">
+        INSERT INTO report_audit_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.auditId != null">
+                audit_id,
+            </if>
+            <if test="bean.enterpriseId != null">
+                enterprise_id,
+            </if>
+            <if test="bean.periodId != null">
+                period_id,
+            </if>
+            <if test="bean.reportId != null">
+                report_id,
+            </if>
+            <if test="bean.auditLevel != null">
+                audit_level,
+            </if>
+            <if test="bean.auditor != null">
+                auditor,
+            </if>
+            <if test="bean.auditResult != null">
+                audit_result,
+            </if>
+            <if test="bean.auditOpinion != null">
+                audit_opinion,
+            </if>
+            <if test="bean.auditTime != null">
+                audit_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bean.auditId != null">
+                #{bean.auditId},
+            </if>
+            <if test="bean.enterpriseId != null">
+                #{bean.enterpriseId},
+            </if>
+            <if test="bean.periodId != null">
+                #{bean.periodId},
+            </if>
+            <if test="bean.reportId != null">
+                #{bean.reportId},
+            </if>
+            <if test="bean.auditLevel != null">
+                #{bean.auditLevel},
+            </if>
+            <if test="bean.auditor != null">
+                #{bean.auditor},
+            </if>
+            <if test="bean.auditResult != null">
+                #{bean.auditResult},
+            </if>
+            <if test="bean.auditOpinion != null">
+                #{bean.auditOpinion},
+            </if>
+            <if test="bean.auditTime != null">
+                #{bean.auditTime},
+            </if>
+        </trim>
+        on DUPLICATE key update
+        <trim prefix="" suffix="" suffixOverrides=",">
+            <if test="bean.enterpriseId != null">
+                enterprise_id = VALUES(enterprise_id),
+            </if>
+            <if test="bean.periodId != null">
+                period_id = VALUES(period_id),
+            </if>
+            <if test="bean.reportId != null">
+                report_id = VALUES(report_id),
+            </if>
+            <if test="bean.auditLevel != null">
+                audit_level = VALUES(audit_level),
+            </if>
+            <if test="bean.auditor != null">
+                auditor = VALUES(auditor),
+            </if>
+            <if test="bean.auditResult != null">
+                audit_result = VALUES(audit_result),
+            </if>
+            <if test="bean.auditOpinion != null">
+                audit_opinion = VALUES(audit_opinion),
+            </if>
+            <if test="bean.auditTime != null">
+                audit_time = VALUES(audit_time),
+            </if>
+        </trim>
+    </insert>
+    
+    <!--根据AuditId查询-->
+    <select id="selectByAuditId" resultMap="base_result_map">
+        select
+        <include refid="base_column_list" />
+        from report_audit_history
+        where audit_id=#{auditId}
+    </select>
+    
+    <!--根据AuditId更新-->
+    <update id="updateByAuditId" parameterType="com.yunnancommon.entity.po.ReportAuditHistory">
+        update report_audit_history
+        <set>
+            <if test="bean.enterpriseId != null">
+                enterprise_id = #{bean.enterpriseId},
+            </if>
+            <if test="bean.periodId != null">
+                period_id = #{bean.periodId},
+            </if>
+            <if test="bean.reportId != null">
+                report_id = #{bean.reportId},
+            </if>
+            <if test="bean.auditLevel != null">
+                audit_level = #{bean.auditLevel},
+            </if>
+            <if test="bean.auditor != null">
+                auditor = #{bean.auditor},
+            </if>
+            <if test="bean.auditResult != null">
+                audit_result = #{bean.auditResult},
+            </if>
+            <if test="bean.auditOpinion != null">
+                audit_opinion = #{bean.auditOpinion},
+            </if>
+            <if test="bean.auditTime != null">
+                audit_time = #{bean.auditTime},
+            </if>
+        </set>
+        where audit_id=#{auditId}
+    </update>
+    
+    <!--根据AuditId删除-->
+    <delete id="deleteByAuditId">
+        delete from report_audit_history
+        where audit_id=#{auditId}
+    </delete>
+    
+</mapper>
