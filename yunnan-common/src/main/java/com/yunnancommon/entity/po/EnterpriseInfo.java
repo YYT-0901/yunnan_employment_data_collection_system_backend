@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.yunnancommon.enums.DateTimePatternEnum;
 import com.yunnancommon.utils.DateUtils;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @Description:企业信息表
@@ -82,7 +81,6 @@ public class EnterpriseInfo implements Serializable {
 	/**
 	 * 状态: 0-创建未备案 1-已备案未审核 2-已退回 3-正常(已备案已审核) 4-倒闭
 	 */
-	@JsonIgnore
 	private Integer status;
 
 	/**
