@@ -4,14 +4,6 @@ package com.yunnanenterprise.dto.report;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-/**
- * 暂存报表 DTO
- * 
- * 设计思路：
- * 1. 暂存时数据可以不完整，所以大部分字段不加 @NotNull
- * 2. periodId 必填，因为要知道是哪个调查期的报表
- * 3. reportId 可选，如果是第一次暂存则为null，后端会创建
- */
 public class ReportSaveDTO {
     
     /**

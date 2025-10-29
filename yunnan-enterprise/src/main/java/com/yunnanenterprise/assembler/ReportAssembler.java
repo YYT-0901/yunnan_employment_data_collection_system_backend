@@ -52,29 +52,31 @@ public class ReportAssembler {
             return r;
         }
 
-        // 有减员
+        // 有减员：保存减员类型和原因
         r.setReductionType(dict.typeCodeToId(cmd.getReductionTypeCode()));
         r.setReason1(dict.causeCodeToId(cmd.getPrimaryReasonCode()));
         r.setReason2(dict.causeCodeToId(cmd.getSecondaryReasonCode()));
         r.setReason3(dict.causeCodeToId(cmd.getTertiaryReasonCode()));
 
-        // “其他”说明的处理：
-        // - 减员类型为 OTHER：放到 other_reason
-        // - 原因为 OTHER：放到对应 reasonX_desc
+        // ✅ 关键修复：保存所有原因的说明（不限于"其他"）
+        // 问题背景：
+        //   - 前端要求：只要选择了原因，说明就是必填的（不管是什么原因）
+        //   - 旧逻辑：只保存"其他"原因的说明，导致其他原因的说明被丢弃
+        //   - 修复后：保存所有原因的说明，确保数据不丢失
+        
+        // 1. 减员类型说明：只有选择"其他"类型时才保存到 other_reason 字段
         if (ReportConstants.OTHER_CODE.equals(cmd.getReductionTypeCode())) {
             r.setOtherReason(nullIfBlank(cmd.getReductionTypeDesc()));
         } else {
             r.setOtherReason(null);
         }
-        r.setReason1Desc(
-                ReportConstants.OTHER_CODE.equals(cmd.getPrimaryReasonCode()) ? nullIfBlank(cmd.getPrimaryReasonDesc())
-                        : null);
-        r.setReason2Desc(ReportConstants.OTHER_CODE.equals(cmd.getSecondaryReasonCode())
-                ? nullIfBlank(cmd.getSecondaryReasonDesc())
-                : null);
-        r.setReason3Desc(ReportConstants.OTHER_CODE.equals(cmd.getTertiaryReasonCode())
-                ? nullIfBlank(cmd.getTertiaryReasonDesc())
-                : null);
+        
+        // 2. ✅ 所有原因的说明都保存到对应的 reasonX_desc 字段
+        //    无论原因是"合同到期"、"正常退休"、"成本上涨"还是"其他"
+        //    用户填写的说明都会被保存到数据库
+        r.setReason1Desc(nullIfBlank(cmd.getPrimaryReasonDesc()));
+        r.setReason2Desc(nullIfBlank(cmd.getSecondaryReasonDesc()));
+        r.setReason3Desc(nullIfBlank(cmd.getTertiaryReasonDesc()));
 
         return r;
     }
