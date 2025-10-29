@@ -486,3 +486,7 @@ org.springframework.web.servlet.resource.NoResourceFoundException: No static res
 2025-10-25 22:57:14 [INFO][org.springframework.boot.web.embedded.tomcat.GracefulShutdown][doShutdown][76]-> Graceful shutdown complete
 2025-10-25 22:57:14 [INFO][com.zaxxer.hikari.HikariDataSource][close][349]-> HikariCPDatasource - Shutdown initiated...
 2025-10-25 22:57:14 [INFO][com.zaxxer.hikari.HikariDataSource][close][351]-> HikariCPDatasource - Shutdown completed.
+2025-10-29 19:24:31 [INFO][org.springframework.boot.web.embedded.tomcat.GracefulShutdown][shutDownGracefully][54]-> Commencing graceful shutdown. Waiting for active requests to complete
+2025-10-29 19:24:32 [INFO][org.springframework.boot.web.embedded.tomcat.GracefulShutdown][doShutdown][76]-> Graceful shutdown complete
+2025-10-29 19:24:32 [INFO][com.zaxxer.hikari.HikariDataSource][close][349]-> HikariCPDatasource - Shutdown initiated...
+2025-10-29 19:24:32 [INFO][com.zaxxer.hikari.HikariDataSource][close][351]-> HikariCPDatasource - Shutdown completed.
