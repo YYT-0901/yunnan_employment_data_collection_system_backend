@@ -81,10 +81,10 @@ public class ReportAssembler {
         return r;
     }
 
-    public EnterpriseReportInfo toEnterpriseReportInfoForDraft(ReportCommand cmd, String reportId, Date now) {
+    public EnterpriseReportInfo toEnterpriseReportInfoForDraft(ReportCommand cmd, String reportId, Integer periodId, Date now) {
         EnterpriseReportInfo e = new EnterpriseReportInfo();
         e.setEnterpriseId(cmd.getEnterpriseId());
-        e.setPeriodId(PeriodUtils.toPeriodId(cmd.getReportingPeriod()));
+        e.setPeriodId(periodId);
         e.setReportId(reportId);
         e.setStatus(0); // 0-已暂存
         e.setUpdatedAt(now);
@@ -94,10 +94,10 @@ public class ReportAssembler {
         return e;
     }
 
-    public EnterpriseReportInfo toEnterpriseReportInfoForSubmit(ReportCommand cmd, String reportId, Date now) {
+    public EnterpriseReportInfo toEnterpriseReportInfoForSubmit(ReportCommand cmd, String reportId, Integer periodId, Date now) {
         EnterpriseReportInfo e = new EnterpriseReportInfo();
         e.setEnterpriseId(cmd.getEnterpriseId());
-        e.setPeriodId(PeriodUtils.toPeriodId(cmd.getReportingPeriod()));
+        e.setPeriodId(periodId);
         e.setReportId(reportId);
         e.setStatus(1); // 1-待市级审核
         e.setUpdatedAt(now);
@@ -137,6 +137,7 @@ public class ReportAssembler {
         if (e != null) {
             v.setPeriodStartTime(e.getPeriodStartTime() != null ? fmt.format(e.getPeriodStartTime()) : null);
             v.setPeriodEndTime(e.getPeriodEndTime() != null ? fmt.format(e.getPeriodEndTime()) : null);
+            v.setReasonReturn(e.getReasonReturn());
         }
         return v;
     }

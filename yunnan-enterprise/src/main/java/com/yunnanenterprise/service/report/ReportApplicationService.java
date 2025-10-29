@@ -14,6 +14,10 @@ import com.yunnancommon.entity.po.ReportAuditHistory;
 import com.yunnanenterprise.assembler.ReportAssembler;
 import com.yunnanenterprise.dto.report.ReportCommand;
 import com.yunnanenterprise.dto.report.ReportV0;
+import org.apache.ibatis.binding.BindingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.yunnanenterprise.enums.ReportStatusEnum;
 import org.springframework.stereotype.Service;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +34,8 @@ import java.util.*;
 @Service
 @Profile("db")
 public class ReportApplicationService {
+
+    private static final Logger log = LoggerFactory.getLogger(ReportApplicationService.class);
 
     private final EnterpriseReportInfoService enterpriseReportInfoService;
     private final ReportInfoService reportInfoService;
@@ -124,6 +130,9 @@ public class ReportApplicationService {
             e.setPeriodId(periodId);
             
             ReportV0 vo = assembler.toVO(e, null);
+            vo.setReportingPeriod(yyyyMm);
+            applyEditabilityFlags(vo, e);
+            applyLatestAuditSnapshot(vo, null, null);
             
             // 如果有历史数据，自动填充建档期就业人数并锁定
             if (hasHistory) {
@@ -149,6 +158,12 @@ public class ReportApplicationService {
         EnterpriseReportInfo e = list.get(0);
         ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
         ReportV0 vo = assembler.toVO(e, r);
+        vo.setReportingPeriod(yyyyMm);
+        applyEditabilityFlags(vo, e);
+
+        Map<String, ReportAuditHistory[]> snapshot = loadLatestAuditSnapshots(Collections.singletonList(e.getReportId()));
+        ReportAuditHistory[] pair = snapshot.get(e.getReportId());
+        applyLatestAuditSnapshot(vo, pair != null ? pair[0] : null, pair != null ? pair[1] : null);
         
         System.out.println("Existing report - initial_employees: " + vo.getInitialEmployees() 
             + ", current_employees: " + vo.getCurrentEmployees()
@@ -235,6 +250,150 @@ public class ReportApplicationService {
         return null;
     }
 
+    private boolean hasNewerVersion(String enterpriseId, Integer periodId, String reportId) {
+        if (reportId == null) {
+            return false;
+        }
+        EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
+        query.setEnterpriseId(enterpriseId);
+        query.setPeriodId(periodId);
+        query.setOldReportId(reportId);
+        query.setPageNo(1);
+        query.setPageSize(1);
+        List<EnterpriseReportInfo> newerList = enterpriseReportInfoService.findListByParam(query);
+        return newerList != null && !newerList.isEmpty();
+    }
+
+    private void applyEditabilityFlags(ReportV0 vo, EnterpriseReportInfo entity) {
+        if (vo == null) {
+            return;
+        }
+
+        if (entity == null) {
+            vo.setEditable(true);
+            vo.setCanResubmit(false);
+            return;
+        }
+
+        Integer status = entity.getStatus();
+        ReportStatusEnum statusEnum = ReportStatusEnum.getByCode(status);
+        boolean editable = (statusEnum == null) || statusEnum.canEdit();
+
+        if (editable && hasNewerVersion(entity.getEnterpriseId(), entity.getPeriodId(), entity.getReportId())) {
+            editable = false;
+        }
+
+        vo.setEditable(editable);
+        vo.setCanResubmit(editable && status != null && status == 5);
+    }
+
+    private String resolveAuditLevelName(Integer level) {
+        if (level == null) {
+            return null;
+        }
+        switch (level) {
+            case 1:
+                return "市级审核";
+            case 2:
+                return "省级审核";
+            default:
+                return "";
+        }
+    }
+
+    private String resolveAuditResultName(Integer result) {
+        if (result == null) {
+            return null;
+        }
+        return result == 1 ? "通过" : (result == 2 ? "驳回" : "");
+    }
+
+    private void applyLatestAuditSnapshot(ReportV0 vo, ReportAuditHistory latest, ReportAuditHistory latestReject) {
+        if (vo == null) {
+            return;
+        }
+
+        ReportAuditHistory source = latestReject != null ? latestReject : latest;
+        if (source == null) {
+            vo.setLatestAuditLevel(null);
+            vo.setLatestAuditLevelName(null);
+            vo.setLatestAuditResult(null);
+            vo.setLatestAuditResultName(null);
+            vo.setLatestAuditOpinion(null);
+            vo.setLatestAuditTime(null);
+            return;
+        }
+
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        vo.setLatestAuditLevel(source.getAuditLevel());
+        vo.setLatestAuditLevelName(resolveAuditLevelName(source.getAuditLevel()));
+        vo.setLatestAuditResult(source.getAuditResult());
+        vo.setLatestAuditResultName(resolveAuditResultName(source.getAuditResult()));
+        vo.setLatestAuditOpinion(source.getAuditOpinion());
+        vo.setLatestAuditTime(source.getAuditTime() != null ? fmt.format(source.getAuditTime()) : null);
+
+        if (latestReject == null && latest != null && latest.getAuditResult() != null && latest.getAuditResult() == 2) {
+            // 如果最新记录本身就是驳回，保持已有设置
+            return;
+        }
+
+        if (latestReject != null && latestReject != source) {
+            // 如果使用最新审核信息（非驳回），确保驳回信息也同步
+            vo.setLatestAuditResult(latestReject.getAuditResult());
+            vo.setLatestAuditResultName(resolveAuditResultName(latestReject.getAuditResult()));
+            vo.setLatestAuditOpinion(latestReject.getAuditOpinion());
+            vo.setLatestAuditTime(latestReject.getAuditTime() != null ? fmt.format(latestReject.getAuditTime()) : null);
+            vo.setLatestAuditLevel(latestReject.getAuditLevel());
+            vo.setLatestAuditLevelName(resolveAuditLevelName(latestReject.getAuditLevel()));
+        }
+    }
+
+    private Map<String, ReportAuditHistory[]> loadLatestAuditSnapshots(List<String> reportIds) {
+        Map<String, ReportAuditHistory[]> snapshots = new HashMap<>();
+        if (reportIds == null || reportIds.isEmpty()) {
+            return snapshots;
+        }
+
+        for (String reportId : reportIds) {
+            if (reportId == null) {
+                continue;
+            }
+            ReportAuditHistoryQuery query = new ReportAuditHistoryQuery();
+            query.setReportId(reportId);
+            query.setOrderBy("audit_time DESC");
+            query.setPageNo(1);
+            query.setPageSize(20);
+
+            List<ReportAuditHistory> historyList;
+            try {
+                historyList = reportAuditHistoryService.findListByParam(query);
+            } catch (BindingException ex) {
+                log.warn("ReportAuditHistoryMapper 未加载，跳过审核历史快照填充", ex);
+                return Collections.emptyMap();
+            } catch (Exception ex) {
+                log.warn("查询审核历史失败，跳过快照填充 reportId={}", reportId, ex);
+                continue;
+            }
+            if (historyList == null || historyList.isEmpty()) {
+                continue;
+            }
+
+            ReportAuditHistory latest = historyList.get(0);
+            ReportAuditHistory latestReject = null;
+            for (ReportAuditHistory history : historyList) {
+                if (history != null && history.getAuditResult() != null && history.getAuditResult() == 2) {
+                    latestReject = history;
+                    break;
+                }
+            }
+
+            snapshots.put(reportId, new ReportAuditHistory[] { latest, latestReject });
+        }
+
+        return snapshots;
+    }
+
     /**
      * 保存草稿（暂存）
      * 
@@ -274,7 +433,7 @@ public class ReportApplicationService {
         }
 
         // 写 enterprise_report_info（状态=0）
-        EnterpriseReportInfo e = assembler.toEnterpriseReportInfoForDraft(cmd, reportId, now);
+        EnterpriseReportInfo e = assembler.toEnterpriseReportInfoForDraft(cmd, reportId, periodId, now);
         if (list == null || list.isEmpty()) {
             enterpriseReportInfoService.add(e);
         } else {
@@ -311,7 +470,7 @@ public class ReportApplicationService {
 
         // 更新状态为"待市级审核"（status=1）
         EnterpriseReportInfo latest = list.get(0);
-        EnterpriseReportInfo submit = assembler.toEnterpriseReportInfoForSubmit(cmd, latest.getReportId(), now);
+        EnterpriseReportInfo submit = assembler.toEnterpriseReportInfoForSubmit(cmd, latest.getReportId(), periodId, now);
         enterpriseReportInfoService.updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(
                 submit, submit.getEnterpriseId(), submit.getPeriodId(), submit.getReportId());
     }
@@ -372,7 +531,24 @@ public class ReportApplicationService {
             if (periodInfo != null && periodInfo.getInvestigateTime() != null) {
                 vo.setReportingPeriod(periodInfo.getInvestigateTime());
             }
+            applyEditabilityFlags(vo, e);
             result.add(vo);
+        }
+
+        List<String> reportIds = new ArrayList<>();
+        for (ReportV0 vo : result) {
+            if (vo != null && vo.getId() != null) {
+                reportIds.add(vo.getId());
+            }
+        }
+
+        Map<String, ReportAuditHistory[]> snapshots = loadLatestAuditSnapshots(reportIds);
+        for (ReportV0 vo : result) {
+            if (vo == null) {
+                continue;
+            }
+            ReportAuditHistory[] pair = vo.getId() != null ? snapshots.get(vo.getId()) : null;
+            applyLatestAuditSnapshot(vo, pair != null ? pair[0] : null, pair != null ? pair[1] : null);
         }
 
         return result;
@@ -538,7 +714,7 @@ public class ReportApplicationService {
         reportInfoService.add(newReportInfo);
 
         // 步骤6：创建新版本的enterprise_report_info
-        EnterpriseReportInfo newEnterpriseReport = assembler.toEnterpriseReportInfoForSubmit(cmd, newReportId, now);
+        EnterpriseReportInfo newEnterpriseReport = assembler.toEnterpriseReportInfoForSubmit(cmd, newReportId, periodId, now);
         newEnterpriseReport.setOldReportId(oldReportId); // 关联旧版本
         enterpriseReportInfoService.add(newEnterpriseReport);
 

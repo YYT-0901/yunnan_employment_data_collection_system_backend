@@ -70,6 +70,33 @@ public class ReportV0 {
     @JsonProperty("is_current_employees_locked")
     private Boolean isCurrentEmployeesLocked;
 
+    @JsonProperty("editable")
+    private Boolean editable;
+
+    @JsonProperty("can_resubmit")
+    private Boolean canResubmit;
+
+    @JsonProperty("latest_audit_level")
+    private Integer latestAuditLevel;
+
+    @JsonProperty("latest_audit_level_name")
+    private String latestAuditLevelName;
+
+    @JsonProperty("latest_audit_result")
+    private Integer latestAuditResult;
+
+    @JsonProperty("latest_audit_result_name")
+    private String latestAuditResultName;
+
+    @JsonProperty("latest_audit_opinion")
+    private String latestAuditOpinion;
+
+    @JsonProperty("latest_audit_time")
+    private String latestAuditTime;
+
+    @JsonProperty("reason_return")
+    private String reasonReturn;
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -133,4 +160,31 @@ public class ReportV0 {
     public void setIsCurrentEmployeesLocked(Boolean isCurrentEmployeesLocked ) {
         this.isCurrentEmployeesLocked = isCurrentEmployeesLocked;
     }
+
+    public Boolean getEditable() { return editable; }
+    public void setEditable(Boolean editable) { this.editable = editable; }
+
+    public Boolean getCanResubmit() { return canResubmit; }
+    public void setCanResubmit(Boolean canResubmit) { this.canResubmit = canResubmit; }
+
+    public Integer getLatestAuditLevel() { return latestAuditLevel; }
+    public void setLatestAuditLevel(Integer latestAuditLevel) { this.latestAuditLevel = latestAuditLevel; }
+
+    public String getLatestAuditLevelName() { return latestAuditLevelName; }
+    public void setLatestAuditLevelName(String latestAuditLevelName) { this.latestAuditLevelName = latestAuditLevelName; }
+
+    public Integer getLatestAuditResult() { return latestAuditResult; }
+    public void setLatestAuditResult(Integer latestAuditResult) { this.latestAuditResult = latestAuditResult; }
+
+    public String getLatestAuditResultName() { return latestAuditResultName; }
+    public void setLatestAuditResultName(String latestAuditResultName) { this.latestAuditResultName = latestAuditResultName; }
+
+    public String getLatestAuditOpinion() { return latestAuditOpinion; }
+    public void setLatestAuditOpinion(String latestAuditOpinion) { this.latestAuditOpinion = latestAuditOpinion; }
+
+    public String getLatestAuditTime() { return latestAuditTime; }
+    public void setLatestAuditTime(String latestAuditTime) { this.latestAuditTime = latestAuditTime; }
+
+    public String getReasonReturn() { return reasonReturn; }
+    public void setReasonReturn(String reasonReturn) { this.reasonReturn = reasonReturn; }
 }

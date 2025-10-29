@@ -2,35 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yunnancommon.mapper.ReportAuditHistoryMapper">
-    
-    <!--实体映射-->
+
     <resultMap id="base_result_map" type="com.yunnancommon.entity.po.ReportAuditHistory">
-        <!--审核记录ID-->
         <id column="audit_id" property="auditId" />
-        <!--企业ID-->
         <result column="enterprise_id" property="enterpriseId" />
-        <!--调查期ID-->
         <result column="period_id" property="periodId" />
-        <!--被审核的报表ID-->
         <result column="report_id" property="reportId" />
-        <!--审核层级-->
         <result column="audit_level" property="auditLevel" />
-        <!--审核人-->
         <result column="auditor" property="auditor" />
-        <!--审核结果-->
         <result column="audit_result" property="auditResult" />
-        <!--审核意见-->
         <result column="audit_opinion" property="auditOpinion" />
-        <!--审核时间-->
         <result column="audit_time" property="auditTime" />
     </resultMap>
-    
-    <!--通用查询结果列-->
+
     <sql id="base_column_list">
         audit_id,enterprise_id,period_id,report_id,audit_level,auditor,audit_result,audit_opinion,audit_time
     </sql>
-    
-    <!--基础查询条件-->
+
     <sql id="base_query_condition">
         <if test="query.auditId != null">
             and audit_id = #{query.auditId}
@@ -54,8 +42,7 @@
             and audit_result = #{query.auditResult}
         </if>
     </sql>
-    
-    <!--扩展查询条件-->
+
     <sql id="base_query_condition_extend">
         <if test="query.enterpriseIdFuzzy != null and query.enterpriseIdFuzzy != ''">
             and enterprise_id like concat('%',#{query.enterpriseIdFuzzy},'%')
@@ -73,16 +60,14 @@
             <![CDATA[ and audit_time < date_sub(str_to_date(#{query.auditTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
         </if>
     </sql>
-    
-    <!--通用查询条件-->
+
     <sql id="query_condition">
         <where>
             <include refid="base_query_condition" />
             <include refid="base_query_condition_extend" />
         </where>
     </sql>
-    
-    <!--查询列表-->
+
     <select id="selectList" resultMap="base_result_map">
         SELECT
         <include refid="base_column_list" />
@@ -95,15 +80,13 @@
             limit #{query.simplePage.start},#{query.simplePage.end}
         </if>
     </select>
-    
-    <!--查询数量-->
+
     <select id="selectCount" resultType="java.lang.Integer">
         SELECT count(1)
         FROM report_audit_history
         <include refid="query_condition" />
     </select>
-    
-    <!--插入（匹配有值的字段）-->
+
     <insert id="insert" parameterType="com.yunnancommon.entity.po.ReportAuditHistory" useGeneratedKeys="true" keyProperty="bean.auditId">
         INSERT INTO report_audit_history
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -159,8 +142,7 @@
             </if>
         </trim>
     </insert>
-    
-    <!--插入或更新（匹配有值的字段）-->
+
     <insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.ReportAuditHistory">
         INSERT INTO report_audit_history
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -221,46 +203,51 @@
                 #{bean.auditTime},
             </if>
         </trim>
-        on DUPLICATE key update
-        <trim prefix="" suffix="" suffixOverrides=",">
-            <if test="bean.enterpriseId != null">
-                enterprise_id = VALUES(enterprise_id),
-            </if>
-            <if test="bean.periodId != null">
-                period_id = VALUES(period_id),
-            </if>
-            <if test="bean.reportId != null">
-                report_id = VALUES(report_id),
-            </if>
-            <if test="bean.auditLevel != null">
-                audit_level = VALUES(audit_level),
-            </if>
-            <if test="bean.auditor != null">
-                auditor = VALUES(auditor),
-            </if>
-            <if test="bean.auditResult != null">
-                audit_result = VALUES(audit_result),
-            </if>
-            <if test="bean.auditOpinion != null">
-                audit_opinion = VALUES(audit_opinion),
-            </if>
-            <if test="bean.auditTime != null">
-                audit_time = VALUES(audit_time),
-            </if>
-        </trim>
+        ON DUPLICATE KEY UPDATE
+            enterprise_id = VALUES(enterprise_id),
+            period_id = VALUES(period_id),
+            report_id = VALUES(report_id),
+            audit_level = VALUES(audit_level),
+            auditor = VALUES(auditor),
+            audit_result = VALUES(audit_result),
+            audit_opinion = VALUES(audit_opinion),
+            audit_time = VALUES(audit_time)
     </insert>
-    
-    <!--根据AuditId查询-->
+
+    <insert id="insertBatch" parameterType="com.yunnancommon.entity.po.ReportAuditHistory">
+        INSERT INTO report_audit_history(enterprise_id,period_id,report_id,audit_level,auditor,audit_result,audit_opinion,audit_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.enterpriseId},#{item.periodId},#{item.reportId},#{item.auditLevel},#{item.auditor},#{item.auditResult},#{item.auditOpinion},#{item.auditTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="com.yunnancommon.entity.po.ReportAuditHistory">
+        INSERT INTO report_audit_history(enterprise_id,period_id,report_id,audit_level,auditor,audit_result,audit_opinion,audit_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.enterpriseId},#{item.periodId},#{item.reportId},#{item.auditLevel},#{item.auditor},#{item.auditResult},#{item.auditOpinion},#{item.auditTime})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            enterprise_id = VALUES(enterprise_id),
+            period_id = VALUES(period_id),
+            report_id = VALUES(report_id),
+            audit_level = VALUES(audit_level),
+            auditor = VALUES(auditor),
+            audit_result = VALUES(audit_result),
+            audit_opinion = VALUES(audit_opinion),
+            audit_time = VALUES(audit_time)
+    </insert>
+
     <select id="selectByAuditId" resultMap="base_result_map">
-        select
+        SELECT
         <include refid="base_column_list" />
-        from report_audit_history
-        where audit_id=#{auditId}
+        FROM report_audit_history
+        WHERE audit_id = #{auditId}
     </select>
-    
-    <!--根据AuditId更新-->
+
     <update id="updateByAuditId" parameterType="com.yunnancommon.entity.po.ReportAuditHistory">
-        update report_audit_history
+        UPDATE report_audit_history
         <set>
             <if test="bean.enterpriseId != null">
                 enterprise_id = #{bean.enterpriseId},
@@ -287,13 +274,12 @@
                 audit_time = #{bean.auditTime},
             </if>
         </set>
-        where audit_id=#{auditId}
+        WHERE audit_id = #{auditId}
     </update>
-    
-    <!--根据AuditId删除-->
+
     <delete id="deleteByAuditId">
-        delete from report_audit_history
-        where audit_id=#{auditId}
+        DELETE FROM report_audit_history WHERE audit_id = #{auditId}
     </delete>
-    
+
 </mapper>
+
