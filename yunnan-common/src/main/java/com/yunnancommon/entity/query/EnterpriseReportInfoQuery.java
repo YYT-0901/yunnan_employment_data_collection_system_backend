@@ -97,6 +97,16 @@ public class EnterpriseReportInfoQuery extends BaseQuery{
 	 */
 	private Integer enterpriseRegion;
 
+	private String enterpriseNameFuzzy;
+
+	public String getEnterpriseNameFuzzy() {
+		return enterpriseNameFuzzy;
+	}
+
+	public void setEnterpriseNameFuzzy(String enterpriseNameFuzzy) {
+		this.enterpriseNameFuzzy = enterpriseNameFuzzy;
+	}
+
 	public String getEnterpriseId() {
 		return enterpriseId;
 	}
