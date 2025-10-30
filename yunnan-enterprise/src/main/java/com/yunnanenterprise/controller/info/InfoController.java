@@ -34,7 +34,7 @@ public class InfoController extends ABaseController {
         enterpriseInfo.setStatus(1);
         enterpriseInfo.setCreatedAt(Date.valueOf(LocalDateTime.now().toLocalDate()));
         enterpriseInfo.setUpdatedAt(Date.valueOf(LocalDateTime.now().toLocalDate()));
-        return getSuccessResponseVO(enterpriseInfoService.add(enterpriseInfo));
+        return getSuccessResponseVO(enterpriseInfoService.updateEnterpriseInfoByEnterpriseId(enterpriseInfo, enterpriseId));
     }
 
     @PutMapping("/update")
