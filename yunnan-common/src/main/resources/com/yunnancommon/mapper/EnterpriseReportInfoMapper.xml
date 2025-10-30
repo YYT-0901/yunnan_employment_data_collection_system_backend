@@ -55,7 +55,7 @@
 			and reason_return = #{query.reasonReturn}
 		</if>
 		<if test="query.status != null">
-			and status = #{query.status}
+			and eri.status = #{query.status}
 		</if>
 		<if test="query.periodStartTime != null">
 			and period_start_time = #{query.periodStartTime}
@@ -142,7 +142,7 @@
 	<!--查询数量-->
 	<select id="selectCount" resultType="java.lang.Integer">
 		select count(1)
-		from enterprise_report_info
+		from enterprise_report_info eri
 		<include refid="query_condition" />
 	</select>
 
@@ -377,6 +377,19 @@
 	<!--根据EnterpriseIdAndPeriodIdAndReportId查询-->
 	<select id="selectByEnterpriseIdAndPeriodIdAndReportId" resultMap="base_result_map">
 		select <include refid="base_column_list" /> from enterprise_report_info where enterprise_id = #{enterpriseId} and period_id = #{periodId} and report_id = #{reportId}
+	</select>
+
+	<select id="selectListWithAssociated" resultType="com.yunnancommon.entity.vo.EnterpriseReportVO">
+		SELECT eri.enterprise_id,eri.period_id,eri.report_id,eri.old_report_id,eri.reason_return,eri.status,eri.period_start_time,eri.period_end_time,eri.created_at,eri.updated_at,eri.enterprise_nature,eri.enterprise_industry,eri.enterprise_region, ei.name AS enterprise_name FROM enterprise_report_info eri
+		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
+		<include refid="query_condition" />
+		<where>
+			<if test="query.enterpriseNameFuzzy != null and query.enterpriseNameFuzzy != ''">
+				and ei.name like concat('%',#{query.enterpriseNameFuzzy},'%')
+			</if>
+		</where>
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
 	</select>
 
 	<!--根据EnterpriseIdAndPeriodIdAndReportId更新-->
