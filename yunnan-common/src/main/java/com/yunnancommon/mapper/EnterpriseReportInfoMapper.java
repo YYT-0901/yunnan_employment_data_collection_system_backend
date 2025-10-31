@@ -31,4 +31,6 @@ public interface EnterpriseReportInfoMapper<T, P> extends BaseMapper {
 
 
     List<EnterpriseReportVO> selectListWithAssociated(@Param("query") P p);
+
+	Integer selectCountWithAssociated(@Param("query") P p);
 }
