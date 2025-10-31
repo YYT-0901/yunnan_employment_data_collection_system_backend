@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.yunnancommon.enums.DateTimePatternEnum;
 import com.yunnancommon.utils.DateUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @Description:账号信息表

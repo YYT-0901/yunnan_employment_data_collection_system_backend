@@ -18,7 +18,6 @@ import com.yunnancommon.service.EnterpriseInfoService;
 import com.yunnancommon.service.impl.EnterpriseInfoServiceImpl;
 import com.yunnancommon.utils.TokenUtils;
 import com.yunnanprovince.config.AppConfig;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 
 @RestController
 @RequestMapping("/account")

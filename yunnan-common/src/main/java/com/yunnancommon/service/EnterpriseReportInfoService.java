@@ -1,7 +1,6 @@
 package com.yunnancommon.service;
 
 
-import com.yunnancommon.entity.vo.EnterpriseReportVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.EnterpriseReportInfo;
 import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
@@ -60,5 +59,4 @@ public interface EnterpriseReportInfoService {
 	Integer deleteEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Integer periodId, String reportId);
 
 
-	PaginationResultVO<EnterpriseReportVO> findListByPageWithAssociatedEnterpriseName(EnterpriseReportInfoQuery query);
 }

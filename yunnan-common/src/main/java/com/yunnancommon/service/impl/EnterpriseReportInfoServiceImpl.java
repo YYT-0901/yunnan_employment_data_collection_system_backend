@@ -2,7 +2,6 @@ package com.yunnancommon.service.impl;
 
 
 import com.yunnancommon.entity.query.SimplePage;
-import com.yunnancommon.entity.vo.EnterpriseReportVO;
 import com.yunnancommon.enums.PageSize;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.EnterpriseReportInfo;
@@ -52,17 +51,6 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
 		query.setSimplePage(page);
 		List<EnterpriseReportInfo> list = this.findListByParam(query);
 		PaginationResultVO<EnterpriseReportInfo> result = new PaginationResultVO<EnterpriseReportInfo>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
-		return result;
-	}
-
-	@Override
-	public PaginationResultVO<EnterpriseReportVO> findListByPageWithAssociatedEnterpriseName(EnterpriseReportInfoQuery query) {
-		Integer count = this.findCountByParam(query);
-		Integer pageSize = query.getPageSize() == null ? PageSize.SIZE15.getSize(): query.getPageSize();
-		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
-		query.setSimplePage(page);
-		List<EnterpriseReportVO> list = enterpriseReportInfoMapper.selectListWithAssociated(query);
-		PaginationResultVO<EnterpriseReportVO> result = new PaginationResultVO<EnterpriseReportVO>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
 		return result;
 	}
 
