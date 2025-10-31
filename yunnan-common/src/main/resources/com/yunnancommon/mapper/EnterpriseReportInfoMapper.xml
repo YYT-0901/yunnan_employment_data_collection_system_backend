@@ -118,6 +118,9 @@
 		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
 			<![CDATA[ and updated_at < str_to_date(#{query.updatedAtEnd}, '%Y-%m-%d', interval -1 day) ]]>
 		</if>
+		<if test="query.enterpriseNameFuzzy != null and query.enterpriseNameFuzzy != ''">
+			and ei.name like concat('%',#{query.enterpriseNameFuzzy},'%')
+		</if>
 	</sql>
 
 	<!--通用查询条件-->
@@ -143,6 +146,13 @@
 	<select id="selectCount" resultType="java.lang.Integer">
 		select count(1)
 		from enterprise_report_info eri
+		<include refid="query_condition" />
+	</select>
+
+	<select id="selectCountWithAssociated" resultType="java.lang.Integer">
+		select count(1)
+		from enterprise_report_info eri
+		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
 		<include refid="query_condition" />
 	</select>
 
@@ -383,14 +393,10 @@
 		SELECT eri.enterprise_id,eri.period_id,eri.report_id,eri.old_report_id,eri.reason_return,eri.status,eri.period_start_time,eri.period_end_time,eri.created_at,eri.updated_at,eri.enterprise_nature,eri.enterprise_industry,eri.enterprise_region, ei.name AS enterprise_name FROM enterprise_report_info eri
 		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
 		<include refid="query_condition" />
-		<where>
-			<if test="query.enterpriseNameFuzzy != null and query.enterpriseNameFuzzy != ''">
-				and ei.name like concat('%',#{query.enterpriseNameFuzzy},'%')
-			</if>
-		</where>
 		<if test="query.orderBy != null">order by ${query.orderBy}</if>
 		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
 	</select>
+
 
 	<!--根据EnterpriseIdAndPeriodIdAndReportId更新-->
 	<update id="updateByEnterpriseIdAndPeriodIdAndReportId" parameterType="com.yunnancommon.entity.po.EnterpriseReportInfo">

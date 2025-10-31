@@ -3,6 +3,7 @@ package com.yunnanenterprise.controller;
 import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.constants.Constants;
+import com.yunnancommon.entity.dto.LoginDto;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
 import com.yunnancommon.enums.AccountTypeEnum;
@@ -12,11 +13,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -31,11 +28,9 @@ public class AccountController extends ABaseController {
     private RedisComponent redisComponent;
 
     @PostMapping("/login")
-    public ResponseVO login(HttpServletRequest request, HttpServletResponse response, 
-                           @RequestParam("account") String account, 
-                           @RequestParam("password") String password) throws BusinessException {
+    public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @RequestBody LoginDto loginDto) throws BusinessException {
         try {
-            TokenInfoVO tokenVO = accountInfoService.login(account, password);
+            TokenInfoVO tokenVO = accountInfoService.login(loginDto.getUsername(), loginDto.getPassword());
             saveToken2Cookie(response, tokenVO.getToken());
             return getSuccessResponseVO(tokenVO);
         } finally {

@@ -57,7 +57,7 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
 
 	@Override
 	public PaginationResultVO<EnterpriseReportVO> findListByPageWithAssociatedEnterpriseName(EnterpriseReportInfoQuery query) {
-		Integer count = this.findCountByParam(query);
+		Integer count = enterpriseReportInfoMapper.selectCountWithAssociated(query);
 		Integer pageSize = query.getPageSize() == null ? PageSize.SIZE15.getSize(): query.getPageSize();
 		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
 		query.setSimplePage(page);
