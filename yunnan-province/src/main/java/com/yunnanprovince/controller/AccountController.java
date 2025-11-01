@@ -3,6 +3,7 @@ package com.yunnanprovince.controller;
 import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.constants.Constants;
+import com.yunnancommon.entity.dto.LoginDto;
 import com.yunnancommon.entity.po.AccountInfo;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.query.AccountInfoQuery;
@@ -18,18 +19,16 @@ import com.yunnancommon.service.EnterpriseInfoService;
 import com.yunnancommon.service.impl.EnterpriseInfoServiceImpl;
 import com.yunnancommon.utils.TokenUtils;
 import com.yunnanprovince.config.AppConfig;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @RestController
 @RequestMapping("/account")
@@ -45,9 +44,9 @@ public class AccountController extends ABaseController {
     private AccountInfoService accountInfoService;
 
     @PostMapping("/login")
-    public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @NotEmpty String username, @NotEmpty String password) throws BusinessException {
+    public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @RequestBody LoginDto loginDto) throws BusinessException {
         try {
-            if (!appconfig.getUsername().equals(username) || !appconfig.getPassword().equals(password)) {
+            if (!appconfig.getUsername().equals(loginDto.getUsername()) || !appconfig.getPassword().equals(loginDto.getPassword())) {
                 throw new BusinessException("账号或密码错误");
             }
 
