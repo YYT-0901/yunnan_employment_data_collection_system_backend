@@ -17,17 +17,17 @@ public interface EnterpriseReportInfoMapper<T, P> extends BaseMapper {
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId查询
 	 */
-	T selectByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId, @Param("periodId") Integer periodId, @Param("reportId") String reportId);
+	T selectByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId, @Param("periodId") Long periodId, @Param("reportId") String reportId);
 
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId更新
 	 */
-	Integer updateByEnterpriseIdAndPeriodIdAndReportId(@Param("bean") T t, @Param("enterpriseId") String enterpriseId, @Param("periodId") Integer periodId, @Param("reportId") String reportId);
+	Integer updateByEnterpriseIdAndPeriodIdAndReportId(@Param("bean") T t, @Param("enterpriseId") String enterpriseId, @Param("periodId") Long periodId, @Param("reportId") String reportId);
 
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId删除
 	 */
-	Integer deleteByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId, @Param("periodId") Integer periodId, @Param("reportId") String reportId);
+	Integer deleteByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId, @Param("periodId") Long periodId, @Param("reportId") String reportId);
 
 
     List<EnterpriseReportVO> selectListWithAssociated(@Param("query") P p);
