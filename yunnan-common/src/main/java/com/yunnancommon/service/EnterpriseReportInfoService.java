@@ -47,17 +47,17 @@ public interface EnterpriseReportInfoService {
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId查询
 	 */
-	EnterpriseReportInfo getEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Integer periodId, String reportId);
+	EnterpriseReportInfo getEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Long periodId, String reportId);
 
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId更新
 	 */
-	Integer updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(EnterpriseReportInfo bean, String enterpriseId, Integer periodId, String reportId);
+	Integer updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(EnterpriseReportInfo bean, String enterpriseId, Long periodId, String reportId);
 
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId删除
 	 */
-	Integer deleteEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Integer periodId, String reportId);
+	Integer deleteEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Long periodId, String reportId);
 
 
 	PaginationResultVO<EnterpriseReportVO> findListByPageWithAssociatedEnterpriseName(EnterpriseReportInfoQuery query);
