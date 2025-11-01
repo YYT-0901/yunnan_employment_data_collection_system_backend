@@ -26,4 +26,5 @@ public interface LogInfoMapper<T, P> extends BaseMapper {
 	Integer deleteByLogId(@Param("logId") Long logId);
 
 
+    void deleteAll(@Param("endTime") String endTime);
 }
