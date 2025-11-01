@@ -4,6 +4,7 @@ import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.service.EnterpriseInfoService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.sql.Date;
@@ -20,7 +21,8 @@ public class InfoController extends ABaseController {
     private EnterpriseInfoService enterpriseInfoService;
 
     @GetMapping("/get")
-    public ResponseVO<EnterpriseInfo> getProfile(@RequestHeader(("Authorization")) String token) {
+    public ResponseVO<EnterpriseInfo> getProfile(HttpServletRequest request) {
+        String token = getTokenFromCookie(request);
         String enterpriseId = "1";    // TODO: 这里应该从令牌中获取企业 ID
         System.out.println("Token: " + token);
         return getSuccessResponseVO(enterpriseInfoService.getEnterpriseInfoByEnterpriseId(enterpriseId));
