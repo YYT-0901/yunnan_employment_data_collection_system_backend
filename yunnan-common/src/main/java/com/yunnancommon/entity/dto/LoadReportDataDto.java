@@ -14,7 +14,7 @@ public class LoadReportDataDto {
     private String enterpriseName;
     private Integer industry;
     private Integer nature;
-    private Integer periodId;
+    private Long periodId;
     private Integer region;
     private Integer status;
 }

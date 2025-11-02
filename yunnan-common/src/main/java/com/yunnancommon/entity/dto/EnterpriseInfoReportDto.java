@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EnterpriseInfoReportDto {
     private String enterpriseId;
-    private Integer periodId;
+    private Long periodId;
     private String reportId;
     private String rejectReason;
 }
