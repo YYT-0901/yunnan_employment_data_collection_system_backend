@@ -3,6 +3,9 @@ package com.yunnanprovince.controller;
 import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.constants.Constants;
+import com.yunnancommon.entity.dto.ChangeStatusDto;
+import com.yunnancommon.entity.dto.CreateAccountDto;
+import com.yunnancommon.entity.dto.LoginDto;
 import com.yunnancommon.entity.po.AccountInfo;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.query.AccountInfoQuery;
@@ -18,18 +21,16 @@ import com.yunnancommon.service.EnterpriseInfoService;
 import com.yunnancommon.service.impl.EnterpriseInfoServiceImpl;
 import com.yunnancommon.utils.TokenUtils;
 import com.yunnanprovince.config.AppConfig;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 @RestController
 @RequestMapping("/account")
@@ -45,9 +46,9 @@ public class AccountController extends ABaseController {
     private AccountInfoService accountInfoService;
 
     @PostMapping("/login")
-    public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @NotEmpty String username, @NotEmpty String password) throws BusinessException {
+    public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @RequestBody LoginDto loginDto) throws BusinessException {
         try {
-            if (!appconfig.getUsername().equals(username) || !appconfig.getPassword().equals(password)) {
+            if (!appconfig.getUsername().equals(loginDto.getUsername()) || !appconfig.getPassword().equals(loginDto.getPassword())) {
                 throw new BusinessException("账号或密码错误");
             }
 
@@ -84,15 +85,16 @@ public class AccountController extends ABaseController {
      * 新增账号(企业,市)
      * */
     @PostMapping("/createAccount")
-    public ResponseVO createAccount(Integer type, EnterpriseInfo enterpriseInfo, Integer cityCode) throws BusinessException {
+    public ResponseVO createAccount(@RequestBody CreateAccountDto createAccountDto) throws BusinessException {
+        Integer type = createAccountDto.getType();
         if (!AccountTypeEnum.CITY.getCode().equals(type) && !AccountTypeEnum.ENTERPRISE.getCode().equals(type)) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
         CreatedAccountVO createdAccountVO = null;
         if (AccountTypeEnum.ENTERPRISE.getCode().equals(type)) {
-            createdAccountVO = enterpriseInfoService.createEnterpriseAccount(enterpriseInfo);
+            createdAccountVO = enterpriseInfoService.createEnterpriseAccount(createAccountDto.getEnterpriseInfo());
         } else {
-            createdAccountVO = enterpriseInfoService.createCityAccount(cityCode);
+            createdAccountVO = enterpriseInfoService.createCityAccount(createAccountDto.getCityCode());
         }
 
         // TODO 发送邮箱到企业人email
@@ -123,10 +125,10 @@ public class AccountController extends ABaseController {
      * 修改账号状态
      */
     @PostMapping("/changeStatus")
-    public ResponseVO changeStatus(String username, Integer status) throws BusinessException {
+    public ResponseVO changeStatus(@RequestBody ChangeStatusDto changeStatusDto) throws BusinessException {
         AccountInfo accountInfo = new AccountInfo();
-        accountInfo.setStatus(status);
-        accountInfoService.updateAccountInfoByUsername(accountInfo,  username);
+        accountInfo.setStatus(changeStatusDto.getStatus());
+        accountInfoService.updateAccountInfoByUsername(accountInfo,  changeStatusDto.getUsername());
         return getSuccessResponseVO(null);
     }
 }

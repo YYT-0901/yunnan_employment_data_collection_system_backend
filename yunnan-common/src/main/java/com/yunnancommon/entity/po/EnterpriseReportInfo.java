@@ -22,7 +22,7 @@ public class EnterpriseReportInfo implements Serializable {
 	/**
 	 * 调查期ID
 	 */
-	private Integer periodId;
+	 private Long periodId;
 
 	/**
 	 * 数据填报ID
@@ -95,11 +95,11 @@ public class EnterpriseReportInfo implements Serializable {
 		this.enterpriseId = enterpriseId;
 	}
 
-	public Integer getPeriodId() {
+	public Long getPeriodId() {
 		return periodId;
 	}
 
-	public void setPeriodId(Integer periodId) {
+	public void setPeriodId(Long periodId) {
 		this.periodId = periodId;
 	}
 
