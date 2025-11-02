@@ -48,6 +48,10 @@ public class EnterpriseInfo implements Serializable {
 	 * 主要经营业务详情
 	 */
 	private String industryDesc;
+	/**
+	 * 退回原因
+	 */
+	private String reasonReturn;
 
 	/**
 	 * 联系人名称
@@ -153,6 +157,12 @@ public class EnterpriseInfo implements Serializable {
 	public void setIndustryDesc(String industryDesc) {
 		this.industryDesc = industryDesc;
 	}
+	public String getReasonReturn() {
+		return reasonReturn;
+	}
+	public void setReasonReturn(String reasonReturn) {
+		this.reasonReturn = reasonReturn;
+	}
 
 	public String getContactName() {
 		return contactName;
@@ -228,6 +238,6 @@ public class EnterpriseInfo implements Serializable {
 
 	@Override
 	public String toString() {
-		return "企业ID:" + (enterpriseId == null ? "空" : enterpriseId) + ",组织机构代码:" + (orgCode == null ? "空" : orgCode) + ",企业名称:" + (name == null ? "空" : name) + ",所属地区:" + (region == null ? "空" : region) + ",所属性质:" + (nature == null ? "空" : nature) + ",所属行业:" + (industry == null ? "空" : industry) + ",主要经营业务详情:" + (industryDesc == null ? "空" : industryDesc) + ",联系人名称:" + (contactName == null ? "空" : contactName) + ",联系人地址:" + (address == null ? "空" : address) + ",邮政编码:" + (postalCode == null ? "空" : postalCode) + ",联系电话:" + (phoneNum == null ? "空" : phoneNum) + ",传真号:" + (faxNum == null ? "空" : faxNum) + ",邮箱:" + (email == null ? "空" : email) + ",状态: 0-创建未备案 1-已备案未审核 2-已退回 3-正常(已备案已审核) 4-倒闭:" + (status == null ? "空" : status) + ",企业创建时间:" + (createdAt == null ? "空" : DateUtils.format(createdAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",企业信息修改时间:" + (updatedAt == null ? "空" : DateUtils.format(updatedAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()));
+		return "企业ID:" + (enterpriseId == null ? "空" : enterpriseId) + ",组织机构代码:" + (orgCode == null ? "空" : orgCode) + ",企业名称:" + (name == null ? "空" : name) + ",所属地区:" + (region == null ? "空" : region) + ",所属性质:" + (nature == null ? "空" : nature) + ",所属行业:" + (industry == null ? "空" : industry) + ",主要经营业务详情:" + (industryDesc == null ? "空" : industryDesc) + ",退回原因:" + (reasonReturn == null ? "空" : reasonReturn) + ",联系人名称:" + (contactName == null ? "空" : contactName) + ",联系人地址:" + (address == null ? "空" : address) + ",邮政编码:" + (postalCode == null ? "空" : postalCode) + ",联系电话:" + (phoneNum == null ? "空" : phoneNum) + ",传真号:" + (faxNum == null ? "空" : faxNum) + ",邮箱:" + (email == null ? "空" : email) + ",状态: 0-创建未备案 1-已备案未审核 2-已退回 3-正常(已备案已审核) 4-倒闭:" + (status == null ? "空" : status) + ",企业创建时间:" + (createdAt == null ? "空" : DateUtils.format(createdAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",企业信息修改时间:" + (updatedAt == null ? "空" : DateUtils.format(updatedAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()));
 	}
 }

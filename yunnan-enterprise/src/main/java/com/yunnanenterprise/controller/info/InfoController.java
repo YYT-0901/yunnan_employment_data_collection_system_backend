@@ -3,7 +3,9 @@ package com.yunnanenterprise.controller.info;
 import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.vo.ResponseVO;
+import com.yunnancommon.entity.vo.TokenInfoVO;
 import com.yunnancommon.service.EnterpriseInfoService;
+import com.yunnancommon.component.RedisComponent;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -19,29 +21,33 @@ public class InfoController extends ABaseController {
 
     @Resource
     private EnterpriseInfoService enterpriseInfoService;
+    @Resource
+    private RedisComponent redisComponent;
 
     @GetMapping("/get")
     public ResponseVO<EnterpriseInfo> getProfile(HttpServletRequest request) {
         String token = getTokenFromCookie(request);
-        String enterpriseId = "1";    // TODO: 这里应该从令牌中获取企业 ID
-        System.out.println("Token: " + token);
+        TokenInfoVO tokenInfoVO = redisComponent.getEnterpriseTokenInfo(token);
+        String enterpriseId = tokenInfoVO.getEnterpriseInfo().getEnterpriseId();
         return getSuccessResponseVO(enterpriseInfoService.getEnterpriseInfoByEnterpriseId(enterpriseId));
     }
 
     @PostMapping("/submit")
-    public ResponseVO submitProfile(@RequestHeader(("Authorization")) String token, @RequestBody EnterpriseInfo enterpriseInfo) {
-        String enterpriseId = token;    // TODO: 这里应该从令牌中获取企业 ID
-        System.out.println("Token: " + token);
+    public ResponseVO submitProfile(HttpServletRequest request, @RequestBody EnterpriseInfo enterpriseInfo) {
+        String token = getTokenFromCookie(request);
+        TokenInfoVO tokenInfoVO = redisComponent.getEnterpriseTokenInfo(token);
+        String enterpriseId = tokenInfoVO.getEnterpriseInfo().getEnterpriseId();
         enterpriseInfo.setEnterpriseId(enterpriseId);
         enterpriseInfo.setStatus(1);
-        enterpriseInfo.setCreatedAt(Date.valueOf(LocalDateTime.now().toLocalDate()));
         enterpriseInfo.setUpdatedAt(Date.valueOf(LocalDateTime.now().toLocalDate()));
         return getSuccessResponseVO(enterpriseInfoService.updateEnterpriseInfoByEnterpriseId(enterpriseInfo, enterpriseId));
     }
 
     @PutMapping("/update")
-    public ResponseVO updateProfile(@RequestHeader(("Authorization")) String token, @RequestBody EnterpriseInfo enterpriseInfo) {
-        String enterpriseId = token;   // TODO: 这里应该从令牌中获取企业 ID
+    public ResponseVO updateProfile(HttpServletRequest request, @RequestBody EnterpriseInfo enterpriseInfo) {
+        String token = getTokenFromCookie(request);
+        TokenInfoVO tokenInfoVO = redisComponent.getEnterpriseTokenInfo(token);
+        String enterpriseId = tokenInfoVO.getEnterpriseInfo().getEnterpriseId();
         EnterpriseInfo oldInfo = enterpriseInfoService.getEnterpriseInfoByEnterpriseId(enterpriseId);
         if (oldInfo == null) {
             return getErrorResponseVO("企业信息不存在");
@@ -57,15 +63,19 @@ public class InfoController extends ABaseController {
         enterpriseInfo.setNature(oldInfo.getNature());
         enterpriseInfo.setIndustry(oldInfo.getIndustry());
         enterpriseInfo.setIndustryDesc(oldInfo.getIndustryDesc());
+        enterpriseInfo.setReasonReturn("");
         enterpriseInfo.setStatus(3);
         enterpriseInfo.setCreatedAt(oldInfo.getCreatedAt());
         enterpriseInfo.setUpdatedAt(Date.valueOf(LocalDateTime.now().toLocalDate()));
+        System.out.println(enterpriseInfo);
         return getSuccessResponseVO(enterpriseInfoService.updateEnterpriseInfoByEnterpriseId(enterpriseInfo,enterpriseId));
     }
 
     @GetMapping("/check-status")
-    public ResponseVO checkStatus(@RequestHeader(("Authorization")) String token) {
-        String enterpriseId = token;   // TODO: 这里应该从令牌中获取企业 ID
+    public ResponseVO checkStatus(HttpServletRequest request) {
+        String token = getTokenFromCookie(request);
+        TokenInfoVO tokenInfoVO = redisComponent.getEnterpriseTokenInfo(token);
+        String enterpriseId = tokenInfoVO.getEnterpriseInfo().getEnterpriseId();
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.getEnterpriseInfoByEnterpriseId(enterpriseId);
         if (enterpriseInfo == null) {
             return getErrorResponseVO("企业信息不存在");

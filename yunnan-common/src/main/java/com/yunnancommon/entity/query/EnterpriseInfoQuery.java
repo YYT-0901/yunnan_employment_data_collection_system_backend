@@ -52,6 +52,13 @@ public class EnterpriseInfoQuery extends BaseQuery{
 	private String industryDescFuzzy;
 
 	/**
+	 * 退回原因
+	 */
+	private String reasonReturn;
+
+	private String reasonReturnFuzzy;
+
+	/**
 	 * 联系人名称
 	 */
 	private String contactName;
@@ -171,6 +178,13 @@ public class EnterpriseInfoQuery extends BaseQuery{
 	public void setIndustryDesc(String industryDesc) {
 		this.industryDesc = industryDesc;
 	}
+	public String getReasonReturn() {
+		return reasonReturn;
+	}
+
+	public void setReasonReturn(String reasonReturn) {
+		this.reasonReturn = reasonReturn;
+	}
 
 	public String getContactName() {
 		return contactName;
@@ -274,6 +288,14 @@ public class EnterpriseInfoQuery extends BaseQuery{
 
 	public void setIndustryDescFuzzy(String industryDescFuzzy) {
 		this.industryDescFuzzy = industryDescFuzzy;
+	}
+
+	public String getReasonReturnFuzzy() {
+		return reasonReturnFuzzy;
+	}
+
+	public void setReasonReturnFuzzy(String reasonReturnFuzzy) {
+		this.reasonReturnFuzzy = reasonReturnFuzzy;
 	}
 
 	public String getContactNameFuzzy() {
