@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunnancommon.mapper.EnterpriseReportInfoMapper">
+	<!--实体映射-->
+	<resultMap id="base_result_map" type="com.yunnancommon.entity.po.EnterpriseReportInfo">
+		<!--企业ID-->
+		<result column="enterprise_id" property="enterpriseId" />
+		<!--调查期ID-->
+		<result column="period_id" property="periodId" />
+		<!--数据填报ID-->
+		<result column="report_id" property="reportId" />
+		<!--旧数据填报ID-->
+		<result column="old_report_id" property="oldReportId" />
+		<!--退回原因-->
+		<result column="reason_return" property="reasonReturn" />
+		<!--状态: -1-未填报 0-已暂存 1-待市级审核 2-待省级审核 3-审核通过 4-已归档 5-驳回-->
+		<result column="status" property="status" />
+		<!--上报填报开始时间-->
+		<result column="period_start_time" property="periodStartTime" />
+		<!--上报填报结束时间-->
+		<result column="period_end_time" property="periodEndTime" />
+		<!--创建时间-->
+		<result column="created_at" property="createdAt" />
+		<!--更新时间-->
+		<result column="updated_at" property="updatedAt" />
+		<!--企业所属性质-->
+		<result column="enterprise_nature" property="enterpriseNature" />
+		<!--企业所属行业-->
+		<result column="enterprise_industry" property="enterpriseIndustry" />
+		<!--企业所属地区-->
+		<result column="enterprise_region" property="enterpriseRegion" />
+	</resultMap>
+
+	<!--通用查询结果-->
+	<sql id="base_column_list">
+		enterprise_id,period_id,report_id,old_report_id,reason_return,status,period_start_time,period_end_time,created_at,updated_at,enterprise_nature,enterprise_industry,enterprise_region
+	</sql>
+
+	<!--基础查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.enterpriseId != null and query.enterpriseId != ''">
+			and enterprise_id = #{query.enterpriseId}
+		</if>
+		<if test="query.periodId != null">
+			and period_id = #{query.periodId}
+		</if>
+		<if test="query.reportId != null and query.reportId != ''">
+			and report_id = #{query.reportId}
+		</if>
+		<if test="query.oldReportId != null and query.oldReportId != ''">
+			and old_report_id = #{query.oldReportId}
+		</if>
+		<if test="query.reasonReturn != null and query.reasonReturn != ''">
+			and reason_return = #{query.reasonReturn}
+		</if>
+		<if test="query.status != null">
+			and eri.status = #{query.status}
+		</if>
+		<if test="query.periodStartTime != null">
+			and period_start_time = #{query.periodStartTime}
+		</if>
+		<if test="query.periodEndTime != null">
+			and period_end_time = #{query.periodEndTime}
+		</if>
+		<if test="query.createdAt != null">
+			and created_at = #{query.createdAt}
+		</if>
+		<if test="query.updatedAt != null">
+			and updated_at = #{query.updatedAt}
+		</if>
+		<if test="query.enterpriseNature != null">
+			and enterprise_nature = #{query.enterpriseNature}
+		</if>
+		<if test="query.enterpriseIndustry != null">
+			and enterprise_industry = #{query.enterpriseIndustry}
+		</if>
+		<if test="query.enterpriseRegion != null">
+			and enterprise_region = #{query.enterpriseRegion}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.enterpriseIdFuzzy != null and query.enterpriseIdFuzzy != ''">
+			 and enterprise_id like concat('%',#{query.enterpriseIdFuzzy},'%')
+		</if>
+		<if test="query.reportIdFuzzy != null and query.reportIdFuzzy != ''">
+			 and report_id like concat('%',#{query.reportIdFuzzy},'%')
+		</if>
+		<if test="query.oldReportIdFuzzy != null and query.oldReportIdFuzzy != ''">
+			 and old_report_id like concat('%',#{query.oldReportIdFuzzy},'%')
+		</if>
+		<if test="query.reasonReturnFuzzy != null and query.reasonReturnFuzzy != ''">
+			 and reason_return like concat('%',#{query.reasonReturnFuzzy},'%')
+		</if>
+		<if test="query.periodStartTimeStart != null and query.periodStartTimeStart != ''">
+			<![CDATA[ and period_start_time >= str_to_date(#{query.periodStartTimeStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.periodStartTimeEnd != null and query.periodStartTimeEnd != ''">
+			<![CDATA[ and period_start_time < str_to_date(#{query.periodStartTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+		</if>
+		<if test="query.periodEndTimeStart != null and query.periodEndTimeStart != ''">
+			<![CDATA[ and period_end_time >= str_to_date(#{query.periodEndTimeStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.periodEndTimeEnd != null and query.periodEndTimeEnd != ''">
+			<![CDATA[ and period_end_time < str_to_date(#{query.periodEndTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+		</if>
+		<if test="query.createdAtStart != null and query.createdAtStart != ''">
+			<![CDATA[ and created_at >= str_to_date(#{query.createdAtStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
+			<![CDATA[ and created_at < str_to_date(#{query.createdAtEnd}, '%Y-%m-%d', interval -1 day) ]]>
+		</if>
+		<if test="query.updatedAtStart != null and query.updatedAtStart != ''">
+			<![CDATA[ and updated_at >= str_to_date(#{query.updatedAtStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
+			<![CDATA[ and updated_at < str_to_date(#{query.updatedAtEnd}, '%Y-%m-%d', interval -1 day) ]]>
+		</if>
+		<if test="query.enterpriseNameFuzzy != null and query.enterpriseNameFuzzy != ''">
+			and ei.name like concat('%',#{query.enterpriseNameFuzzy},'%')
+		</if>
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="query_condition">
+	<where>
+		<include refid="base_query_condition" />
+		<include refid="base_query_condition_extend" />
+	</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		select
+		<include refid="base_column_list" />
+		from enterprise_report_info
+		<include refid="query_condition" />
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+
+
+	<!--查询数量-->
+	<select id="selectCount" resultType="java.lang.Integer">
+		select count(1)
+		from enterprise_report_info eri
+		<include refid="query_condition" />
+	</select>
+
+	<select id="selectCountWithAssociated" resultType="java.lang.Integer">
+		select count(1)
+		from enterprise_report_info eri
+		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
+		<include refid="query_condition" />
+	</select>
+
+
+	<!--单条插入-->
+	<insert id="insert" parameterType="com.yunnancommon.entity.po.EnterpriseReportInfo">
+
+		insert into enterprise_report_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.enterpriseId != null">
+				enterprise_id,
+			</if>
+			<if test="bean.periodId != null">
+				period_id,
+			</if>
+			<if test="bean.reportId != null">
+				report_id,
+			</if>
+			<if test="bean.oldReportId != null">
+				old_report_id,
+			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.periodStartTime != null">
+				period_start_time,
+			</if>
+			<if test="bean.periodEndTime != null">
+				period_end_time,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+			<if test="bean.enterpriseNature != null">
+				enterprise_nature,
+			</if>
+			<if test="bean.enterpriseIndustry != null">
+				enterprise_industry,
+			</if>
+			<if test="bean.enterpriseRegion != null">
+				enterprise_region,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.enterpriseId != null">
+				#{bean.enterpriseId},
+			</if>
+			<if test="bean.periodId != null">
+				#{bean.periodId},
+			</if>
+			<if test="bean.reportId != null">
+				#{bean.reportId},
+			</if>
+			<if test="bean.oldReportId != null">
+				#{bean.oldReportId},
+			</if>
+			<if test="bean.reasonReturn != null">
+				#{bean.reasonReturn},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.periodStartTime != null">
+				#{bean.periodStartTime},
+			</if>
+			<if test="bean.periodEndTime != null">
+				#{bean.periodEndTime},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+			<if test="bean.enterpriseNature != null">
+				#{bean.enterpriseNature},
+			</if>
+			<if test="bean.enterpriseIndustry != null">
+				#{bean.enterpriseIndustry},
+			</if>
+			<if test="bean.enterpriseRegion != null">
+				#{bean.enterpriseRegion},
+			</if>
+		</trim>
+	</insert>
+
+	<!--插入或更新-->
+	<insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.EnterpriseReportInfo">
+		insert into enterprise_report_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.enterpriseId != null">
+				enterprise_id,
+			</if>
+			<if test="bean.periodId != null">
+				period_id,
+			</if>
+			<if test="bean.reportId != null">
+				report_id,
+			</if>
+			<if test="bean.oldReportId != null">
+				old_report_id,
+			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.periodStartTime != null">
+				period_start_time,
+			</if>
+			<if test="bean.periodEndTime != null">
+				period_end_time,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+			<if test="bean.enterpriseNature != null">
+				enterprise_nature,
+			</if>
+			<if test="bean.enterpriseIndustry != null">
+				enterprise_industry,
+			</if>
+			<if test="bean.enterpriseRegion != null">
+				enterprise_region,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.enterpriseId != null">
+				#{bean.enterpriseId},
+			</if>
+			<if test="bean.periodId != null">
+				#{bean.periodId},
+			</if>
+			<if test="bean.reportId != null">
+				#{bean.reportId},
+			</if>
+			<if test="bean.oldReportId != null">
+				#{bean.oldReportId},
+			</if>
+			<if test="bean.reasonReturn != null">
+				#{bean.reasonReturn},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.periodStartTime != null">
+				#{bean.periodStartTime},
+			</if>
+			<if test="bean.periodEndTime != null">
+				#{bean.periodEndTime},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+			<if test="bean.enterpriseNature != null">
+				#{bean.enterpriseNature},
+			</if>
+			<if test="bean.enterpriseIndustry != null">
+				#{bean.enterpriseIndustry},
+			</if>
+			<if test="bean.enterpriseRegion != null">
+				#{bean.enterpriseRegion},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.oldReportId != null">
+				old_report_id = VALUES(old_report_id),
+			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return = VALUES(reason_return),
+			</if>
+			<if test="bean.status != null">
+				status = VALUES(status),
+			</if>
+			<if test="bean.periodStartTime != null">
+				period_start_time = VALUES(period_start_time),
+			</if>
+			<if test="bean.periodEndTime != null">
+				period_end_time = VALUES(period_end_time),
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = VALUES(created_at),
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = VALUES(updated_at),
+			</if>
+			<if test="bean.enterpriseNature != null">
+				enterprise_nature = VALUES(enterprise_nature),
+			</if>
+			<if test="bean.enterpriseIndustry != null">
+				enterprise_industry = VALUES(enterprise_industry),
+			</if>
+			<if test="bean.enterpriseRegion != null">
+				enterprise_region = VALUES(enterprise_region),
+			</if>
+		</trim>
+	</insert>
+
+	<!--添加（批量插入）-->
+	<insert id="insertBatch" parameterType="com.yunnancommon.entity.po.EnterpriseReportInfo">
+		insert into enterprise_report_info(enterprise_id,period_id,report_id,old_report_id,reason_return,status,period_start_time,period_end_time,created_at,updated_at,enterprise_nature,enterprise_industry,enterprise_region) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.enterpriseId},#{item.periodId},#{item.reportId},#{item.oldReportId},#{item.reasonReturn},#{item.status},#{item.periodStartTime},#{item.periodEndTime},#{item.createdAt},#{item.updatedAt},#{item.enterpriseNature},#{item.enterpriseIndustry},#{item.enterpriseRegion})
+			</foreach>
+	</insert>
+
+
+	<!--添加（批量插入或更新）-->
+	<insert id="insertOrUpdateBatch" parameterType="com.yunnancommon.entity.po.EnterpriseReportInfo">
+		insert into enterprise_report_info(enterprise_id,period_id,report_id,old_report_id,reason_return,status,period_start_time,period_end_time,created_at,updated_at,enterprise_nature,enterprise_industry,enterprise_region) values
+			<foreach collection="list" item="item" separator=",">
+				(#{item.enterpriseId},#{item.periodId},#{item.reportId},#{item.oldReportId},#{item.reasonReturn},#{item.status},#{item.periodStartTime},#{item.periodEndTime},#{item.createdAt},#{item.updatedAt},#{item.enterpriseNature},#{item.enterpriseIndustry},#{item.enterpriseRegion})
+			</foreach>
+		on DUPLICATE key update
+			enterprise_id = VALUES(enterprise_id),period_id = VALUES(period_id),report_id = VALUES(report_id),old_report_id = VALUES(old_report_id),reason_return = VALUES(reason_return),status = VALUES(status),period_start_time = VALUES(period_start_time),period_end_time = VALUES(period_end_time),created_at = VALUES(created_at),updated_at = VALUES(updated_at),enterprise_nature = VALUES(enterprise_nature),enterprise_industry = VALUES(enterprise_industry),enterprise_region = VALUES(enterprise_region)
+	</insert>
+
+	<!--根据EnterpriseIdAndPeriodIdAndReportId查询-->
+	<select id="selectByEnterpriseIdAndPeriodIdAndReportId" resultMap="base_result_map">
+		select <include refid="base_column_list" /> from enterprise_report_info where enterprise_id = #{enterpriseId} and period_id = #{periodId} and report_id = #{reportId}
+	</select>
+
+	<select id="selectListWithAssociated" resultType="com.yunnancommon.entity.vo.EnterpriseReportVO">
+		SELECT eri.enterprise_id,eri.period_id,eri.report_id,eri.old_report_id,eri.reason_return,eri.status,eri.period_start_time,eri.period_end_time,eri.created_at,eri.updated_at,eri.enterprise_nature,eri.enterprise_industry,eri.enterprise_region, ei.name AS enterprise_name FROM enterprise_report_info eri
+		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
+		<include refid="query_condition" />
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+
+
+	<!--根据EnterpriseIdAndPeriodIdAndReportId更新-->
+	<update id="updateByEnterpriseIdAndPeriodIdAndReportId" parameterType="com.yunnancommon.entity.po.EnterpriseReportInfo">
+		update enterprise_report_info
+		<set>
+			<if test="bean.enterpriseId != null">
+				enterprise_id = #{bean.enterpriseId},
+			</if>
+			<if test="bean.periodId != null">
+				period_id = #{bean.periodId},
+			</if>
+			<if test="bean.reportId != null">
+				report_id = #{bean.reportId},
+			</if>
+			<if test="bean.oldReportId != null">
+				old_report_id = #{bean.oldReportId},
+			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return = #{bean.reasonReturn},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+			<if test="bean.periodStartTime != null">
+				period_start_time = #{bean.periodStartTime},
+			</if>
+			<if test="bean.periodEndTime != null">
+				period_end_time = #{bean.periodEndTime},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+			<if test="bean.enterpriseNature != null">
+				enterprise_nature = #{bean.enterpriseNature},
+			</if>
+			<if test="bean.enterpriseIndustry != null">
+				enterprise_industry = #{bean.enterpriseIndustry},
+			</if>
+			<if test="bean.enterpriseRegion != null">
+				enterprise_region = #{bean.enterpriseRegion},
+			</if>
+		</set>
+		where enterprise_id = #{enterpriseId} and period_id = #{periodId} and report_id = #{reportId}
+	</update>
+
+	<!--根据EnterpriseIdAndPeriodIdAndReportId删除-->
+	<delete id="deleteByEnterpriseIdAndPeriodIdAndReportId">
+		delete from enterprise_report_info where enterprise_id = #{enterpriseId} and period_id = #{periodId} and report_id = #{reportId}
+	</delete>
+
+
+</mapper>

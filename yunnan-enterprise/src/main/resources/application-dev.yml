@@ -1,0 +1,32 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:enterprise_dev;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 15MB
+  main:
+    lazy-initialization: true
+
+# 开发环境：使用专门的 logback 配置（仅控制台输出）
+logging:
+  config: classpath:logback-spring-dev.xml
+
+project:
+  folder: /Users/chanwensheng/Documents/大学/UniFile/大四上/卓越工程/code
+
+server:
+  port: 8082
+
+mybatis:
+  mapper-locations: classpath*:com/yunnancommon/mapper/*.xml
+  type-aliases-package: com.yunnancommon.entity.po
+
+

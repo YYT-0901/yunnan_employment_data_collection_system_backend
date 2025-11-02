@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration scan="true" scanPeriod="10 minutes">
+
+    <!-- 修复 ConsoleAppender：使用 encoder 替代 layout -->
+    <appender name="stdot" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss,GMT+8} [%p][%c][%M][%L]-> %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <springProperty scope="context" name="log.path" source="project.folder"/>
+    <springProperty scope="context" name="log.root.level" source="log.root.level"/>
+    <springProperty scope="context" name="appname" source="spring.application.name"/>
+
+    <property name="LOG_FOLDER" value="logs"/>
+
+    <!-- 修复 RollingFileAppender：使用新的 SizeAndTimeBasedRollingPolicy -->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/${LOG_FOLDER}/${appname}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/${LOG_FOLDER}/${appname}.%d{yyyyMMdd}.%i.log</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+        <encoder>
+            <charset>utf-8</charset>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss,GMT+8} [%p][%c][%M][%L]-> %m%n</pattern>
+        </encoder>
+        <append>true</append>
+        <prudent>false</prudent>
+    </appender>
+
+    <logger name="org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener"
+            level="error"></logger>
+    <logger name="org.redisson.connection.DNSMonitor" level="error"></logger>
+    <logger name="com.zaxxer.hikari" level="info"></logger>
+    <logger name="io.lettuce.core" level="info"></logger>
+    <logger name="org.springframework.data.redis" level="info"></logger>
+
+    <root level="${log.root.level:-INFO}">
+        <appender-ref ref="stdot"/>
+        <appender-ref ref="file"/>
+    </root>
+
+</configuration>
