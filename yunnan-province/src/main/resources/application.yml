@@ -2,6 +2,7 @@ spring:
   application:
     name: yunnan-province
   servlet:
+
     multipart:
       max-file-size: 10MB
       max-request-size: 15MB
@@ -45,3 +46,5 @@ admin:
 
 server:
   port: 8080
+  servlet:
+    context-path: /api

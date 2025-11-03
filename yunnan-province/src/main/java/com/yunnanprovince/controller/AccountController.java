@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -45,7 +46,7 @@ public class AccountController extends ABaseController {
     private AccountInfoService accountInfoService;
 
     @PostMapping("/login")
-    public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @NotEmpty String username, @NotEmpty String password) throws BusinessException {
+    public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @RequestParam @NotEmpty String username, @RequestParam @NotEmpty String password) throws BusinessException {
         try {
             if (!appconfig.getUsername().equals(username) || !appconfig.getPassword().equals(password)) {
                 throw new BusinessException("账号或密码错误");
