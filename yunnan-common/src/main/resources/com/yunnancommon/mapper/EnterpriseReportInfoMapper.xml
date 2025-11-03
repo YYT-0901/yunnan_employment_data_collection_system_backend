@@ -450,5 +450,238 @@
 		delete from enterprise_report_info where enterprise_id = #{enterpriseId} and period_id = #{periodId} and report_id = #{reportId}
 	</delete>
 
+	<!--
+		SQL 1: 通用分析查询（支持动态分组）
+
+		【业务逻辑】
+		1. 根据groupBy参数动态选择分组字段（region/nature/industry）
+		2. 聚合计算六大指标
+		3. 只统计已审核通过的数据（status IN (2,3,4)）
+		4. 支持多维度筛选（地区、性质、行业）
+
+		【返回字段】
+		- dimension_code: 维度代码
+		- enterprise_count: 企业总数
+		- construction_total: 建档期总岗位数
+		- investigation_total: 调查期总岗位数
+
+		【注意】
+		岗位变化总数、岗位减少总数、岗位变化占比 需要在Service层计算
+	-->
+	<select id="selectAnalysisData" resultType="java.util.Map">
+		SELECT
+			<!-- 动态选择分组字段 -->
+			<choose>
+				<when test="query.groupBy == 'region'">
+					eri.enterprise_region as dimension_code,
+				</when>
+				<when test="query.groupBy == 'nature'">
+					eri.enterprise_nature as dimension_code,
+				</when>
+				<when test="query.groupBy == 'industry'">
+					eri.enterprise_industry as dimension_code,
+				</when>
+				<otherwise>
+					'ALL' as dimension_code,
+				</otherwise>
+			</choose>
+
+			<!-- 聚合指标 -->
+			COUNT(DISTINCT eri.enterprise_id) as enterprise_count,
+			SUM(IFNULL(ri.construction_count, 0)) as construction_total,
+			SUM(IFNULL(ri.investigation_count, 0)) as investigation_total
+
+		FROM enterprise_report_info eri
+		LEFT JOIN report_info ri ON eri.report_id = ri.report_id
+
+		WHERE 1=1
+			<!-- 调查期筛选 -->
+			<if test="query.periodIds != null and query.periodIds.size() > 0">
+				AND eri.period_id IN
+				<foreach collection="query.periodIds" item="periodId" open="(" close=")" separator=",">
+					#{periodId}
+				</foreach>
+			</if>
+
+			<!-- 状态筛选：只统计已审核通过的数据 -->
+			<if test="query.statuses != null and query.statuses.size() > 0">
+				AND eri.status IN
+				<foreach collection="query.statuses" item="status" open="(" close=")" separator=",">
+					#{status}
+				</foreach>
+			</if>
+
+			<!-- 地区筛选 -->
+			<if test="query.regions != null and query.regions.size() > 0">
+				AND eri.enterprise_region IN
+				<foreach collection="query.regions" item="region" open="(" close=")" separator=",">
+					#{region}
+				</foreach>
+			</if>
+
+			<!-- 企业性质筛选 -->
+			<if test="query.natures != null and query.natures.size() > 0">
+				AND eri.enterprise_nature IN
+				<foreach collection="query.natures" item="nature" open="(" close=")" separator=",">
+					#{nature}
+				</foreach>
+			</if>
+
+			<!-- 企业行业筛选 -->
+			<if test="query.industries != null and query.industries.size() > 0">
+				AND eri.enterprise_industry IN
+				<foreach collection="query.industries" item="industry" open="(" close=")" separator=",">
+					#{industry}
+				</foreach>
+			</if>
+
+		<!-- 动态分组 -->
+		<if test="query.groupBy != null and query.groupBy != ''">
+			GROUP BY dimension_code
+		</if>
+
+		ORDER BY dimension_code
+	</select>
+
+
+	<!--
+		SQL 2: 取样分析（按地区统计企业数）
+
+		【业务逻辑】
+		只关注企业地区分布，不计算岗位数据
+
+		【返回字段】
+		- region_code: 地区代码
+		- enterprise_count: 企业数量
+	-->
+	<select id="selectSamplingData" resultType="java.util.Map">
+		SELECT
+			eri.enterprise_region as region_code,
+			COUNT(DISTINCT eri.enterprise_id) as enterprise_count
+
+		FROM enterprise_report_info eri
+
+		WHERE 1=1
+			<!-- 调查期筛选 -->
+			<if test="query.periodIds != null and query.periodIds.size() > 0">
+				AND eri.period_id IN
+				<foreach collection="query.periodIds" item="periodId" open="(" close=")" separator=",">
+					#{periodId}
+				</foreach>
+			</if>
+
+			<!-- 状态筛选 -->
+			<if test="query.statuses != null and query.statuses.size() > 0">
+				AND eri.status IN
+				<foreach collection="query.statuses" item="status" open="(" close=")" separator=",">
+					#{status}
+				</foreach>
+			</if>
+
+			<!-- 地区筛选（可选） -->
+			<if test="query.regions != null and query.regions.size() > 0">
+				AND eri.enterprise_region IN
+				<foreach collection="query.regions" item="region" open="(" close=")" separator=",">
+					#{region}
+				</foreach>
+			</if>
+
+		GROUP BY eri.enterprise_region
+		ORDER BY enterprise_count DESC
+	</select>
+
+
+	<!--
+		SQL 3: 趋势分析（按时间序列查询）
+
+		【业务逻辑】
+		1. 按periodId分组，查询每个时间点的数据
+		2. 支持按维度进一步分组（如：查看昆明市每个月的趋势）
+
+		【返回字段】
+		- period_id: 调查期ID
+		- dimension_code: 维度代码（可选）
+		- enterprise_count: 企业总数
+		- construction_total: 建档期总岗位数
+		- investigation_total: 调查期总岗位数
+	-->
+	<select id="selectTrendData" resultType="java.util.Map">
+		SELECT
+			eri.period_id,
+
+			<!-- 动态选择分组字段 -->
+			<choose>
+				<when test="query.groupBy == 'region'">
+					eri.enterprise_region as dimension_code,
+				</when>
+				<when test="query.groupBy == 'nature'">
+					eri.enterprise_nature as dimension_code,
+				</when>
+				<when test="query.groupBy == 'industry'">
+					eri.enterprise_industry as dimension_code,
+				</when>
+				<otherwise>
+					'ALL' as dimension_code,
+				</otherwise>
+			</choose>
+
+			<!-- 聚合指标 -->
+			COUNT(DISTINCT eri.enterprise_id) as enterprise_count,
+			SUM(IFNULL(ri.construction_count, 0)) as construction_total,
+			SUM(IFNULL(ri.investigation_count, 0)) as investigation_total
+
+		FROM enterprise_report_info eri
+		LEFT JOIN report_info ri ON eri.report_id = ri.report_id
+
+		WHERE 1=1
+			<!-- 调查期筛选 -->
+			<if test="query.periodIds != null and query.periodIds.size() > 0">
+				AND eri.period_id IN
+				<foreach collection="query.periodIds" item="periodId" open="(" close=")" separator=",">
+					#{periodId}
+				</foreach>
+			</if>
+
+			<!-- 状态筛选 -->
+			<if test="query.statuses != null and query.statuses.size() > 0">
+				AND eri.status IN
+				<foreach collection="query.statuses" item="status" open="(" close=")" separator=",">
+					#{status}
+				</foreach>
+			</if>
+
+			<!-- 地区筛选 -->
+			<if test="query.regions != null and query.regions.size() > 0">
+				AND eri.enterprise_region IN
+				<foreach collection="query.regions" item="region" open="(" close=")" separator=",">
+					#{region}
+				</foreach>
+			</if>
+
+			<!-- 企业性质筛选 -->
+			<if test="query.natures != null and query.natures.size() > 0">
+				AND eri.enterprise_nature IN
+				<foreach collection="query.natures" item="nature" open="(" close=")" separator=",">
+					#{nature}
+				</foreach>
+			</if>
+
+			<!-- 企业行业筛选 -->
+			<if test="query.industries != null and query.industries.size() > 0">
+				AND eri.enterprise_industry IN
+				<foreach collection="query.industries" item="industry" open="(" close=")" separator=",">
+					#{industry}
+				</foreach>
+			</if>
+
+		<!-- 按时间和维度分组 -->
+		GROUP BY eri.period_id
+		<if test="query.groupBy != null and query.groupBy != ''">
+			, dimension_code
+		</if>
+
+		ORDER BY eri.period_id, dimension_code
+	</select>
+
 
 </mapper>

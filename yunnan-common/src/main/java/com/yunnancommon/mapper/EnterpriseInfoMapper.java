@@ -1,7 +1,13 @@
 package com.yunnancommon.mapper;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import com.yunnancommon.entity.dto.AnalysisQueryDto;
+
 /**
  * @Description:企业信息表Mapper
  * @auther:group2
@@ -25,5 +31,10 @@ public interface EnterpriseInfoMapper<T, P> extends BaseMapper {
 	 */
 	Integer deleteByEnterpriseId(@Param("enterpriseId") String enterpriseId);
 
+	List<Map<String, Object>> selectAnalysisData(@Param("query") AnalysisQueryDto query);
+
+	List<Map<String, Object>> selectSamplingData(@Param("query") AnalysisQueryDto query);
+
+	List<Map<String, Object>> selectTrendData(@Param("query") AnalysisQueryDto query);
 
 }
