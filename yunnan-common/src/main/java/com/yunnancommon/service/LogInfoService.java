@@ -59,4 +59,5 @@ public interface LogInfoService {
 	Integer deleteLogInfoByLogId(Long logId);
 
 
+    void clearLogs(String endTime);
 }

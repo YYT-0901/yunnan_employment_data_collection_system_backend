@@ -1,7 +1,11 @@
 package com.yunnancommon.mapper;
 
+import com.yunnancommon.entity.vo.EnterpriseReportVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
 /**
  * @Description:企业上报信息表Mapper
  * @auther:group2
@@ -13,17 +17,20 @@ public interface EnterpriseReportInfoMapper<T, P> extends BaseMapper {
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId查询
 	 */
-	T selectByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId, @Param("periodId") Integer periodId, @Param("reportId") String reportId);
+	T selectByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId, @Param("periodId") Long periodId, @Param("reportId") String reportId);
 
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId更新
 	 */
-	Integer updateByEnterpriseIdAndPeriodIdAndReportId(@Param("bean") T t, @Param("enterpriseId") String enterpriseId, @Param("periodId") Integer periodId, @Param("reportId") String reportId);
+	Integer updateByEnterpriseIdAndPeriodIdAndReportId(@Param("bean") T t, @Param("enterpriseId") String enterpriseId, @Param("periodId") Long periodId, @Param("reportId") String reportId);
 
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId删除
 	 */
-	Integer deleteByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId, @Param("periodId") Integer periodId, @Param("reportId") String reportId);
+	Integer deleteByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId, @Param("periodId") Long periodId, @Param("reportId") String reportId);
 
 
+    List<EnterpriseReportVO> selectListWithAssociated(@Param("query") P p);
+
+	Integer selectCountWithAssociated(@Param("query") P p);
 }

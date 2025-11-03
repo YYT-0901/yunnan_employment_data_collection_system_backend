@@ -1,12 +1,16 @@
 package com.yunnancommon.service.impl;
 
 
+import com.yunnancommon.entity.po.EnterpriseReportInfo;
+import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
 import com.yunnancommon.entity.query.SimplePage;
 import com.yunnancommon.enums.PageSize;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.PeriodInfo;
 import com.yunnancommon.entity.query.PeriodInfoQuery;
+import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.mapper.PeriodInfoMapper;
+import com.yunnancommon.service.EnterpriseReportInfoService;
 import com.yunnancommon.service.PeriodInfoService;
 import org.springframework.stereotype.Service;
 
@@ -15,14 +19,17 @@ import javax.annotation.Resource;
 import java.util.List;
 /**
  * @Description:调查期信息表ServiceImpl
- * @auther:group2
- * @date:2025/10/22
+ * @auther:SOON JIANG BING
+ * @date:2025/11/02
  */
 @Service("periodInfoService")
 public class PeriodInfoServiceImpl implements PeriodInfoService {
 
 	@Resource
 	private PeriodInfoMapper<PeriodInfo, PeriodInfoQuery> periodInfoMapper;
+
+	@Resource
+	private EnterpriseReportInfoService enterpriseReportInfoService;
 
 	/**
 	 * 根据条件查询列表
@@ -88,7 +95,7 @@ public class PeriodInfoServiceImpl implements PeriodInfoService {
 	 * 根据PeriodId查询
 	 */
 	@Override
-	public PeriodInfo getPeriodInfoByPeriodId(Integer periodId) {
+	public PeriodInfo getPeriodInfoByPeriodId(Long periodId) {
 		return this.periodInfoMapper.selectByPeriodId(periodId);
 	}
 
@@ -96,7 +103,7 @@ public class PeriodInfoServiceImpl implements PeriodInfoService {
 	 * 根据PeriodId更新
 	 */
 	@Override
-	public Integer updatePeriodInfoByPeriodId(PeriodInfo bean, Integer periodId) {
+	public Integer updatePeriodInfoByPeriodId(PeriodInfo bean, Long periodId) {
 		return this.periodInfoMapper.updateByPeriodId(bean, periodId);
 	}
 
@@ -104,8 +111,39 @@ public class PeriodInfoServiceImpl implements PeriodInfoService {
 	 * 根据PeriodId删除
 	 */
 	@Override
-	public Integer deletePeriodInfoByPeriodId(Integer periodId) {
+	public Integer deletePeriodInfoByPeriodId(Long periodId) throws BusinessException {
+		// 先删除企业报告信息
+		EnterpriseReportInfoQuery enterpriseReportInfoQuery = new EnterpriseReportInfoQuery();
+		enterpriseReportInfoQuery.setPeriodId(periodId);
+		List<EnterpriseReportInfo> listByParam = enterpriseReportInfoService.findListByParam(enterpriseReportInfoQuery);
+		if(listByParam != null && !listByParam.isEmpty()) {
+			throw new BusinessException("该调查期下存在企业报告信息，不能删除");
+		}
 		return this.periodInfoMapper.deleteByPeriodId(periodId);
+	}
+
+	/**
+	 * 根据InvestigateTime查询
+	 */
+	@Override
+	public PeriodInfo getPeriodInfoByInvestigateTime(String investigateTime) {
+		return this.periodInfoMapper.selectByInvestigateTime(investigateTime);
+	}
+
+	/**
+	 * 根据InvestigateTime更新
+	 */
+	@Override
+	public Integer updatePeriodInfoByInvestigateTime(PeriodInfo bean, String investigateTime) {
+		return this.periodInfoMapper.updateByInvestigateTime(bean, investigateTime);
+	}
+
+	/**
+	 * 根据InvestigateTime删除
+	 */
+	@Override
+	public Integer deletePeriodInfoByInvestigateTime(String investigateTime) {
+		return this.periodInfoMapper.deleteByInvestigateTime(investigateTime);
 	}
 
 

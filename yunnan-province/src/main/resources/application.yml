@@ -2,7 +2,6 @@ spring:
   application:
     name: yunnan-province
   servlet:
-
     multipart:
       max-file-size: 10MB
       max-request-size: 15MB
@@ -32,6 +31,11 @@ spring:
           max-idle: 10
           min-idle: 0
       timeout: 2000
+
+#MyBatis的配置信息
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
 
 project:
   folder: D:\\STUDY\\beijing_universiti_folder7\\excellent_engineering_code\\yunnan\\

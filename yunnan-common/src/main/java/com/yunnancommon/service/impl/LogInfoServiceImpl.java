@@ -108,5 +108,10 @@ public class LogInfoServiceImpl implements LogInfoService {
 		return this.logInfoMapper.deleteByLogId(logId);
 	}
 
+	@Override
+	public void clearLogs(String endTime) {
+		this.logInfoMapper.deleteAll(endTime);
+	}
+
 
 }
