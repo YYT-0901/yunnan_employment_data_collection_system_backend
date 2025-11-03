@@ -18,6 +18,8 @@
 		<result column="industry" property="industry" />
 		<!--主要经营业务详情-->
 		<result column="industry_desc" property="industryDesc" />
+		<!--退回原因-->
+		<result column="reason_return" property="reasonReturn" />
 		<!--联系人名称-->
 		<result column="contact_name" property="contactName" />
 		<!--联系人地址-->
@@ -40,7 +42,7 @@
 
 	<!--通用查询结果-->
 	<sql id="base_column_list">
-		enterprise_id,org_code,name,region,nature,industry,industry_desc,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at
+		enterprise_id,org_code,name,region,nature,industry,industry_desc,reason_return,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at
 	</sql>
 
 	<!--基础查询条件-->
@@ -65,6 +67,9 @@
 		</if>
 		<if test="query.industryDesc != null and query.industryDesc != ''">
 			and industry_desc = #{query.industryDesc}
+		</if>
+		<if test="query.reasonReturn != null and query.reasonReturn != ''">
+			and reason_return = #{query.reasonReturn}
 		</if>
 		<if test="query.contactName != null and query.contactName != ''">
 			and contact_name = #{query.contactName}
@@ -108,6 +113,9 @@
 		</if>
 		<if test="query.industryDescFuzzy != null and query.industryDescFuzzy != ''">
 			 and industry_desc like concat('%',#{query.industryDescFuzzy},'%')
+		</if>
+		<if test="query.reasonReturnFuzzy != null and query.reasonReturnFuzzy != ''">
+			 and reason_return like concat('%',#{query.reasonReturnFuzzy},'%')
 		</if>
 		<if test="query.contactNameFuzzy != null and query.contactNameFuzzy != ''">
 			 and contact_name like concat('%',#{query.contactNameFuzzy},'%')
@@ -194,6 +202,9 @@
 			<if test="bean.industryDesc != null">
 				industry_desc,
 			</if>
+		    <if test="bean.reasonReturn != null">
+				reason_return,
+			</if>
 			<if test="bean.contactName != null">
 				contact_name,
 			</if>
@@ -243,6 +254,9 @@
 			</if>
 			<if test="bean.industryDesc != null">
 				#{bean.industryDesc},
+			</if>
+		    <if test="bean.reasonReturn != null">
+				#{bean.reasonReturn},
 			</if>
 			<if test="bean.contactName != null">
 				#{bean.contactName},
@@ -299,6 +313,9 @@
 			<if test="bean.industryDesc != null">
 				industry_desc,
 			</if>
+		    <if test="bean.reasonReturn != null">
+				reason_return,
+			</if>
 			<if test="bean.contactName != null">
 				contact_name,
 			</if>
@@ -349,6 +366,9 @@
 			<if test="bean.industryDesc != null">
 				#{bean.industryDesc},
 			</if>
+		    <if test="bean.reasonReturn != null">
+				#{bean.reasonReturn},
+			</if>
 			<if test="bean.contactName != null">
 				#{bean.contactName},
 			</if>
@@ -397,6 +417,9 @@
 			<if test="bean.industryDesc != null">
 				industry_desc = VALUES(industry_desc),
 			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return = VALUES(reason_return),
+			</if>
 			<if test="bean.contactName != null">
 				contact_name = VALUES(contact_name),
 			</if>
@@ -429,18 +452,18 @@
 
 	<!--添加（批量插入）-->
 	<insert id="insertBatch" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
-		insert into enterprise_info(enterprise_id,org_code,name,region,nature,industry,industry_desc,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
+		insert into enterprise_info(enterprise_id,org_code,name,region,nature,industry,industry_desc,reason_return,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
 			<foreach collection="list" item="item" separator=",">
-				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.nature},#{item.industry},#{item.industryDesc},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
+				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.nature},#{item.industry},#{item.industryDesc},#{item.reasonReturn},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
 			</foreach>
 	</insert>
 
 
 	<!--添加（批量插入或更新）-->
 	<insert id="insertOrUpdateBatch" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
-		insert into enterprise_info(enterprise_id,org_code,name,region,nature,industry,industry_desc,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
+		insert into enterprise_info(enterprise_id,org_code,name,region,nature,industry,industry_desc,reason_return,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
 			<foreach collection="list" item="item" separator=",">
-				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.nature},#{item.industry},#{item.industryDesc},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
+				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.nature},#{item.industry},#{item.industryDesc},#{item.reasonReturn},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
 			</foreach>
 		on DUPLICATE key update
 			enterprise_id = VALUES(enterprise_id),org_code = VALUES(org_code),name = VALUES(name),region = VALUES(region),nature = VALUES(nature),industry = VALUES(industry),industry_desc = VALUES(industry_desc),contact_name = VALUES(contact_name),address = VALUES(address),postal_code = VALUES(postal_code),phone_num = VALUES(phone_num),fax_num = VALUES(fax_num),email = VALUES(email),status = VALUES(status),created_at = VALUES(created_at),updated_at = VALUES(updated_at)
@@ -475,6 +498,9 @@
 			</if>
 			<if test="bean.industryDesc != null">
 				industry_desc = #{bean.industryDesc},
+			</if>
+		    <if test="bean.reasonReturn != null">
+				reason_return = #{bean.reasonReturn},
 			</if>
 			<if test="bean.contactName != null">
 				contact_name = #{bean.contactName},
