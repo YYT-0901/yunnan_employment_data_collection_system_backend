@@ -25,7 +25,7 @@ public class RegionUtils {
     public static class RegionNode {
         private Integer code;
         private String name;
-        private Integer parent;
+        private Integer parentId;
         private List<RegionNode> children;
 
         public Integer getCode() {
@@ -44,12 +44,12 @@ public class RegionUtils {
             this.name = name;
         }
 
-        public Integer getParant() {
-            return parent;
+        public Integer getParentId() {
+            return parentId;
         }
 
-        public void setParent(Integer parent) {
-            this.parent = parent;
+        public void setParentId(Integer parentId) {
+            this.parentId = parentId;
         }
 
         public List<RegionNode> getChildren() {
@@ -127,7 +127,7 @@ public class RegionUtils {
 
         while (current != null) {
             path.add(0, current.getName());
-            Integer parentCode = current.getParant();
+            Integer parentCode = current.getParentId();
             current = parentCode != null ? regionMap.get(parentCode) : null;
         }
 

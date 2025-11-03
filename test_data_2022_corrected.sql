@@ -5,7 +5,7 @@
 -- 代码来源: yunnan_region_code.json, enterprise_types.json, enterprise_industries.json
 -- ====================================================================
 
-USE project1;
+USE project2;
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
