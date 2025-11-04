@@ -5,11 +5,11 @@ import java.util.Date;
 /**
  * @Description:企业信息表查询对象
  * @auther:group2
- * @date:2025/10/22
+ * @date:2025/11/04
  */
 public class EnterpriseInfoQuery extends BaseQuery{
 	/**
-	 * 企业ID
+	 * 
 	 */
 	private String enterpriseId;
 
@@ -35,9 +35,19 @@ public class EnterpriseInfoQuery extends BaseQuery{
 	private Integer region;
 
 	/**
+	 * 所属地区一级分类
+	 */
+	private Integer regionCode;
+
+	/**
 	 * 所属性质
 	 */
 	private Integer nature;
+
+	/**
+	 * 所属性质一级分类
+	 */
+	private Integer natureCode;
 
 	/**
 	 * 所属行业
@@ -45,11 +55,23 @@ public class EnterpriseInfoQuery extends BaseQuery{
 	private Integer industry;
 
 	/**
+	 * 所属行业一级分类
+	 */
+	private Integer industryCode;
+
+	/**
 	 * 主要经营业务详情
 	 */
 	private String industryDesc;
 
 	private String industryDescFuzzy;
+
+	/**
+	 * 企业备案退回原因
+	 */
+	private String reasonReturn;
+
+	private String reasonReturnFuzzy;
 
 	/**
 	 * 联系人名称
@@ -148,12 +170,28 @@ public class EnterpriseInfoQuery extends BaseQuery{
 		this.region = region;
 	}
 
+	public Integer getRegionCode() {
+		return regionCode;
+	}
+
+	public void setRegionCode(Integer regionCode) {
+		this.regionCode = regionCode;
+	}
+
 	public Integer getNature() {
 		return nature;
 	}
 
 	public void setNature(Integer nature) {
 		this.nature = nature;
+	}
+
+	public Integer getNatureCode() {
+		return natureCode;
+	}
+
+	public void setNatureCode(Integer natureCode) {
+		this.natureCode = natureCode;
 	}
 
 	public Integer getIndustry() {
@@ -164,12 +202,28 @@ public class EnterpriseInfoQuery extends BaseQuery{
 		this.industry = industry;
 	}
 
+	public Integer getIndustryCode() {
+		return industryCode;
+	}
+
+	public void setIndustryCode(Integer industryCode) {
+		this.industryCode = industryCode;
+	}
+
 	public String getIndustryDesc() {
 		return industryDesc;
 	}
 
 	public void setIndustryDesc(String industryDesc) {
 		this.industryDesc = industryDesc;
+	}
+
+	public String getReasonReturn() {
+		return reasonReturn;
+	}
+
+	public void setReasonReturn(String reasonReturn) {
+		this.reasonReturn = reasonReturn;
 	}
 
 	public String getContactName() {
@@ -274,6 +328,14 @@ public class EnterpriseInfoQuery extends BaseQuery{
 
 	public void setIndustryDescFuzzy(String industryDescFuzzy) {
 		this.industryDescFuzzy = industryDescFuzzy;
+	}
+
+	public String getReasonReturnFuzzy() {
+		return reasonReturnFuzzy;
+	}
+
+	public void setReasonReturnFuzzy(String reasonReturnFuzzy) {
+		this.reasonReturnFuzzy = reasonReturnFuzzy;
 	}
 
 	public String getContactNameFuzzy() {
