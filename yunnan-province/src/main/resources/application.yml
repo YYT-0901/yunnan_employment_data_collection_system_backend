@@ -6,7 +6,7 @@ spring:
       max-file-size: 10MB
       max-request-size: 15MB
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/yunnan_system?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/project1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
     username: root
     password: MySQL@4869
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -32,13 +32,8 @@ spring:
           min-idle: 0
       timeout: 2000
 
-#MyBatis的配置信息
-mybatis:
-  configuration:
-    map-underscore-to-camel-case: true
-
 project:
-  folder: D:\\STUDY\\beijing_universiti_folder7\\excellent_engineering_code\\yunnan\\
+  folder: ./yunnan
 
 log:
   root:
@@ -50,5 +45,8 @@ admin:
 
 server:
   port: 8080
+  servlet:
+    context-path: /api
+
   servlet:
     context-path: /api
