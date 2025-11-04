@@ -4,7 +4,7 @@
 <mapper namespace="com.yunnancommon.mapper.EnterpriseInfoMapper">
 	<!--实体映射-->
 	<resultMap id="base_result_map" type="com.yunnancommon.entity.po.EnterpriseInfo">
-		<!--企业ID-->
+		<!---->
 		<id column="enterprise_id" property="enterpriseId" />
 		<!--组织机构代码-->
 		<result column="org_code" property="orgCode" />
@@ -12,12 +12,20 @@
 		<result column="name" property="name" />
 		<!--所属地区-->
 		<result column="region" property="region" />
+		<!--所属地区一级分类-->
+		<result column="region_code" property="regionCode" />
 		<!--所属性质-->
 		<result column="nature" property="nature" />
+		<!--所属性质一级分类-->
+		<result column="nature_code" property="natureCode" />
 		<!--所属行业-->
 		<result column="industry" property="industry" />
+		<!--所属行业一级分类-->
+		<result column="industry_code" property="industryCode" />
 		<!--主要经营业务详情-->
 		<result column="industry_desc" property="industryDesc" />
+		<!--企业备案退回原因-->
+		<result column="reason_return" property="reasonReturn" />
 		<!--联系人名称-->
 		<result column="contact_name" property="contactName" />
 		<!--联系人地址-->
@@ -40,7 +48,7 @@
 
 	<!--通用查询结果-->
 	<sql id="base_column_list">
-		enterprise_id,org_code,name,region,nature,industry,industry_desc,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at
+		enterprise_id,org_code,name,region,region_code,nature,nature_code,industry,industry_code,industry_desc,reason_return,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at
 	</sql>
 
 	<!--基础查询条件-->
@@ -57,14 +65,26 @@
 		<if test="query.region != null">
 			and region = #{query.region}
 		</if>
+		<if test="query.regionCode != null">
+			and region_code = #{query.regionCode}
+		</if>
 		<if test="query.nature != null">
 			and nature = #{query.nature}
+		</if>
+		<if test="query.natureCode != null">
+			and nature_code = #{query.natureCode}
 		</if>
 		<if test="query.industry != null">
 			and industry = #{query.industry}
 		</if>
+		<if test="query.industryCode != null">
+			and industry_code = #{query.industryCode}
+		</if>
 		<if test="query.industryDesc != null and query.industryDesc != ''">
 			and industry_desc = #{query.industryDesc}
+		</if>
+		<if test="query.reasonReturn != null and query.reasonReturn != ''">
+			and reason_return = #{query.reasonReturn}
 		</if>
 		<if test="query.contactName != null and query.contactName != ''">
 			and contact_name = #{query.contactName}
@@ -108,6 +128,9 @@
 		</if>
 		<if test="query.industryDescFuzzy != null and query.industryDescFuzzy != ''">
 			 and industry_desc like concat('%',#{query.industryDescFuzzy},'%')
+		</if>
+		<if test="query.reasonReturnFuzzy != null and query.reasonReturnFuzzy != ''">
+			 and reason_return like concat('%',#{query.reasonReturnFuzzy},'%')
 		</if>
 		<if test="query.contactNameFuzzy != null and query.contactNameFuzzy != ''">
 			 and contact_name like concat('%',#{query.contactNameFuzzy},'%')
@@ -185,14 +208,26 @@
 			<if test="bean.region != null">
 				region,
 			</if>
+			<if test="bean.regionCode != null">
+				region_code,
+			</if>
 			<if test="bean.nature != null">
 				nature,
+			</if>
+			<if test="bean.natureCode != null">
+				nature_code,
 			</if>
 			<if test="bean.industry != null">
 				industry,
 			</if>
+			<if test="bean.industryCode != null">
+				industry_code,
+			</if>
 			<if test="bean.industryDesc != null">
 				industry_desc,
+			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return,
 			</if>
 			<if test="bean.contactName != null">
 				contact_name,
@@ -235,14 +270,26 @@
 			<if test="bean.region != null">
 				#{bean.region},
 			</if>
+			<if test="bean.regionCode != null">
+				#{bean.regionCode},
+			</if>
 			<if test="bean.nature != null">
 				#{bean.nature},
+			</if>
+			<if test="bean.natureCode != null">
+				#{bean.natureCode},
 			</if>
 			<if test="bean.industry != null">
 				#{bean.industry},
 			</if>
+			<if test="bean.industryCode != null">
+				#{bean.industryCode},
+			</if>
 			<if test="bean.industryDesc != null">
 				#{bean.industryDesc},
+			</if>
+			<if test="bean.reasonReturn != null">
+				#{bean.reasonReturn},
 			</if>
 			<if test="bean.contactName != null">
 				#{bean.contactName},
@@ -290,14 +337,26 @@
 			<if test="bean.region != null">
 				region,
 			</if>
+			<if test="bean.regionCode != null">
+				region_code,
+			</if>
 			<if test="bean.nature != null">
 				nature,
+			</if>
+			<if test="bean.natureCode != null">
+				nature_code,
 			</if>
 			<if test="bean.industry != null">
 				industry,
 			</if>
+			<if test="bean.industryCode != null">
+				industry_code,
+			</if>
 			<if test="bean.industryDesc != null">
 				industry_desc,
+			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return,
 			</if>
 			<if test="bean.contactName != null">
 				contact_name,
@@ -340,14 +399,26 @@
 			<if test="bean.region != null">
 				#{bean.region},
 			</if>
+			<if test="bean.regionCode != null">
+				#{bean.regionCode},
+			</if>
 			<if test="bean.nature != null">
 				#{bean.nature},
+			</if>
+			<if test="bean.natureCode != null">
+				#{bean.natureCode},
 			</if>
 			<if test="bean.industry != null">
 				#{bean.industry},
 			</if>
+			<if test="bean.industryCode != null">
+				#{bean.industryCode},
+			</if>
 			<if test="bean.industryDesc != null">
 				#{bean.industryDesc},
+			</if>
+			<if test="bean.reasonReturn != null">
+				#{bean.reasonReturn},
 			</if>
 			<if test="bean.contactName != null">
 				#{bean.contactName},
@@ -388,14 +459,26 @@
 			<if test="bean.region != null">
 				region = VALUES(region),
 			</if>
+			<if test="bean.regionCode != null">
+				region_code = VALUES(region_code),
+			</if>
 			<if test="bean.nature != null">
 				nature = VALUES(nature),
+			</if>
+			<if test="bean.natureCode != null">
+				nature_code = VALUES(nature_code),
 			</if>
 			<if test="bean.industry != null">
 				industry = VALUES(industry),
 			</if>
+			<if test="bean.industryCode != null">
+				industry_code = VALUES(industry_code),
+			</if>
 			<if test="bean.industryDesc != null">
 				industry_desc = VALUES(industry_desc),
+			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return = VALUES(reason_return),
 			</if>
 			<if test="bean.contactName != null">
 				contact_name = VALUES(contact_name),
@@ -429,21 +512,21 @@
 
 	<!--添加（批量插入）-->
 	<insert id="insertBatch" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
-		insert into enterprise_info(enterprise_id,org_code,name,region,nature,industry,industry_desc,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
+		insert into enterprise_info(enterprise_id,org_code,name,region,region_code,nature,nature_code,industry,industry_code,industry_desc,reason_return,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
 			<foreach collection="list" item="item" separator=",">
-				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.nature},#{item.industry},#{item.industryDesc},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
+				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.regionCode},#{item.nature},#{item.natureCode},#{item.industry},#{item.industryCode},#{item.industryDesc},#{item.reasonReturn},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
 			</foreach>
 	</insert>
 
 
 	<!--添加（批量插入或更新）-->
 	<insert id="insertOrUpdateBatch" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
-		insert into enterprise_info(enterprise_id,org_code,name,region,nature,industry,industry_desc,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
+		insert into enterprise_info(enterprise_id,org_code,name,region,region_code,nature,nature_code,industry,industry_code,industry_desc,reason_return,contact_name,address,postal_code,phone_num,fax_num,email,status,created_at,updated_at) values
 			<foreach collection="list" item="item" separator=",">
-				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.nature},#{item.industry},#{item.industryDesc},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
+				(#{item.enterpriseId},#{item.orgCode},#{item.name},#{item.region},#{item.regionCode},#{item.nature},#{item.natureCode},#{item.industry},#{item.industryCode},#{item.industryDesc},#{item.reasonReturn},#{item.contactName},#{item.address},#{item.postalCode},#{item.phoneNum},#{item.faxNum},#{item.email},#{item.status},#{item.createdAt},#{item.updatedAt})
 			</foreach>
 		on DUPLICATE key update
-			enterprise_id = VALUES(enterprise_id),org_code = VALUES(org_code),name = VALUES(name),region = VALUES(region),nature = VALUES(nature),industry = VALUES(industry),industry_desc = VALUES(industry_desc),contact_name = VALUES(contact_name),address = VALUES(address),postal_code = VALUES(postal_code),phone_num = VALUES(phone_num),fax_num = VALUES(fax_num),email = VALUES(email),status = VALUES(status),created_at = VALUES(created_at),updated_at = VALUES(updated_at)
+			enterprise_id = VALUES(enterprise_id),org_code = VALUES(org_code),name = VALUES(name),region = VALUES(region),region_code = VALUES(region_code),nature = VALUES(nature),nature_code = VALUES(nature_code),industry = VALUES(industry),industry_code = VALUES(industry_code),industry_desc = VALUES(industry_desc),reason_return = VALUES(reason_return),contact_name = VALUES(contact_name),address = VALUES(address),postal_code = VALUES(postal_code),phone_num = VALUES(phone_num),fax_num = VALUES(fax_num),email = VALUES(email),status = VALUES(status),created_at = VALUES(created_at),updated_at = VALUES(updated_at)
 	</insert>
 
 	<!--根据EnterpriseId查询-->
@@ -467,14 +550,26 @@
 			<if test="bean.region != null">
 				region = #{bean.region},
 			</if>
+			<if test="bean.regionCode != null">
+				region_code = #{bean.regionCode},
+			</if>
 			<if test="bean.nature != null">
 				nature = #{bean.nature},
+			</if>
+			<if test="bean.natureCode != null">
+				nature_code = #{bean.natureCode},
 			</if>
 			<if test="bean.industry != null">
 				industry = #{bean.industry},
 			</if>
+			<if test="bean.industryCode != null">
+				industry_code = #{bean.industryCode},
+			</if>
 			<if test="bean.industryDesc != null">
 				industry_desc = #{bean.industryDesc},
+			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return = #{bean.reasonReturn},
 			</if>
 			<if test="bean.contactName != null">
 				contact_name = #{bean.contactName},
@@ -512,5 +607,78 @@
 		delete from enterprise_info where enterprise_id = #{enterpriseId}
 	</delete>
 
+
+	<!--根据params更新-->
+	<update id="updateByParams" parameterType="com.yunnancommon.entity.po.EnterpriseInfo">
+		update enterprise_info
+		<set>
+			<if test="bean.enterpriseId != null">
+				enterprise_id = #{bean.enterpriseId},
+			</if>
+			<if test="bean.orgCode != null">
+				org_code = #{bean.orgCode},
+			</if>
+			<if test="bean.name != null">
+				name = #{bean.name},
+			</if>
+			<if test="bean.region != null">
+				region = #{bean.region},
+			</if>
+			<if test="bean.regionCode != null">
+				region_code = #{bean.regionCode},
+			</if>
+			<if test="bean.nature != null">
+				nature = #{bean.nature},
+			</if>
+			<if test="bean.natureCode != null">
+				nature_code = #{bean.natureCode},
+			</if>
+			<if test="bean.industry != null">
+				industry = #{bean.industry},
+			</if>
+			<if test="bean.industryCode != null">
+				industry_code = #{bean.industryCode},
+			</if>
+			<if test="bean.industryDesc != null">
+				industry_desc = #{bean.industryDesc},
+			</if>
+			<if test="bean.reasonReturn != null">
+				reason_return = #{bean.reasonReturn},
+			</if>
+			<if test="bean.contactName != null">
+				contact_name = #{bean.contactName},
+			</if>
+			<if test="bean.address != null">
+				address = #{bean.address},
+			</if>
+			<if test="bean.postalCode != null">
+				postal_code = #{bean.postalCode},
+			</if>
+			<if test="bean.phoneNum != null">
+				phone_num = #{bean.phoneNum},
+			</if>
+			<if test="bean.faxNum != null">
+				fax_num = #{bean.faxNum},
+			</if>
+			<if test="bean.email != null">
+				email = #{bean.email},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+		</set>
+		<include refid="query_condition" />
+	</update>
+	<!--根据params删除-->
+	<delete id="deleteByParams">
+		delete from enterprise_info
+		<include refid="query_condition" />
+	</delete>
 
 </mapper>
