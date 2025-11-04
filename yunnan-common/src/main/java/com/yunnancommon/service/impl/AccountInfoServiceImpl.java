@@ -5,6 +5,7 @@ import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
 import com.yunnancommon.entity.query.SimplePage;
+import com.yunnancommon.entity.vo.AccountEnterpriseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
 import com.yunnancommon.enums.AccountStatusEnum;
 import com.yunnancommon.enums.PageSize;
@@ -66,6 +67,17 @@ public class AccountInfoServiceImpl implements AccountInfoService {
 		query.setSimplePage(page);
 		List<AccountInfo> list = this.findListByParam(query);
 		PaginationResultVO<AccountInfo> result = new PaginationResultVO<AccountInfo>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+		return result;
+	}
+
+	@Override
+	public PaginationResultVO<AccountEnterpriseVO> findListByPageWithAssociated(AccountInfoQuery query) {
+		Integer count = this.findCountByParam(query);
+		Integer pageSize = query.getPageSize() == null ? PageSize.SIZE15.getSize(): query.getPageSize();
+		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
+		query.setSimplePage(page);
+		List<AccountEnterpriseVO> list = this.accountInfoMapper.findListByParamWithAssociatedEnterpriseInfo(query);
+		PaginationResultVO<AccountEnterpriseVO> result = new PaginationResultVO<AccountEnterpriseVO>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
 		return result;
 	}
 
@@ -148,7 +160,6 @@ public class AccountInfoServiceImpl implements AccountInfoService {
 
 		return tokenInfoVO;
 	}
-
 
 
 }

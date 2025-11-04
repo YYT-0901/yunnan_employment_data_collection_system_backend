@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * @Description:调查期信息表
- * @auther:group2
- * @date:2025/10/22
+ * @auther:SOON JIANG BING
+ * @date:2025/11/02
  */
 public class PeriodInfo implements Serializable {
 	/**

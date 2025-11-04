@@ -2,6 +2,7 @@ package com.yunnancommon.service.impl;
 
 
 import com.yunnancommon.entity.query.SimplePage;
+import com.yunnancommon.entity.vo.EnterpriseReportVO;
 import com.yunnancommon.enums.PageSize;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.EnterpriseReportInfo;
@@ -54,6 +55,17 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
 		return result;
 	}
 
+	@Override
+	public PaginationResultVO<EnterpriseReportVO> findListByPageWithAssociatedEnterpriseName(EnterpriseReportInfoQuery query) {
+		Integer count = enterpriseReportInfoMapper.selectCountWithAssociated(query);
+		Integer pageSize = query.getPageSize() == null ? PageSize.SIZE15.getSize(): query.getPageSize();
+		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
+		query.setSimplePage(page);
+		List<EnterpriseReportVO> list = enterpriseReportInfoMapper.selectListWithAssociated(query);
+		PaginationResultVO<EnterpriseReportVO> result = new PaginationResultVO<EnterpriseReportVO>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
+		return result;
+	}
+
 	/**
 	 * 新增
 	 */
@@ -88,7 +100,7 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
 	 * 根据EnterpriseIdAndPeriodIdAndReportId查询
 	 */
 	@Override
-	public EnterpriseReportInfo getEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Integer periodId, String reportId) {
+	public EnterpriseReportInfo getEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Long periodId, String reportId) {
 		return this.enterpriseReportInfoMapper.selectByEnterpriseIdAndPeriodIdAndReportId(enterpriseId, periodId, reportId);
 	}
 
@@ -96,7 +108,7 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
 	 * 根据EnterpriseIdAndPeriodIdAndReportId更新
 	 */
 	@Override
-	public Integer updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(EnterpriseReportInfo bean, String enterpriseId, Integer periodId, String reportId) {
+	public Integer updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(EnterpriseReportInfo bean, String enterpriseId, Long periodId, String reportId) {
 		return this.enterpriseReportInfoMapper.updateByEnterpriseIdAndPeriodIdAndReportId(bean, enterpriseId, periodId, reportId);
 	}
 
@@ -104,7 +116,7 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
 	 * 根据EnterpriseIdAndPeriodIdAndReportId删除
 	 */
 	@Override
-	public Integer deleteEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Integer periodId, String reportId) {
+	public Integer deleteEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Long periodId, String reportId) {
 		return this.enterpriseReportInfoMapper.deleteByEnterpriseIdAndPeriodIdAndReportId(enterpriseId, periodId, reportId);
 	}
 

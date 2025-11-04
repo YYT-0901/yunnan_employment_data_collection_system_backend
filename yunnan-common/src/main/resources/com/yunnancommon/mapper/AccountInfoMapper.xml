@@ -106,6 +106,15 @@
 		<include refid="query_condition" />
 	</select>
 
+	<select id="findListByParamWithAssociatedEnterpriseInfo"
+			resultType="com.yunnancommon.entity.vo.AccountEnterpriseVO">
+		select a.username, a.password, a.type, a.enterprise_id as enterpriseId, a.city_code as cityCode, a.last_login_time as lastLoginTime, a.status, a.created_at as createdAt,
+		e.org_code as orgCode, e.name, e.region, e.nature, e.industry, e.industry_desc as industryDesc, e.contact_name as contactName, e.address, e.postal_code as postalCode, e.phone_num as phoneNum, e.fax_num as faxNum, e.email
+		from account_info a
+		left join enterprise_info e on a.enterprise_id = e.enterprise_id
+		<include refid="query_condition" />
+	</select>
+
 
 	<!--单条插入-->
 	<insert id="insert" parameterType="com.yunnancommon.entity.po.AccountInfo">
@@ -270,7 +279,9 @@
 		select <include refid="base_column_list" /> from account_info where username = #{username}
 	</select>
 
-	<!--根据Username更新-->
+
+
+    <!--根据Username更新-->
 	<update id="updateByUsername" parameterType="com.yunnancommon.entity.po.AccountInfo">
 		update account_info
 		<set>

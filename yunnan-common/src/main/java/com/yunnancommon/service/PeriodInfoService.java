@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @Description:调查期信息表Service
  * @auther:group2
- * @date:2025/10/22
+ * @date:2025/11/04
  */
 public interface PeriodInfoService {
 
@@ -46,17 +46,42 @@ public interface PeriodInfoService {
 	/**
 	 * 根据PeriodId查询
 	 */
-	PeriodInfo getPeriodInfoByPeriodId(Integer periodId);
+	PeriodInfo getPeriodInfoByPeriodId(Long periodId);
 
 	/**
 	 * 根据PeriodId更新
 	 */
-	Integer updatePeriodInfoByPeriodId(PeriodInfo bean, Integer periodId);
+	Integer updatePeriodInfoByPeriodId(PeriodInfo bean, Long periodId);
 
 	/**
 	 * 根据PeriodId删除
 	 */
-	Integer deletePeriodInfoByPeriodId(Integer periodId);
+	Integer deletePeriodInfoByPeriodId(Long periodId);
+
+	/**
+	 * 根据InvestigateTime查询
+	 */
+	PeriodInfo getPeriodInfoByInvestigateTime(String investigateTime);
+
+	/**
+	 * 根据InvestigateTime更新
+	 */
+	Integer updatePeriodInfoByInvestigateTime(PeriodInfo bean, String investigateTime);
+
+	/**
+	 * 根据InvestigateTime删除
+	 */
+	Integer deletePeriodInfoByInvestigateTime(String investigateTime);
+
+	/**
+	 * 根据参数更新
+	 */
+	Integer updateByParams(PeriodInfo bean, PeriodInfoQuery query);
+
+	/**
+	 * 根据参数删除
+	 */
+	Integer deleteByParam(PeriodInfoQuery query);
 
 
 }

@@ -22,7 +22,7 @@ public class EnterpriseReportInfo implements Serializable {
 	/**
 	 * 调查期ID
 	 */
-	private Integer periodId;
+	 private Long periodId;
 
 	/**
 	 * 数据填报ID
@@ -42,7 +42,6 @@ public class EnterpriseReportInfo implements Serializable {
 	/**
 	 * 状态: -1-未填报 0-已暂存 1-待市级审核 2-待省级审核 3-审核通过 4-已归档 5-驳回
 	 */
-	@JsonIgnore
 	private Integer status;
 
 	/**
@@ -96,11 +95,11 @@ public class EnterpriseReportInfo implements Serializable {
 		this.enterpriseId = enterpriseId;
 	}
 
-	public Integer getPeriodId() {
+	public Long getPeriodId() {
 		return periodId;
 	}
 
-	public void setPeriodId(Integer periodId) {
+	public void setPeriodId(Long periodId) {
 		this.periodId = periodId;
 	}
 

@@ -1,6 +1,7 @@
 package com.yunnancommon.service;
 
 
+import com.yunnancommon.entity.vo.CreatedAccountVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
@@ -9,7 +10,7 @@ import java.util.List;
 /**
  * @Description:企业信息表Service
  * @auther:group2
- * @date:2025/10/22
+ * @date:2025/11/04
  */
 public interface EnterpriseInfoService {
 
@@ -58,5 +59,18 @@ public interface EnterpriseInfoService {
 	 */
 	Integer deleteEnterpriseInfoByEnterpriseId(String enterpriseId);
 
+	/**
+	 * 根据参数更新
+	 */
+	Integer updateByParams(EnterpriseInfo bean, EnterpriseInfoQuery query);
+
+	/**
+	 * 根据参数删除
+	 */
+	Integer deleteByParams(EnterpriseInfoQuery query);
+
+	CreatedAccountVO createEnterpriseAccount(EnterpriseInfo enterpriseInfo);
+
+	CreatedAccountVO createCityAccount(Integer cityCode);
 
 }

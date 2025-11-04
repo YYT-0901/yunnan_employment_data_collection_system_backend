@@ -34,4 +34,14 @@ public interface BaseMapper<T, P> {
          * selectCount:根据集合查询数量
          */
         Integer selectCount(@Param("query") P p);
+
+        /**
+         * updateByParam:根据参数更新
+         */
+        Integer updateByParams(@Param("bean") T t,@Param("query") P p);
+
+        /**
+         * deleteByParam:根据参数删除
+         */
+        Integer deleteByParams(@Param("query") P p);
     }

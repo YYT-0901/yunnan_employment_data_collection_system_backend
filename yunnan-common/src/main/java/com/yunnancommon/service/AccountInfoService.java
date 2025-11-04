@@ -1,6 +1,8 @@
 package com.yunnancommon.service;
 
 
+import com.yunnancommon.entity.query.EnterpriseInfoQuery;
+import com.yunnancommon.entity.vo.AccountEnterpriseVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.AccountInfo;
 import com.yunnancommon.entity.query.AccountInfoQuery;
@@ -62,4 +64,5 @@ public interface AccountInfoService {
 
     TokenInfoVO login(String account, String password) throws BusinessException;
 
+	PaginationResultVO<AccountEnterpriseVO> findListByPageWithAssociated(AccountInfoQuery query);
 }

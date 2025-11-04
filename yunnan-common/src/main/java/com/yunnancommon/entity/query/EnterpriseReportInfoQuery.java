@@ -18,7 +18,7 @@ public class EnterpriseReportInfoQuery extends BaseQuery{
 	/**
 	 * 调查期ID
 	 */
-	private Integer periodId;
+	private Long periodId;
 
 	/**
 	 * 数据填报ID
@@ -97,6 +97,16 @@ public class EnterpriseReportInfoQuery extends BaseQuery{
 	 */
 	private Integer enterpriseRegion;
 
+	private String enterpriseNameFuzzy;
+
+	public String getEnterpriseNameFuzzy() {
+		return enterpriseNameFuzzy;
+	}
+
+	public void setEnterpriseNameFuzzy(String enterpriseNameFuzzy) {
+		this.enterpriseNameFuzzy = enterpriseNameFuzzy;
+	}
+
 	public String getEnterpriseId() {
 		return enterpriseId;
 	}
@@ -105,11 +115,11 @@ public class EnterpriseReportInfoQuery extends BaseQuery{
 		this.enterpriseId = enterpriseId;
 	}
 
-	public Integer getPeriodId() {
+	public Long getPeriodId() {
 		return periodId;
 	}
 
-	public void setPeriodId(Integer periodId) {
+	public void setPeriodId(Long periodId) {
 		this.periodId = periodId;
 	}
 

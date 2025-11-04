@@ -1,5 +1,11 @@
 package com.yunnanenterprise.assembler;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import com.yunnancommon.entity.po.EnterpriseReportInfo;
 import com.yunnancommon.entity.po.ReportInfo;
 import com.yunnanenterprise.constants.ReportConstants;
@@ -7,11 +13,6 @@ import com.yunnanenterprise.dictionary.DictionaryService;
 import com.yunnanenterprise.dto.report.ReportCommand;
 import com.yunnanenterprise.dto.report.ReportV0;
 import com.yunnanenterprise.service.report.PeriodUtils;
-import org.springframework.stereotype.Component;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.UUID;
 
 /**
  * 组装/转换：

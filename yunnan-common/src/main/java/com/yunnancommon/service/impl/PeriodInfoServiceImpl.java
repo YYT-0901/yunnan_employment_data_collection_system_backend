@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * @Description:调查期信息表ServiceImpl
  * @auther:group2
- * @date:2025/10/22
+ * @date:2025/11/04
  */
 @Service("periodInfoService")
 public class PeriodInfoServiceImpl implements PeriodInfoService {
@@ -88,7 +88,7 @@ public class PeriodInfoServiceImpl implements PeriodInfoService {
 	 * 根据PeriodId查询
 	 */
 	@Override
-	public PeriodInfo getPeriodInfoByPeriodId(Integer periodId) {
+	public PeriodInfo getPeriodInfoByPeriodId(Long periodId) {
 		return this.periodInfoMapper.selectByPeriodId(periodId);
 	}
 
@@ -96,7 +96,7 @@ public class PeriodInfoServiceImpl implements PeriodInfoService {
 	 * 根据PeriodId更新
 	 */
 	@Override
-	public Integer updatePeriodInfoByPeriodId(PeriodInfo bean, Integer periodId) {
+	public Integer updatePeriodInfoByPeriodId(PeriodInfo bean, Long periodId) {
 		return this.periodInfoMapper.updateByPeriodId(bean, periodId);
 	}
 
@@ -104,9 +104,48 @@ public class PeriodInfoServiceImpl implements PeriodInfoService {
 	 * 根据PeriodId删除
 	 */
 	@Override
-	public Integer deletePeriodInfoByPeriodId(Integer periodId) {
+	public Integer deletePeriodInfoByPeriodId(Long periodId) {
 		return this.periodInfoMapper.deleteByPeriodId(periodId);
 	}
 
+	/**
+	 * 根据InvestigateTime查询
+	 */
+	@Override
+	public PeriodInfo getPeriodInfoByInvestigateTime(String investigateTime) {
+		return this.periodInfoMapper.selectByInvestigateTime(investigateTime);
+	}
+
+	/**
+	 * 根据InvestigateTime更新
+	 */
+	@Override
+	public Integer updatePeriodInfoByInvestigateTime(PeriodInfo bean, String investigateTime) {
+		return this.periodInfoMapper.updateByInvestigateTime(bean, investigateTime);
+	}
+
+	/**
+	 * 根据InvestigateTime删除
+	 */
+	@Override
+	public Integer deletePeriodInfoByInvestigateTime(String investigateTime) {
+		return this.periodInfoMapper.deleteByInvestigateTime(investigateTime);
+	}
+
+	/**
+	 * 根据参数更新
+	 */
+	@Override
+	public Integer updateByParams (PeriodInfo bean, PeriodInfoQuery query) {
+		return this.periodInfoMapper.updateByParams(bean, query);
+	}
+
+	/**
+	 * 根据参数删除
+	 */
+	@Override
+	public Integer deleteByParam(PeriodInfoQuery query) {
+		return this.periodInfoMapper.deleteByParams(query);
+	}
 
 }
