@@ -35,10 +35,10 @@ public class ReportApplicationService {
     }
 
     public ReportV0 getByEnterpriseAndPeriod(String enterpriseId, String yyyyMm) {
-        Integer periodId = PeriodUtils.toPeriodId(yyyyMm);
+        Integer periodId = Math.toIntExact(PeriodUtils.toPeriodId(yyyyMm));
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(enterpriseId);
-        q.setPeriodId(periodId);
+        q.setPeriodId(Long.valueOf(periodId));
         q.setOrderBy("updated_at desc");
         q.setPageNo(1);
         q.setPageSize(1);
@@ -47,7 +47,7 @@ public class ReportApplicationService {
             // 返回空壳，仅带 period 信息
             EnterpriseReportInfo e = new EnterpriseReportInfo();
             e.setEnterpriseId(enterpriseId);
-            e.setPeriodId(periodId);
+            e.setPeriodId(Long.valueOf(periodId));
             return assembler.toVO(e, null);
         }
         EnterpriseReportInfo e = list.get(0);
@@ -58,12 +58,12 @@ public class ReportApplicationService {
     @Transactional
     public void saveDraft(ReportCommand cmd) {
         Date now = new Date();
-        Integer periodId = PeriodUtils.toPeriodId(cmd.getReportingPeriod());
+        Integer periodId = Math.toIntExact(PeriodUtils.toPeriodId(cmd.getReportingPeriod()));
 
         // 查询是否已有记录（该企业+期次）
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(cmd.getEnterpriseId());
-        q.setPeriodId(periodId);
+        q.setPeriodId(Long.valueOf(periodId));
         q.setOrderBy("updated_at desc");
         q.setPageNo(1);
         q.setPageSize(1);
@@ -100,12 +100,12 @@ public class ReportApplicationService {
         // 先保存草稿，再切换到提交状态，保证数据一致
         saveDraft(cmd);
         Date now = new Date();
-        Integer periodId = PeriodUtils.toPeriodId(cmd.getReportingPeriod());
+        Integer periodId = Math.toIntExact(PeriodUtils.toPeriodId(cmd.getReportingPeriod()));
 
         // 再次拿最新记录
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(cmd.getEnterpriseId());
-        q.setPeriodId(periodId);
+        q.setPeriodId(Long.valueOf(periodId));
         q.setOrderBy("updated_at desc");
         q.setPageNo(1);
         q.setPageSize(1);

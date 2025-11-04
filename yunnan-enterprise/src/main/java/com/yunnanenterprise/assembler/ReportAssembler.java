@@ -86,7 +86,7 @@ public class ReportAssembler {
         ReportV0 v = new ReportV0();
         v.setId(r != null ? r.getReportId() : null);
         v.setEnterpriseId(e != null ? e.getEnterpriseId() : null);
-        v.setReportingPeriod(e != null ? PeriodUtils.fromPeriodId(e.getPeriodId()) : null);
+        v.setReportingPeriod(e != null ? PeriodUtils.fromPeriodId(Math.toIntExact(e.getPeriodId())) : null);
         v.setStatus(e != null && e.getStatus() != null ? String.valueOf(e.getStatus()) : "");
 
         if (r != null) {
