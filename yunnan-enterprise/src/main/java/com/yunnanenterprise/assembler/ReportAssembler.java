@@ -61,20 +61,20 @@ public class ReportAssembler {
 
         // ✅ 关键修复：保存所有原因的说明（不限于"其他"）
         // 问题背景：
-        // - 前端要求：只要选择了原因，说明就是必填的（不管是什么原因）
-        // - 旧逻辑：只保存"其他"原因的说明，导致其他原因的说明被丢弃
-        // - 修复后：保存所有原因的说明，确保数据不丢失
-
+        //   - 前端要求：只要选择了原因，说明就是必填的（不管是什么原因）
+        //   - 旧逻辑：只保存"其他"原因的说明，导致其他原因的说明被丢弃
+        //   - 修复后：保存所有原因的说明，确保数据不丢失
+        
         // 1. 减员类型说明：只有选择"其他"类型时才保存到 other_reason 字段
         if (ReportConstants.OTHER_CODE.equals(cmd.getReductionTypeCode())) {
             r.setOtherReason(nullIfBlank(cmd.getReductionTypeDesc()));
         } else {
             r.setOtherReason(null);
         }
-
+        
         // 2. ✅ 所有原因的说明都保存到对应的 reasonX_desc 字段
-        // 无论原因是"合同到期"、"正常退休"、"成本上涨"还是"其他"
-        // 用户填写的说明都会被保存到数据库
+        //    无论原因是"合同到期"、"正常退休"、"成本上涨"还是"其他"
+        //    用户填写的说明都会被保存到数据库
         r.setReason1Desc(nullIfBlank(cmd.getPrimaryReasonDesc()));
         r.setReason2Desc(nullIfBlank(cmd.getSecondaryReasonDesc()));
         r.setReason3Desc(nullIfBlank(cmd.getTertiaryReasonDesc()));
@@ -82,8 +82,7 @@ public class ReportAssembler {
         return r;
     }
 
-    public EnterpriseReportInfo toEnterpriseReportInfoForDraft(ReportCommand cmd, String reportId, Long periodId,
-            Date now) {
+    public EnterpriseReportInfo toEnterpriseReportInfoForDraft(ReportCommand cmd, String reportId, Integer periodId, Date now) {
         EnterpriseReportInfo e = new EnterpriseReportInfo();
         e.setEnterpriseId(cmd.getEnterpriseId());
         e.setPeriodId(periodId);
@@ -96,8 +95,7 @@ public class ReportAssembler {
         return e;
     }
 
-    public EnterpriseReportInfo toEnterpriseReportInfoForSubmit(ReportCommand cmd, String reportId, Long periodId,
-            Date now) {
+    public EnterpriseReportInfo toEnterpriseReportInfoForSubmit(ReportCommand cmd, String reportId, Integer periodId, Date now) {
         EnterpriseReportInfo e = new EnterpriseReportInfo();
         e.setEnterpriseId(cmd.getEnterpriseId());
         e.setPeriodId(periodId);
