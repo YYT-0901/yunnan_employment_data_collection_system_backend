@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 企业端报表接口
  *
@@ -82,5 +84,26 @@ public class ReportController extends ABaseController {
         if (c.getCurrentEmployees() != null && c.getCurrentEmployees() > ReportConstants.MAX_EMPLOYEES) {
             throw new IllegalArgumentException("调查期人数超出上限");
         }
+    }
+
+    /**
+     * 获取企业的报表列表
+     * @param enterpriseId 企业ID
+     * @param pageNo 页码（可选，默认1）
+     * @param pageSize 每页数量（可选，默认20）
+     * @return 报表列表
+     */
+    @GetMapping("/reports")
+    public ResponseVO<List<ReportV0>> getReportList(
+            @RequestParam("enterprise_id") String enterpriseId,
+            @RequestParam(value = "page_no", defaultValue = "1") Integer pageNo,
+            @RequestParam(value = "page_size", defaultValue = "20") Integer pageSize) {
+        
+        if (!StringUtils.hasText(enterpriseId)) {
+            throw new IllegalArgumentException("enterprise_id 不能为空");
+        }
+        
+        List<ReportV0> list = app.getReportList(enterpriseId, pageNo, pageSize);
+        return getSuccessResponseVO(list);
     }
 }
