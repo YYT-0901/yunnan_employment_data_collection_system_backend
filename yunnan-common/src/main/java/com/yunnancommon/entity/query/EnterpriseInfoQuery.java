@@ -5,11 +5,11 @@ import java.util.Date;
 /**
  * @Description:企业信息表查询对象
  * @auther:group2
- * @date:2025/11/04
+ * @date:2025/10/22
  */
 public class EnterpriseInfoQuery extends BaseQuery{
 	/**
-	 * 
+	 * 企业ID
 	 */
 	private String enterpriseId;
 
