@@ -14,6 +14,7 @@ import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.dto.AnalysisQueryDto;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.service.DataAnalysisService;
+import com.yunnancommon.service.DruidQueryService;
 
 @RestController
 @RequestMapping("/dataAnalysis")
@@ -23,6 +24,9 @@ public class DataAnalysisController extends ABaseController {
 
     @Resource
     private DataAnalysisService dataAnalysisService;
+    
+    @Resource
+    private DruidQueryService druidQueryService;
 
     // 取样分析API
     @PostMapping("/sampling")
@@ -67,6 +71,59 @@ public class DataAnalysisController extends ABaseController {
             return getSuccessResponseVO(dataAnalysisService.getTrendAnalysis(query));
         } catch (Exception e) {
             logger.error("趋势分析失败", e);
+            return getErrorResponseVO(e.getMessage());
+        }
+    }
+    
+    // ========== Phase 5 新增：多维分析API ==========
+    
+    /**
+     * 多维分析接口（用于 3D 可视化）
+     * 
+     * POST /api/dataAnalysis/multiDimensional
+     * 
+     * 请求体示例：
+     * {
+     *   "periodIds": [1, 2],           // 可选
+     *   "regions": [1, 2, 3],          // 可选，一级地区代码
+     *   "industries": [1, 3, 5],       // 可选，一级行业代码
+     *   "natures": [1, 2]              // 可选，一级性质代码
+     * }
+     * 
+     * 返回数据示例：
+     * {
+     *   "status": "success",
+     *   "data": [
+     *     {
+     *       "regionCode": 1,
+     *       "regionName": "临沧市",
+     *       "industryCode": 3,
+     *       "industryName": "制造业",
+     *       "natureCode": 1,
+     *       "natureName": "国有企业",
+     *       "enterpriseCount": 150,
+     *       "unemploymentRate": 3.2
+     *     },
+     *     ...
+     *   ]
+     * }
+     */
+    @PostMapping("/multiDimensional")
+    public ResponseVO multiDimensional(@RequestBody AnalysisQueryDto query) {
+        try {
+            logger.info("收到多维分析请求，参数：{}", query);
+            
+            // 调用 DruidQueryService 获取多维数据
+            // 注意：这里直接使用 DruidQueryService，与现有的 dataAnalysisService 并存
+            return getSuccessResponseVO(druidQueryService.getMultiDimensionalData(
+                query.getPeriodIds(),
+                query.getRegions(),
+                query.getIndustries(),
+                query.getNatures()
+            ));
+            
+        } catch (Exception e) {
+            logger.error("多维分析失败", e);
             return getErrorResponseVO(e.getMessage());
         }
     }
