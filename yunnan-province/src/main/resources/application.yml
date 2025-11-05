@@ -6,7 +6,7 @@ spring:
       max-file-size: 10MB
       max-request-size: 15MB
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/project2?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/yunnan_database_1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
     username: root
     password: 1234567890
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -44,6 +44,6 @@ admin:
   password: 123456
 
 server:
-  port: 8080
+  port: 9090
   servlet:
     context-path: /api
