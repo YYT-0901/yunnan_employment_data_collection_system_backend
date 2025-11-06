@@ -49,6 +49,6 @@ admin:
   password: 123456
 
 server:
-  port: 9090
+  port: 8080
   servlet:
     context-path: /api
