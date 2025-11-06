@@ -1,4 +1,8 @@
-2025-11-03 21:08:54 [INFO][org.springframework.boot.web.embedded.tomcat.GracefulShutdown][shutDownGracefully][54]-> Commencing graceful shutdown. Waiting for active requests to complete
-2025-11-03 21:08:54 [INFO][org.springframework.boot.web.embedded.tomcat.GracefulShutdown][doShutdown][76]-> Graceful shutdown complete
-2025-11-03 21:08:54 [INFO][com.zaxxer.hikari.HikariDataSource][close][349]-> HikariCPDatasource - Shutdown initiated...
-2025-11-03 21:08:54 [INFO][com.zaxxer.hikari.HikariDataSource][close][351]-> HikariCPDatasource - Shutdown completed.
+2025-11-06 18:15:18 [INFO][org.springframework.boot.web.embedded.tomcat.GracefulShutdown][shutDownGracefully][54]-> Commencing graceful shutdown. Waiting for active requests to complete
+2025-11-06 18:15:18 [INFO][org.springframework.boot.web.embedded.tomcat.GracefulShutdown][doShutdown][76]-> Graceful shutdown complete
+2025-11-06 18:15:18 [INFO][com.zaxxer.hikari.HikariDataSource][close][349]-> HikariCPDatasource - Shutdown initiated...
+2025-11-06 18:15:18 [INFO][com.zaxxer.hikari.HikariDataSource][close][351]-> HikariCPDatasource - Shutdown completed.
+2025-11-06 21:18:55 [INFO][org.springframework.boot.web.embedded.tomcat.GracefulShutdown][shutDownGracefully][54]-> Commencing graceful shutdown. Waiting for active requests to complete
+2025-11-06 21:18:55 [INFO][org.springframework.boot.web.embedded.tomcat.GracefulShutdown][doShutdown][76]-> Graceful shutdown complete
+2025-11-06 21:18:55 [INFO][com.zaxxer.hikari.HikariDataSource][close][349]-> HikariCPDatasource - Shutdown initiated...
+2025-11-06 21:18:55 [INFO][com.zaxxer.hikari.HikariDataSource][close][351]-> HikariCPDatasource - Shutdown completed.

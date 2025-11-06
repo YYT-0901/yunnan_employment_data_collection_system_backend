@@ -180,4 +180,65 @@ public class RegionUtils {
         return new ArrayList<>(resultSet);
     }
 
+    /**
+     * Get top-level parent code (first-level classification)
+     * 
+     * @param code - region code (can be any level)
+     * @return top-level parent code (city/prefecture level in Yunnan)
+     * 
+     * @example
+     * getTopLevelParentCode(530102001) // returns 8 (昆明市)
+     * getTopLevelParentCode(530102) // returns 8 (昆明市)
+     * getTopLevelParentCode(8) // returns 8 (already top-level)
+     */
+    public static Integer getTopLevelParentCode(Integer code) {
+        if (code == null) {
+            return null;
+        }
+
+        RegionNode current = regionMap.get(code);
+        if (current == null) {
+            return code; // return as-is if not found
+        }
+
+        // Traverse up to find the root parent (top-level)
+        while (current.getParentId() != null) {
+            RegionNode parent = regionMap.get(current.getParentId());
+            if (parent == null) {
+                break;
+            }
+            current = parent;
+        }
+
+        return current.getCode();
+    }
+
+    /**
+     * Check if the given code is a top-level (first-level) code
+     * 
+     * @param code - region code
+     * @return true if it's a top-level code
+     */
+    public static boolean isTopLevel(Integer code) {
+        if (code == null) {
+            return false;
+        }
+
+        RegionNode node = regionMap.get(code);
+        return node != null && node.getParentId() == null;
+    }
+
+    /**
+     * Get all top-level region codes
+     * 
+     * @return list of all top-level codes (16 cities/prefectures in Yunnan)
+     */
+    public static List<Integer> getAllTopLevelCodes() {
+        List<Integer> result = new ArrayList<>();
+        for (RegionNode region : rootRegions) {
+            result.add(region.getCode());
+        }
+        return result;
+    }
+
 }

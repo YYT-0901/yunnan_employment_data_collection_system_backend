@@ -470,16 +470,17 @@
 	-->
 	<select id="selectAnalysisData" resultType="java.util.Map">
 		SELECT
+			eri.period_id AS period_id,
 			<!-- 动态选择分组字段 -->
 			<choose>
 				<when test="query.groupBy == 'region'">
-					eri.enterprise_region as dimension_code,
+					COALESCE(ei.region_code, eri.enterprise_region) as dimension_code,
 				</when>
 				<when test="query.groupBy == 'nature'">
-					eri.enterprise_nature as dimension_code,
+					COALESCE(ei.nature_code, eri.enterprise_nature) as dimension_code,
 				</when>
 				<when test="query.groupBy == 'industry'">
-					eri.enterprise_industry as dimension_code,
+					COALESCE(ei.industry_code, eri.enterprise_industry) as dimension_code,
 				</when>
 				<otherwise>
 					'ALL' as dimension_code,
@@ -493,6 +494,7 @@
 
 		FROM enterprise_report_info eri
 		LEFT JOIN report_info ri ON eri.report_id = ri.report_id
+		LEFT JOIN enterprise_info ei ON eri.enterprise_id = ei.enterprise_id
 
 		WHERE 1=1
 			<!-- 调查期筛选 -->
@@ -513,7 +515,7 @@
 
 			<!-- 地区筛选 -->
 			<if test="query.regions != null and query.regions.size() > 0">
-				AND eri.enterprise_region IN
+				AND ei.region_code IN
 				<foreach collection="query.regions" item="region" open="(" close=")" separator=",">
 					#{region}
 				</foreach>
@@ -521,7 +523,7 @@
 
 			<!-- 企业性质筛选 -->
 			<if test="query.natures != null and query.natures.size() > 0">
-				AND eri.enterprise_nature IN
+				AND ei.nature_code IN
 				<foreach collection="query.natures" item="nature" open="(" close=")" separator=",">
 					#{nature}
 				</foreach>
@@ -529,7 +531,7 @@
 
 			<!-- 企业行业筛选 -->
 			<if test="query.industries != null and query.industries.size() > 0">
-				AND eri.enterprise_industry IN
+				AND ei.industry_code IN
 				<foreach collection="query.industries" item="industry" open="(" close=")" separator=",">
 					#{industry}
 				</foreach>
@@ -537,10 +539,10 @@
 
 		<!-- 动态分组 -->
 		<if test="query.groupBy != null and query.groupBy != ''">
-			GROUP BY dimension_code
+			GROUP BY eri.period_id, dimension_code
 		</if>
 
-		ORDER BY dimension_code
+		ORDER BY eri.period_id, dimension_code
 	</select>
 
 
@@ -556,10 +558,11 @@
 	-->
 	<select id="selectSamplingData" resultType="java.util.Map">
 		SELECT
-			eri.enterprise_region as region_code,
+			ei.region_code as region_code,
 			COUNT(DISTINCT eri.enterprise_id) as enterprise_count
 
 		FROM enterprise_report_info eri
+		LEFT JOIN enterprise_info ei ON eri.enterprise_id = ei.enterprise_id
 
 		WHERE 1=1
 			<!-- 调查期筛选 -->
@@ -580,13 +583,13 @@
 
 			<!-- 地区筛选（可选） -->
 			<if test="query.regions != null and query.regions.size() > 0">
-				AND eri.enterprise_region IN
+				AND ei.region_code IN
 				<foreach collection="query.regions" item="region" open="(" close=")" separator=",">
 					#{region}
 				</foreach>
 			</if>
 
-		GROUP BY eri.enterprise_region
+		GROUP BY ei.region_code
 		ORDER BY enterprise_count DESC
 	</select>
 
@@ -612,13 +615,13 @@
 			<!-- 动态选择分组字段 -->
 			<choose>
 				<when test="query.groupBy == 'region'">
-					eri.enterprise_region as dimension_code,
+					ei.region_code as dimension_code,
 				</when>
 				<when test="query.groupBy == 'nature'">
-					eri.enterprise_nature as dimension_code,
+					ei.nature_code as dimension_code,
 				</when>
 				<when test="query.groupBy == 'industry'">
-					eri.enterprise_industry as dimension_code,
+					ei.industry_code as dimension_code,
 				</when>
 				<otherwise>
 					'ALL' as dimension_code,
@@ -632,6 +635,7 @@
 
 		FROM enterprise_report_info eri
 		LEFT JOIN report_info ri ON eri.report_id = ri.report_id
+		LEFT JOIN enterprise_info ei ON eri.enterprise_id = ei.enterprise_id
 
 		WHERE 1=1
 			<!-- 调查期筛选 -->
@@ -652,7 +656,7 @@
 
 			<!-- 地区筛选 -->
 			<if test="query.regions != null and query.regions.size() > 0">
-				AND eri.enterprise_region IN
+				AND ei.region_code IN
 				<foreach collection="query.regions" item="region" open="(" close=")" separator=",">
 					#{region}
 				</foreach>
@@ -660,7 +664,7 @@
 
 			<!-- 企业性质筛选 -->
 			<if test="query.natures != null and query.natures.size() > 0">
-				AND eri.enterprise_nature IN
+				AND ei.nature_code IN
 				<foreach collection="query.natures" item="nature" open="(" close=")" separator=",">
 					#{nature}
 				</foreach>
@@ -668,7 +672,7 @@
 
 			<!-- 企业行业筛选 -->
 			<if test="query.industries != null and query.industries.size() > 0">
-				AND eri.enterprise_industry IN
+				AND ei.industry_code IN
 				<foreach collection="query.industries" item="industry" open="(" close=")" separator=",">
 					#{industry}
 				</foreach>

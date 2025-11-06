@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import com.yunnancommon.entity.vo.SamplingResultVO;
 import com.yunnancommon.mapper.EnterpriseReportInfoMapper;
 import com.yunnancommon.mapper.PeriodInfoMapper;
 import com.yunnancommon.service.DataAnalysisService;
+import com.yunnancommon.service.DictService;
 import com.yunnancommon.utils.RegionUtils;
 
 @Service("dataAnalysisService")
@@ -35,6 +37,9 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
 
     @Resource
     private PeriodInfoMapper periodInfoMapper;
+
+    @Resource
+    private DictService dictService;
 
     /**
      * 取样分析实现
@@ -72,6 +77,9 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
             return new ArrayList<>();
         }
 
+        // 聚合到一级分类
+        rawData = aggregateSamplingDataByRegion(rawData);
+
         // 4. 计算总企业数（用于计算占比）
         int totalEnterpriseCount = rawData.stream()
                 .mapToInt(map -> ((Number) map.get("enterprise_count")).intValue())
@@ -91,7 +99,9 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
                             : 0.0;
 
                     // 转换地区名称
-                    String regionName = RegionUtils.getNameByCode(regionCode);
+                    String regionName = dictService != null
+                            ? dictService.getRegionName(regionCode)
+                            : RegionUtils.getNameByCode(regionCode);
 
                     SamplingResultVO vo = new SamplingResultVO();
                     vo.setRegionCode(regionCode);
@@ -175,6 +185,11 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
             return new ArrayList<>();
         }
 
+        // 聚合地区到一级分类
+        if ("region".equals(query.getGroupBy())) {
+            rawData = aggregateTrendDataByRegion(rawData);
+        }
+
         // 3. 获取period信息（用于显示时间）
         Map<Long, PeriodInfo> periodMap = getPeriodInfoMap(query.getPeriodIds());
 
@@ -243,15 +258,33 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
      * 将数据库查询结果Map转换为AnalysisResultVO
      *
      * 【核心计算逻辑】
-     * 1. 岗位变化总数 = 建档期 - 调查期
-     * 2. 岗位减少总数 = 需要从明细数据计算（这里暂用变化总数代替，实际应单独计算）
-     * 3. 岗位变化占比 = (建档期 - 调查期) / 建档期 × 100%
+     * 1. 岗位变化总数 = 调查期 - 建档期（>0 表示增加）
+     * 2. 岗位减少总数 = Max(0, 建档期 - 调查期)
+     * 3. 岗位变化占比 = (调查期 - 建档期) / 建档期 × 100%
      */
     private AnalysisResultVO convertMapToVO(Map<String, Object> map, String groupBy) {
         AnalysisResultVO vo = new AnalysisResultVO();
 
+        // periodId
+        Object periodIdObj = map.get("period_id");
+        if (periodIdObj == null) {
+            periodIdObj = map.get("PERIOD_ID");
+        }
+        if (periodIdObj == null) {
+            periodIdObj = map.get("periodId");
+        }
+        if (periodIdObj instanceof Number) {
+            vo.setPeriodId(((Number) periodIdObj).longValue());
+        }
+
         // 1. 提取维度code
         Object dimensionCodeObj = map.get("dimension_code");
+        if (dimensionCodeObj == null) {
+            dimensionCodeObj = map.get("DIMENSION_CODE");
+        }
+        if (dimensionCodeObj == null) {
+            dimensionCodeObj = map.get("dimensionCode");
+        }
         String dimensionCode = dimensionCodeObj != null ? dimensionCodeObj.toString() : null;
         vo.setDimensionCode(dimensionCode);
 
@@ -270,12 +303,13 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
 
         // 4. 计算派生指标
         // 岗位变化总数 = 建档期 - 调查期
-        Integer changeTotal = constructionTotal - investigationTotal;
+        Integer changeTotal = (investigationTotal != null ? investigationTotal : 0)
+                - (constructionTotal != null ? constructionTotal : 0);
         vo.setChangeTotal(changeTotal);
 
-        // 岗位减少总数（简化处理：当变化为正时即为减少）
-        // 注意：实际应该从明细数据中计算，这里为了简化，使用Max(0, changeTotal)
-        Integer reductionTotal = Math.max(0, changeTotal);
+        // 岗位减少总数（简化处理：当变化为负时视为减少）
+        // 注意：实际应该从明细数据中计算，这里为了简化，使用 Max(0, 建档期-调查期)
+        Integer reductionTotal = changeTotal < 0 ? Math.abs(changeTotal) : 0;
         vo.setReductionTotal(reductionTotal);
 
         // 岗位变化占比 = (建档期 - 调查期) / 建档期 × 100%
@@ -289,7 +323,7 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
      * 计算岗位变化占比（失业率）
      *
      * 【公式】
-     * (constructionTotal - investigationTotal) / constructionTotal × 100%
+     * (investigationTotal - constructionTotal) / constructionTotal × 100%
      *
      * 【特殊处理】
      * - 如果constructionTotal为0，返回0.0
@@ -304,7 +338,7 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
             investigation = 0;
         }
 
-        double ratio = ((construction - investigation) * 100.0) / construction;
+        double ratio = ((investigation - construction) * 100.0) / construction;
         return Math.round(ratio * 100.0) / 100.0; // 保留2位小数
     }
 
@@ -324,15 +358,25 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
 
             switch (groupBy) {
                 case "region":
+                    if (dictService != null) {
+                        String name = dictService.getRegionName(codeInt);
+                        if (name != null && !name.isEmpty()) {
+                            return name;
+                        }
+                    }
                     return RegionUtils.getNameByCode(codeInt);
 
                 case "nature":
-                    // TODO: 实现NatureUtils.getNameByCode()
-                    return "性质-" + code; // 临时方案
+                    if (dictService != null) {
+                        return dictService.getNatureName(codeInt);
+                    }
+                    return "性质-" + code;
 
                 case "industry":
-                    // TODO: 实现IndustryUtils.getNameByCode()
-                    return "行业-" + code; // 临时方案
+                    if (dictService != null) {
+                        return dictService.getIndustryName(codeInt);
+                    }
+                    return "行业-" + code;
 
                 default:
                     return code;
@@ -340,6 +384,116 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
         } catch (NumberFormatException e) {
             return code;
         }
+    }
+
+    /**
+     * 聚合趋势分析原始数据，使地区维度汇总到一级分类
+     */
+    private List<Map<String, Object>> aggregateTrendDataByRegion(List<Map<String, Object>> rawData) {
+        if (rawData == null || rawData.isEmpty()) {
+            return rawData;
+        }
+
+        Map<String, Map<String, Object>> aggregated = new LinkedHashMap<>();
+
+        for (Map<String, Object> row : rawData) {
+            Integer originalCode = safeParseInteger(row.get("dimension_code"));
+            if (originalCode == null) {
+                continue;
+            }
+
+            Integer topLevelCode = RegionUtils.getTopLevelParentCode(originalCode);
+            Long periodId = safeParseLong(row.get("period_id"));
+            String key = (periodId != null ? periodId.toString() : "0") + "_" + topLevelCode;
+
+            Map<String, Object> aggregatedRow = aggregated.computeIfAbsent(key, k -> {
+                Map<String, Object> base = new HashMap<>();
+                base.put("period_id", periodId);
+                base.put("dimension_code", topLevelCode);
+                base.put("enterprise_count", 0);
+                base.put("construction_total", 0);
+                base.put("investigation_total", 0);
+                return base;
+            });
+
+            aggregatedRow.put("enterprise_count",
+                    safeInt(aggregatedRow.get("enterprise_count")) + safeInt(row.get("enterprise_count")));
+            aggregatedRow.put("construction_total",
+                    safeInt(aggregatedRow.get("construction_total")) + safeInt(row.get("construction_total")));
+            aggregatedRow.put("investigation_total",
+                    safeInt(aggregatedRow.get("investigation_total")) + safeInt(row.get("investigation_total")));
+        }
+
+        return new ArrayList<>(aggregated.values());
+    }
+
+    /**
+     * 聚合取样分析结果到一级地区分类
+     */
+    private List<Map<String, Object>> aggregateSamplingDataByRegion(List<Map<String, Object>> rawData) {
+        if (rawData == null || rawData.isEmpty()) {
+            return rawData;
+        }
+
+        Map<Integer, Integer> aggregated = new LinkedHashMap<>();
+
+        for (Map<String, Object> row : rawData) {
+            Integer originalCode = safeParseInteger(row.get("region_code"));
+            if (originalCode == null) {
+                continue;
+            }
+
+            Integer topLevelCode = RegionUtils.getTopLevelParentCode(originalCode);
+            int enterpriseCount = safeInt(row.get("enterprise_count"));
+            aggregated.merge(topLevelCode, enterpriseCount, Integer::sum);
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        aggregated.forEach((code, count) -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("region_code", code);
+            map.put("enterprise_count", count);
+            result.add(map);
+        });
+
+        return result;
+    }
+
+    private Integer safeParseInteger(Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+
+        try {
+            return Integer.parseInt(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Long safeParseLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+
+        try {
+            return Long.parseLong(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private int safeInt(Object value) {
+        Integer parsed = safeParseInteger(value);
+        return parsed != null ? parsed : 0;
     }
 
     /**
