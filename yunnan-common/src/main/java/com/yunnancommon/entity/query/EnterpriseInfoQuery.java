@@ -35,14 +35,29 @@ public class EnterpriseInfoQuery extends BaseQuery{
 	private Integer region;
 
 	/**
+	 * 所属地区一级分类
+	 */
+	private Integer regionCode;
+
+	/**
 	 * 所属性质
 	 */
 	private Integer nature;
 
 	/**
+	 * 所属性质一级分类
+	 */
+	private Integer natureCode;
+
+	/**
 	 * 所属行业
 	 */
 	private Integer industry;
+
+	/**
+	 * 所属行业一级分类
+	 */
+	private Integer industryCode;
 
 	/**
 	 * 主要经营业务详情
@@ -52,7 +67,7 @@ public class EnterpriseInfoQuery extends BaseQuery{
 	private String industryDescFuzzy;
 
 	/**
-	 * 退回原因
+	 * 企业备案退回原因
 	 */
 	private String reasonReturn;
 
@@ -155,12 +170,28 @@ public class EnterpriseInfoQuery extends BaseQuery{
 		this.region = region;
 	}
 
+	public Integer getRegionCode() {
+		return regionCode;
+	}
+
+	public void setRegionCode(Integer regionCode) {
+		this.regionCode = regionCode;
+	}
+
 	public Integer getNature() {
 		return nature;
 	}
 
 	public void setNature(Integer nature) {
 		this.nature = nature;
+	}
+
+	public Integer getNatureCode() {
+		return natureCode;
+	}
+
+	public void setNatureCode(Integer natureCode) {
+		this.natureCode = natureCode;
 	}
 
 	public Integer getIndustry() {
@@ -171,6 +202,14 @@ public class EnterpriseInfoQuery extends BaseQuery{
 		this.industry = industry;
 	}
 
+	public Integer getIndustryCode() {
+		return industryCode;
+	}
+
+	public void setIndustryCode(Integer industryCode) {
+		this.industryCode = industryCode;
+	}
+
 	public String getIndustryDesc() {
 		return industryDesc;
 	}
@@ -178,6 +217,7 @@ public class EnterpriseInfoQuery extends BaseQuery{
 	public void setIndustryDesc(String industryDesc) {
 		this.industryDesc = industryDesc;
 	}
+
 	public String getReasonReturn() {
 		return reasonReturn;
 	}

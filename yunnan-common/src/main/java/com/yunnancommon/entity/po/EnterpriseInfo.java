@@ -11,11 +11,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * @Description:企业信息表
  * @auther:group2
- * @date:2025/10/22
+ * @date:2025/11/04
  */
 public class EnterpriseInfo implements Serializable {
 	/**
-	 * 企业ID
+	 * 
 	 */
 	private String enterpriseId;
 
@@ -35,9 +35,19 @@ public class EnterpriseInfo implements Serializable {
 	private Integer region;
 
 	/**
+	 * 所属地区一级分类
+	 */
+	private Integer regionCode;
+
+	/**
 	 * 所属性质
 	 */
 	private Integer nature;
+
+	/**
+	 * 所属性质一级分类
+	 */
+	private Integer natureCode;
 
 	/**
 	 * 所属行业
@@ -45,11 +55,17 @@ public class EnterpriseInfo implements Serializable {
 	private Integer industry;
 
 	/**
+	 * 所属行业一级分类
+	 */
+	private Integer industryCode;
+
+	/**
 	 * 主要经营业务详情
 	 */
 	private String industryDesc;
+
 	/**
-	 * 退回原因
+	 * 企业备案退回原因
 	 */
 	private String reasonReturn;
 
@@ -86,6 +102,7 @@ public class EnterpriseInfo implements Serializable {
 	/**
 	 * 状态: 0-创建未备案 1-已备案未审核 2-已退回 3-正常(已备案已审核) 4-倒闭
 	 */
+	@JsonIgnore
 	private Integer status;
 
 	/**
@@ -134,12 +151,28 @@ public class EnterpriseInfo implements Serializable {
 		this.region = region;
 	}
 
+	public Integer getRegionCode() {
+		return regionCode;
+	}
+
+	public void setRegionCode(Integer regionCode) {
+		this.regionCode = regionCode;
+	}
+
 	public Integer getNature() {
 		return nature;
 	}
 
 	public void setNature(Integer nature) {
 		this.nature = nature;
+	}
+
+	public Integer getNatureCode() {
+		return natureCode;
+	}
+
+	public void setNatureCode(Integer natureCode) {
+		this.natureCode = natureCode;
 	}
 
 	public Integer getIndustry() {
@@ -150,6 +183,14 @@ public class EnterpriseInfo implements Serializable {
 		this.industry = industry;
 	}
 
+	public Integer getIndustryCode() {
+		return industryCode;
+	}
+
+	public void setIndustryCode(Integer industryCode) {
+		this.industryCode = industryCode;
+	}
+
 	public String getIndustryDesc() {
 		return industryDesc;
 	}
@@ -157,9 +198,11 @@ public class EnterpriseInfo implements Serializable {
 	public void setIndustryDesc(String industryDesc) {
 		this.industryDesc = industryDesc;
 	}
+
 	public String getReasonReturn() {
 		return reasonReturn;
 	}
+
 	public void setReasonReturn(String reasonReturn) {
 		this.reasonReturn = reasonReturn;
 	}
@@ -238,6 +281,6 @@ public class EnterpriseInfo implements Serializable {
 
 	@Override
 	public String toString() {
-		return "企业ID:" + (enterpriseId == null ? "空" : enterpriseId) + ",组织机构代码:" + (orgCode == null ? "空" : orgCode) + ",企业名称:" + (name == null ? "空" : name) + ",所属地区:" + (region == null ? "空" : region) + ",所属性质:" + (nature == null ? "空" : nature) + ",所属行业:" + (industry == null ? "空" : industry) + ",主要经营业务详情:" + (industryDesc == null ? "空" : industryDesc) + ",退回原因:" + (reasonReturn == null ? "空" : reasonReturn) + ",联系人名称:" + (contactName == null ? "空" : contactName) + ",联系人地址:" + (address == null ? "空" : address) + ",邮政编码:" + (postalCode == null ? "空" : postalCode) + ",联系电话:" + (phoneNum == null ? "空" : phoneNum) + ",传真号:" + (faxNum == null ? "空" : faxNum) + ",邮箱:" + (email == null ? "空" : email) + ",状态: 0-创建未备案 1-已备案未审核 2-已退回 3-正常(已备案已审核) 4-倒闭:" + (status == null ? "空" : status) + ",企业创建时间:" + (createdAt == null ? "空" : DateUtils.format(createdAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",企业信息修改时间:" + (updatedAt == null ? "空" : DateUtils.format(updatedAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()));
+		return ":" + (enterpriseId == null ? "空" : enterpriseId) + ",组织机构代码:" + (orgCode == null ? "空" : orgCode) + ",企业名称:" + (name == null ? "空" : name) + ",所属地区:" + (region == null ? "空" : region) + ",所属地区一级分类:" + (regionCode == null ? "空" : regionCode) + ",所属性质:" + (nature == null ? "空" : nature) + ",所属性质一级分类:" + (natureCode == null ? "空" : natureCode) + ",所属行业:" + (industry == null ? "空" : industry) + ",所属行业一级分类:" + (industryCode == null ? "空" : industryCode) + ",主要经营业务详情:" + (industryDesc == null ? "空" : industryDesc) + ",企业备案退回原因:" + (reasonReturn == null ? "空" : reasonReturn) + ",联系人名称:" + (contactName == null ? "空" : contactName) + ",联系人地址:" + (address == null ? "空" : address) + ",邮政编码:" + (postalCode == null ? "空" : postalCode) + ",联系电话:" + (phoneNum == null ? "空" : phoneNum) + ",传真号:" + (faxNum == null ? "空" : faxNum) + ",邮箱:" + (email == null ? "空" : email) + ",状态: 0-创建未备案 1-已备案未审核 2-已退回 3-正常(已备案已审核) 4-倒闭:" + (status == null ? "空" : status) + ",企业创建时间:" + (createdAt == null ? "空" : DateUtils.format(createdAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",企业信息修改时间:" + (updatedAt == null ? "空" : DateUtils.format(updatedAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()));
 	}
 }

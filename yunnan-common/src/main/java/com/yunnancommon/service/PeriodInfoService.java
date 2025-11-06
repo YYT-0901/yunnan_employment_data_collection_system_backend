@@ -4,13 +4,12 @@ package com.yunnancommon.service;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.PeriodInfo;
 import com.yunnancommon.entity.query.PeriodInfoQuery;
-import com.yunnancommon.exception.BusinessException;
 
 import java.util.List;
 /**
  * @Description:调查期信息表Service
- * @auther:SOON JIANG BING
- * @date:2025/11/02
+ * @auther:group2
+ * @date:2025/11/04
  */
 public interface PeriodInfoService {
 
@@ -57,7 +56,7 @@ public interface PeriodInfoService {
 	/**
 	 * 根据PeriodId删除
 	 */
-	Integer deletePeriodInfoByPeriodId(Long periodId) throws BusinessException;
+	Integer deletePeriodInfoByPeriodId(Long periodId);
 
 	/**
 	 * 根据InvestigateTime查询
@@ -73,6 +72,16 @@ public interface PeriodInfoService {
 	 * 根据InvestigateTime删除
 	 */
 	Integer deletePeriodInfoByInvestigateTime(String investigateTime);
+
+	/**
+	 * 根据参数更新
+	 */
+	Integer updateByParams(PeriodInfo bean, PeriodInfoQuery query);
+
+	/**
+	 * 根据参数删除
+	 */
+	Integer deleteByParam(PeriodInfoQuery query);
 
 
 }

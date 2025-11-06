@@ -11,6 +11,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 @RestControllerAdvice
@@ -42,6 +43,11 @@ public class AGlobalExceptionHandlerController extends ABaseController {
         } else if (e instanceof ConstraintViolationException || e instanceof BindException) {
             ajaxResponse.setCode(ResponseCodeEnum.CODE_600.getCode());
             ajaxResponse.setInfo(ResponseCodeEnum.CODE_600.getMsg());
+            ajaxResponse.setStatus(STATUC_ERROR);
+        } else if (e instanceof HandlerMethodValidationException) {
+            HandlerMethodValidationException validationException = (HandlerMethodValidationException) e;
+            ajaxResponse.setCode(ResponseCodeEnum.CODE_600.getCode());
+            ajaxResponse.setInfo("参数验证失败: " + validationException.getMessage());
             ajaxResponse.setStatus(STATUC_ERROR);
         } else {
             ajaxResponse.setCode(ResponseCodeEnum.CODE_500.getCode());

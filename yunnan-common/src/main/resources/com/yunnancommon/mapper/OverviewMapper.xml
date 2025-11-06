@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunnancommon.mapper.OverviewMapper">
+
+    <select id="getStatisticList" resultType="com.yunnancommon.entity.dto.OverviewStatisticsDataDto">
+        SELECT eri.period_id,
+        eri.report_id,
+        eri.old_report_id,
+        eri.reason_return,
+        eri.status,
+        eri.period_start_time,
+        eri.period_end_time,
+        eri.created_at,
+        eri.updated_at,
+        eri.enterprise_nature,
+        eri.enterprise_industry,
+        eri.enterprise_region,
+        ri.construction_count,
+        ri.investigation_count
+        FROM enterprise_report_info eri
+        LEFT JOIN report_info ri ON eri.report_id = ri.report_id
+        <where>
+            <if test="query.periodId != null">
+                eri.period_id = #{query.periodId}
+            </if>
+            <if test="query.enterpriseRegion != null">
+                AND eri.enterprise_region = #{query.enterpriseRegion}
+            </if>
+        </where>
+    </select>
+
+    <select id="getDistributionDataList" resultType="com.yunnancommon.entity.dto.DistributionData">
+        select ${groupBy} as code, count(*) as value
+        FROM enterprise_info
+        WHERE ${groupBy} IS NOT NULL
+        GROUP BY ${groupBy}
+        ORDER BY value DESC
+    </select>
+</mapper>
