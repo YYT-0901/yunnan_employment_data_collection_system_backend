@@ -29,6 +29,11 @@ public class AccountEnterpriseVO {
 	private String enterpriseId;
 
 	/**
+	 * 企业名称（别名，用于前端显示）
+	 */
+	private String enterpriseName;
+
+	/**
 	 * 市编码
 	 */
 	private Integer cityCode;
