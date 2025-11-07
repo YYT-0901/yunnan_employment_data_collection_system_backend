@@ -351,7 +351,7 @@ public class DruidQueryServiceImpl implements DruidQueryService {
             return new ArrayList<>();
         }
     }
-        
+    
     /**
      * 安全地将 Object 转换为 Integer
      */
@@ -602,6 +602,7 @@ public class DruidQueryServiceImpl implements DruidQueryService {
         // 构建 SQL（与 getMultiDimensionalAnalysis 类似，但支持筛选）
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT ");
+        sql.append("  period_id, ");
         sql.append("  region_code, ");
         sql.append("  industry_code, ");
         sql.append("  nature_code, ");
@@ -633,8 +634,8 @@ public class DruidQueryServiceImpl implements DruidQueryService {
             sql.append("AND nature_code IN (").append(codes).append(") ");
         }
         
-        sql.append("GROUP BY region_code, industry_code, nature_code ");
-        sql.append("ORDER BY region_code, industry_code, nature_code");
+        sql.append("GROUP BY period_id, region_code, industry_code, nature_code ");
+        sql.append("ORDER BY period_id, region_code, industry_code, nature_code");
         
         try {
             List<Map<String, Object>> rawResults = executeQuery(sql.toString());
@@ -655,6 +656,7 @@ public class DruidQueryServiceImpl implements DruidQueryService {
                 String natureName = dictService.getNatureName(natureCode);
                 
                 // 构建完整结果
+                result.put("periodId", row.get("period_id"));
                 result.put("regionCode", regionCode);
                 result.put("regionName", regionName);
                 result.put("industryCode", industryCode);

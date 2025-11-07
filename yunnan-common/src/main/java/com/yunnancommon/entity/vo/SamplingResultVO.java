@@ -11,5 +11,6 @@ public class SamplingResultVO {
     private Integer regionCode;
     private String regionName;
     private Integer enterpriseCount;
+    // 该地区企业数量占全省的百分比
     private Double percentage;
 }
