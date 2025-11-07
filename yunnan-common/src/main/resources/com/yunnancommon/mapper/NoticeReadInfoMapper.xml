@@ -54,7 +54,7 @@
 			<![CDATA[ and read_time >= str_to_date(#{query.readTimeStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.readTimeEnd != null and query.readTimeEnd != ''">
-			<![CDATA[ and read_time < str_to_date(#{query.readTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and read_time < str_to_date(#{query.readTimeEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 		<if test="query.enterpriseIdFuzzy != null and query.enterpriseIdFuzzy != ''">
 			 and enterprise_id like concat('%',#{query.enterpriseIdFuzzy},'%')

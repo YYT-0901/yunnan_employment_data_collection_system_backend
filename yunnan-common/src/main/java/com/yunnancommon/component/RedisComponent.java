@@ -29,6 +29,10 @@ public class RedisComponent {
         redisUtils.setex(Constants.REDIS_KEY_TOKEN_PROVINCE + token, token, Constants.REDIS_KEY_EXPIRES_ONE_DAY);
     }
 
+    public String getProvinceTokenInfo(String token) {
+        return (String) redisUtils.get(Constants.REDIS_KEY_TOKEN_PROVINCE + token);
+    }
+
     public void cleanProvinceTokenInfo(String token) {
         redisUtils.delete(Constants.REDIS_KEY_TOKEN_PROVINCE + token);
     }

@@ -139,4 +139,37 @@ public class AccountController extends ABaseController {
         accountInfoService.updateAccountInfoByUsername(accountInfo,  changeStatusDto.getUsername());
         return getSuccessResponseVO(null);
     }
+
+    @GetMapping("/autoLogin")
+    public ResponseVO autoLogin(HttpServletRequest request, HttpServletResponse response) throws BusinessException {
+        String token = getTokenFromCookie(request);
+        if (StringUtils.isEmpty(token)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_901);
+        }
+        if (redisComponent.getProvinceTokenInfo(token) == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_901);
+        }
+        try {
+            token = TokenUtils.generateToken();
+            saveToken2Cookie(response, token);
+
+            redisComponent.saveProvinceTokenInfo(token);
+
+            return getSuccessResponseVO(null);
+        } finally {
+            // 清除旧的token
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                token = null;
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equals(Constants.TOKEN_KEY)) {
+                        token = cookie.getValue();
+                    }
+                }
+                if (!StringUtils.isEmpty(token)) {
+                    redisComponent.cleanProvinceTokenInfo(token);
+                }
+            }
+        }
+    }
 }
