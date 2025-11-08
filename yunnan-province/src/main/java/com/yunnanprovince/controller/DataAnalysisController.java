@@ -79,17 +79,17 @@ public class DataAnalysisController extends ABaseController {
     
     /**
      * 多维分析接口（用于 3D 可视化）
-     * 
+     *
      * POST /api/dataAnalysis/multiDimensional
-     * 
+     *
      * 请求体示例：
      * {
-     *   "periodIds": [1, 2],           // 可选
-     *   "regions": [1, 2, 3],          // 可选，一级地区代码
-     *   "industries": [1, 3, 5],       // 可选，一级行业代码
-     *   "natures": [1, 2]              // 可选，一级性质代码
+     *   "periodIds": [1, 2],
+     *   "regions": [1, 2, 3],
+     *   "industries": [1, 3, 5],
+     *   "natures": [1, 2]
      * }
-     * 
+     *
      * 返回数据示例：
      * {
      *   "status": "success",
@@ -102,9 +102,10 @@ public class DataAnalysisController extends ABaseController {
      *       "natureCode": 1,
      *       "natureName": "国有企业",
      *       "enterpriseCount": 150,
+     *       "totalEmployed": 420,
+     *       "totalUnemployed": 36,
      *       "unemploymentRate": 3.2
-     *     },
-     *     ...
+     *     }
      *   ]
      * }
      */

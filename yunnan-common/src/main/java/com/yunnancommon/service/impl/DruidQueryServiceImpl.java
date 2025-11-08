@@ -320,6 +320,10 @@ public class DruidQueryServiceImpl implements DruidQueryService {
             for (Map<String, Object> row : rawResults) {
                 Map<String, Object> result = new HashMap<>();
                 
+                if (logger.isDebugEnabled()) {
+                    logger.debug("多维分析原始行数据: {}", row);
+                }
+                
                 // 获取三个维度的代码
                 Integer regionCode = getIntegerValue(row.get("region_code"));
                 Integer industryCode = getIntegerValue(row.get("industry_code"));
@@ -606,8 +610,10 @@ public class DruidQueryServiceImpl implements DruidQueryService {
         sql.append("  region_code, ");
         sql.append("  industry_code, ");
         sql.append("  nature_code, ");
-        sql.append("  COUNT(*) as enterprise_count, ");
-        sql.append("  AVG(CAST(unemployment_rate AS DOUBLE)) as avg_unemployment_rate ");
+        sql.append("  COUNT(*) AS enterprise_count, ");
+        sql.append("  SUM(CAST(employed_count AS BIGINT)) AS total_employed, ");
+        sql.append("  SUM(CAST(unemployed_count AS BIGINT)) AS total_unemployed, ");
+        sql.append("  AVG(CAST(unemployment_rate AS DOUBLE)) AS avg_unemployment_rate ");
         sql.append("FROM enterprise_analysis ");
         sql.append("WHERE region_code IS NOT NULL ");
         sql.append("  AND industry_code IS NOT NULL ");
@@ -664,6 +670,8 @@ public class DruidQueryServiceImpl implements DruidQueryService {
                 result.put("natureCode", natureCode);
                 result.put("natureName", natureName);
                 result.put("enterpriseCount", row.get("enterprise_count"));
+                result.put("totalEmployed", row.get("total_employed"));
+                result.put("totalUnemployed", row.get("total_unemployed"));
                 result.put("unemploymentRate", formatRate(row.get("avg_unemployment_rate")));
                 
                 results.add(result);
