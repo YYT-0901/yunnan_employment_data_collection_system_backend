@@ -611,6 +611,7 @@ public class DruidQueryServiceImpl implements DruidQueryService {
         sql.append("  industry_code, ");
         sql.append("  nature_code, ");
         sql.append("  COUNT(*) AS enterprise_count, ");
+        sql.append("  SUM(CAST(construction_employed AS BIGINT)) AS total_construction_employed, ");
         sql.append("  SUM(CAST(employed_count AS BIGINT)) AS total_employed, ");
         sql.append("  SUM(CAST(unemployed_count AS BIGINT)) AS total_unemployed, ");
         sql.append("  AVG(CAST(unemployment_rate AS DOUBLE)) AS avg_unemployment_rate ");
@@ -670,6 +671,7 @@ public class DruidQueryServiceImpl implements DruidQueryService {
                 result.put("natureCode", natureCode);
                 result.put("natureName", natureName);
                 result.put("enterpriseCount", row.get("enterprise_count"));
+                result.put("constructionEmployed", row.get("total_construction_employed"));
                 result.put("totalEmployed", row.get("total_employed"));
                 result.put("totalUnemployed", row.get("total_unemployed"));
                 result.put("unemploymentRate", formatRate(row.get("avg_unemployment_rate")));

@@ -225,7 +225,46 @@ public class RegionUtils {
         }
 
         RegionNode node = regionMap.get(code);
-        return node != null && node.getParentId() == null;
+        if (node == null) {
+            return false;
+        }
+
+        Integer parentId = node.getParentId();
+        return parentId == null || parentId == 0;
+    }
+
+    /**
+     * 获取离顶级最近的下一级（区/县）code
+     * - 如果原本就是市级（顶级），返回自身
+     * - 如果是区县，返回区县自身
+     * - 如果是街道/乡镇，返回所属区县
+     */
+    public static Integer getSecondLevelParentCode(Integer code) {
+        if (code == null) {
+            return null;
+        }
+
+        RegionNode current = regionMap.get(code);
+        if (current == null) {
+            return code;
+        }
+
+        while (current.getParentId() != null && current.getParentId() != 0) {
+            Integer parentId = current.getParentId();
+            RegionNode parent = regionMap.get(parentId);
+            if (parent == null) {
+                break;
+            }
+
+            if (isTopLevel(parent.getCode())) {
+                // 当前节点的父级已经是顶级，则当前节点就是二级
+                return current.getCode();
+            }
+
+            current = parent;
+        }
+
+        return current.getCode();
     }
 
     /**

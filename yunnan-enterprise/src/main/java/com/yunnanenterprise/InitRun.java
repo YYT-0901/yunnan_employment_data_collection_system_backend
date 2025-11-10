@@ -28,7 +28,8 @@ public class InitRun implements ApplicationRunner {
             redisUtils.get("test");
             log.info("项目启动成功,开启愉快的开发之旅吧!(卓越2组加油)");
         } catch (SQLException e) {
-            log.error("数据库连接失败，请检查数据库配置！");
+            log.error("数据库连接失败，请检查数据库配置！错误详情: {}", e.getMessage());
+            log.error("详细异常信息:", e);
         } catch (RedisConnectionFailureException e) {
             log.error("Redis连接失败，请检查Redis配置！");
         } catch (Exception e) {

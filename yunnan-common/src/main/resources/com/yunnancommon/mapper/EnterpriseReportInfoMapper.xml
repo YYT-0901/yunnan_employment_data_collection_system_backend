@@ -474,7 +474,7 @@
 			<!-- 动态选择分组字段 -->
 			<choose>
 				<when test="query.groupBy == 'region'">
-					COALESCE(ei.region_code, eri.enterprise_region) as dimension_code,
+					COALESCE(ei.region, eri.enterprise_region) as dimension_code,
 				</when>
 				<when test="query.groupBy == 'nature'">
 					COALESCE(ei.nature_code, eri.enterprise_nature) as dimension_code,
@@ -515,7 +515,7 @@
 
 			<!-- 地区筛选 -->
 			<if test="query.regions != null and query.regions.size() > 0">
-				AND ei.region_code IN
+				AND COALESCE(ei.region, eri.enterprise_region) IN
 				<foreach collection="query.regions" item="region" open="(" close=")" separator=",">
 					#{region}
 				</foreach>
@@ -558,7 +558,7 @@
 	-->
 	<select id="selectSamplingData" resultType="java.util.Map">
 		SELECT
-			ei.region_code as region_code,
+			COALESCE(ei.region, eri.enterprise_region) as region_code,
 			COUNT(DISTINCT eri.enterprise_id) as enterprise_count
 
 		FROM enterprise_report_info eri
@@ -583,13 +583,13 @@
 
 			<!-- 地区筛选（可选） -->
 			<if test="query.regions != null and query.regions.size() > 0">
-				AND ei.region_code IN
+				AND COALESCE(ei.region, eri.enterprise_region) IN
 				<foreach collection="query.regions" item="region" open="(" close=")" separator=",">
 					#{region}
 				</foreach>
 			</if>
 
-		GROUP BY ei.region_code
+		GROUP BY COALESCE(ei.region, eri.enterprise_region)
 		ORDER BY enterprise_count DESC
 	</select>
 
@@ -615,7 +615,7 @@
 			<!-- 动态选择分组字段 -->
 			<choose>
 				<when test="query.groupBy == 'region'">
-					ei.region_code as dimension_code,
+					COALESCE(ei.region, eri.enterprise_region) as dimension_code,
 				</when>
 				<when test="query.groupBy == 'nature'">
 					ei.nature_code as dimension_code,
@@ -656,7 +656,7 @@
 
 			<!-- 地区筛选 -->
 			<if test="query.regions != null and query.regions.size() > 0">
-				AND ei.region_code IN
+				AND COALESCE(ei.region, eri.enterprise_region) IN
 				<foreach collection="query.regions" item="region" open="(" close=")" separator=",">
 					#{region}
 				</foreach>

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import com.yunnancommon.entity.dto.AnalysisQueryDto;
 import com.yunnancommon.entity.po.PeriodInfo;
 import com.yunnancommon.entity.vo.AnalysisResultVO;
+import com.yunnancommon.entity.vo.SamplingRegionDetailVO;
 import com.yunnancommon.entity.vo.SamplingResultVO;
 import com.yunnancommon.mapper.EnterpriseReportInfoMapper;
 import com.yunnancommon.mapper.PeriodInfoMapper;
@@ -77,41 +79,27 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
             return new ArrayList<>();
         }
 
-        // 聚合到一级分类
-        rawData = aggregateSamplingDataByRegion(rawData);
+        // 调试：输出原始SQL查询结果
+        logger.info("SQL查询返回 {} 条原始数据", rawData.size());
+        if (!rawData.isEmpty()) {
+            logger.info("第一条数据示例: {}", rawData.get(0));
+        }
+
+        Map<Integer, List<Map<String, Object>>> groupedByCity = groupSamplingDataByTopLevel(rawData);
 
         // 4. 计算总企业数（用于计算占比）
-        int totalEnterpriseCount = rawData.stream()
-                .mapToInt(map -> ((Number) map.get("enterprise_count")).intValue())
+        int totalEnterpriseCount = groupedByCity.values().stream()
+                .mapToInt(list -> list.stream()
+                        .mapToInt(row -> safeInt(row.get("enterprise_count")))
+                        .sum())
                 .sum();
 
         logger.debug("总企业数：{}", totalEnterpriseCount);
 
-        // 5. 转换为VO并计算占比
-        List<SamplingResultVO> result = rawData.stream()
-                .map(map -> {
-                    Integer regionCode = (Integer) map.get("region_code");
-                    Integer enterpriseCount = ((Number) map.get("enterprise_count")).intValue();
-
-                    // 计算占比
-                    Double percentage = totalEnterpriseCount > 0
-                            ? (enterpriseCount * 100.0 / totalEnterpriseCount)
-                            : 0.0;
-
-                    // 转换地区名称
-                    String regionName = dictService != null
-                            ? dictService.getRegionName(regionCode)
-                            : RegionUtils.getNameByCode(regionCode);
-
-                    SamplingResultVO vo = new SamplingResultVO();
-                    vo.setRegionCode(regionCode);
-                    vo.setRegionName(regionName);
-                    vo.setEnterpriseCount(enterpriseCount);
-                    vo.setPercentage(Math.round(percentage * 100.0) / 100.0); // 保留2位小数
-
-                    return vo;
-                })
-                .sorted(Comparator.comparing(SamplingResultVO::getEnterpriseCount).reversed()) // 降序
+        // 5. 构建包含二级地区的VO
+        List<SamplingResultVO> result = groupedByCity.entrySet().stream()
+                .map(entry -> buildSamplingResult(entry.getKey(), entry.getValue(), totalEnterpriseCount))
+                .sorted(Comparator.comparing(SamplingResultVO::getEnterpriseCount).reversed())
                 .collect(Collectors.toList());
 
         logger.info("取样分析完成，返回{}条记录", result.size());
@@ -285,6 +273,12 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
         if (dimensionCodeObj == null) {
             dimensionCodeObj = map.get("dimensionCode");
         }
+        if ("region".equals(groupBy) && dimensionCodeObj != null) {
+            Integer normalized = parseRegionCode(dimensionCodeObj);
+            if (normalized != null) {
+                dimensionCodeObj = normalized.toString();
+            }
+        }
         String dimensionCode = dimensionCodeObj != null ? dimensionCodeObj.toString() : null;
         vo.setDimensionCode(dimensionCode);
 
@@ -397,7 +391,7 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
         Map<String, Map<String, Object>> aggregated = new LinkedHashMap<>();
 
         for (Map<String, Object> row : rawData) {
-            Integer originalCode = safeParseInteger(row.get("dimension_code"));
+            Integer originalCode = parseRegionCode(row.get("dimension_code"));
             if (originalCode == null) {
                 continue;
             }
@@ -428,35 +422,130 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
     }
 
     /**
-     * 聚合取样分析结果到一级地区分类
+     * 将原始取样数据按顶级地区分组
      */
-    private List<Map<String, Object>> aggregateSamplingDataByRegion(List<Map<String, Object>> rawData) {
-        if (rawData == null || rawData.isEmpty()) {
-            return rawData;
-        }
+    private Map<Integer, List<Map<String, Object>>> groupSamplingDataByTopLevel(List<Map<String, Object>> rawData) {
+        Map<Integer, List<Map<String, Object>>> grouped = new LinkedHashMap<>();
 
-        Map<Integer, Integer> aggregated = new LinkedHashMap<>();
+        logger.info("开始按市级分组，共 {} 条数据", rawData.size());
 
         for (Map<String, Object> row : rawData) {
-            Integer originalCode = safeParseInteger(row.get("region_code"));
+            // 使用完整的 region_code 字段来获取完整的地区代码
+            Object regionCodeObj = row.get("region_code");
+            Integer originalCode = parseRegionCode(regionCodeObj);
+            
+            logger.debug("处理数据行 - region_code原始值: {}, 解析后: {}", regionCodeObj, originalCode);
+            
             if (originalCode == null) {
+                logger.warn("无法解析 region_code: {}", regionCodeObj);
                 continue;
             }
 
             Integer topLevelCode = RegionUtils.getTopLevelParentCode(originalCode);
-            int enterpriseCount = safeInt(row.get("enterprise_count"));
-            aggregated.merge(topLevelCode, enterpriseCount, Integer::sum);
+            logger.debug("originalCode: {} -> topLevelCode: {}", originalCode, topLevelCode);
+            
+            grouped.computeIfAbsent(topLevelCode, key -> new ArrayList<>()).add(row);
         }
 
-        List<Map<String, Object>> result = new ArrayList<>();
-        aggregated.forEach((code, count) -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("region_code", code);
-            map.put("enterprise_count", count);
-            result.add(map);
+        logger.info("分组完成，共 {} 个市级分组", grouped.size());
+        grouped.forEach((code, list) -> {
+            logger.info("市级 code={} ({}), 包含 {} 条数据", 
+                    code, RegionUtils.getNameByCode(code), list.size());
         });
 
+        return grouped;
+    }
+
+    private SamplingResultVO buildSamplingResult(Integer topLevelCode, List<Map<String, Object>> rows,
+            int totalEnterpriseCount) {
+        logger.info("构建市级结果 - code: {} ({}), 包含 {} 条原始数据", 
+                topLevelCode, RegionUtils.getNameByCode(topLevelCode), rows.size());
+        
+        int cityTotal = rows.stream()
+                .mapToInt(row -> safeInt(row.get("enterprise_count")))
+                .sum();
+
+        double percentage = totalEnterpriseCount > 0
+                ? (cityTotal * 100.0 / totalEnterpriseCount)
+                : 0.0;
+
+        SamplingResultVO vo = new SamplingResultVO();
+        vo.setRegionCode(topLevelCode);
+        vo.setRegionName(resolveRegionName(topLevelCode));
+        vo.setEnterpriseCount(cityTotal);
+        vo.setPercentage(Math.round(percentage * 100.0) / 100.0);
+        
+        List<SamplingRegionDetailVO> children = buildChildDetails(rows, cityTotal);
+        vo.setChildren(children);
+        
+        logger.info("市级 {} 构建完成 - 企业总数: {}, children数量: {}", 
+                vo.getRegionName(), cityTotal, children.size());
+
+        return vo;
+    }
+
+    private List<SamplingRegionDetailVO> buildChildDetails(List<Map<String, Object>> rows, int cityTotal) {
+        Map<Integer, Integer> secondLevelAggregated = new LinkedHashMap<>();
+
+        for (Map<String, Object> row : rows) {
+            Integer originalCode = parseRegionCode(row.get("region_code"));
+            
+            // 调试日志：输出原始数据
+            logger.debug("原始数据 - region_code: {}, originalCode: {}, enterprise_count: {}", 
+                    row.get("region_code"), originalCode, row.get("enterprise_count"));
+            
+            if (originalCode == null) {
+                continue;
+            }
+            Integer secondLevelCode = RegionUtils.getSecondLevelParentCode(originalCode);
+            
+            // 调试日志：输出二级分类code
+            logger.debug("originalCode: {} -> secondLevelCode: {}", originalCode, secondLevelCode);
+            
+            int enterpriseCount = safeInt(row.get("enterprise_count"));
+            secondLevelAggregated.merge(secondLevelCode != null ? secondLevelCode : originalCode,
+                    enterpriseCount, Integer::sum);
+        }
+
+        List<SamplingRegionDetailVO> result = secondLevelAggregated.entrySet().stream()
+                .map(entry -> {
+                    int enterpriseCount = entry.getValue();
+                    double percentage = cityTotal > 0
+                            ? (enterpriseCount * 100.0 / cityTotal)
+                            : 0.0;
+
+                    SamplingRegionDetailVO detailVO = new SamplingRegionDetailVO();
+                    detailVO.setRegionCode(entry.getKey());
+                    detailVO.setRegionName(resolveRegionName(entry.getKey()));
+                    detailVO.setEnterpriseCount(enterpriseCount);
+                    detailVO.setPercentage(Math.round(percentage * 100.0) / 100.0);
+                    return detailVO;
+                })
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(SamplingRegionDetailVO::getEnterpriseCount).reversed())
+                .collect(Collectors.toList());
+        
+        // 调试日志：输出最终的children数量
+        logger.debug("构建的children数量: {}, 详情: {}", result.size(), result);
+        
         return result;
+    }
+
+    private String resolveRegionName(Integer regionCode) {
+        if (regionCode == null) {
+            return "未知";
+        }
+
+        String regionName = null;
+        if (dictService != null) {
+            regionName = dictService.getRegionName(regionCode);
+        }
+
+        if (regionName == null || "未知".equals(regionName)) {
+            regionName = RegionUtils.getNameByCode(regionCode);
+        }
+
+        return regionName;
     }
 
     private Integer safeParseInteger(Object value) {
@@ -473,6 +562,90 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    /**
+     * 解析数据库中的地区编码，兼容带有分隔符的写法
+     */
+    private Integer parseRegionCode(Object value) {
+        Integer direct = safeParseInteger(value);
+        if (direct != null) {
+            return direct;
+        }
+
+        if (value == null) {
+            return null;
+        }
+
+        String text = value.toString();
+        if (text == null) {
+            return null;
+        }
+
+        text = text.trim();
+        if (text.isEmpty()) {
+            return null;
+        }
+
+        String[] rawSegments = text.split("[^0-9]+");
+        List<String> segments = Arrays.stream(rawSegments)
+                .filter(segment -> segment != null && !segment.isEmpty())
+                .collect(Collectors.toList());
+
+        if (segments.isEmpty()) {
+            return null;
+        }
+
+        // 如果某一段本身就是合法的地区编码（例如直接存储了县级code），优先返回
+        for (int i = segments.size() - 1; i >= 0; i--) {
+            try {
+                Integer candidate = Integer.parseInt(segments.get(i));
+                if (regionExists(candidate)) {
+                    return candidate;
+                }
+            } catch (NumberFormatException ignore) {
+            }
+        }
+
+        // 尝试拼接所有数字，保持原始位数
+        String digitsOnly = String.join("", segments);
+        if (!digitsOnly.isEmpty()) {
+            try {
+                Integer candidate = Integer.parseInt(digitsOnly);
+                if (regionExists(candidate)) {
+                    return candidate;
+                }
+            } catch (NumberFormatException ignore) {
+            }
+        }
+
+        // 最后按层级折算（每级 *100），确保不会返回null
+        Integer composed = null;
+        for (String segment : segments) {
+            try {
+                int part = Integer.parseInt(segment);
+                composed = composed == null ? part : composed * 100 + part;
+            } catch (NumberFormatException ignore) {
+                return null;
+            }
+        }
+        return composed;
+    }
+
+    private boolean regionExists(Integer code) {
+        if (code == null) {
+            return false;
+        }
+
+        if (dictService != null) {
+            String name = dictService.getRegionName(code);
+            if (name != null && !"未知".equals(name)) {
+                return true;
+            }
+        }
+
+        String fallback = RegionUtils.getNameByCode(code);
+        return fallback != null && !String.valueOf(code).equals(fallback);
     }
 
     private Long safeParseLong(Object value) {
