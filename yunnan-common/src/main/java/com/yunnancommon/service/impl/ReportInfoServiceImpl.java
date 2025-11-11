@@ -1,13 +1,19 @@
 package com.yunnancommon.service.impl;
 
 
+import com.yunnancommon.entity.po.EnterpriseInfo;
+import com.yunnancommon.entity.po.EnterpriseReportInfo;
+import com.yunnancommon.entity.po.PeriodInfo;
+import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
 import com.yunnancommon.entity.query.SimplePage;
+import com.yunnancommon.entity.vo.ReportInfoDetailVO;
 import com.yunnancommon.enums.PageSize;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.ReportInfo;
 import com.yunnancommon.entity.query.ReportInfoQuery;
 import com.yunnancommon.mapper.ReportInfoMapper;
 import com.yunnancommon.service.ReportInfoService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -108,5 +114,11 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 		return this.reportInfoMapper.deleteByReportId(reportId);
 	}
 
-
+	/**
+	 * 根据ReportId查询报表详情，包含企业名称和调查期时间
+	 */
+	@Override
+	public ReportInfoDetailVO getReportInfoDetailByReportId(String reportId) {
+		return this.reportInfoMapper.selectDetailByReportId(reportId);
+	}
 }
