@@ -547,21 +547,26 @@
 
 
 	<!--
-		SQL 2: 取样分析（按地区统计企业数）
+		SQL 2: 取样分析（按地区统计企业数和岗位数）
 
 		【业务逻辑】
-		只关注企业地区分布，不计算岗位数据
+		统计企业地区分布和岗位数据
 
 		【返回字段】
 		- region_code: 地区代码
 		- enterprise_count: 企业数量
+		- construction_total: 建档期总岗位数
+		- investigation_total: 调查期总岗位数
 	-->
 	<select id="selectSamplingData" resultType="java.util.Map">
 		SELECT
 			COALESCE(ei.region, eri.enterprise_region) as region_code,
-			COUNT(DISTINCT eri.enterprise_id) as enterprise_count
+			COUNT(DISTINCT eri.enterprise_id) as enterprise_count,
+			SUM(IFNULL(ri.construction_count, 0)) as construction_total,
+			SUM(IFNULL(ri.investigation_count, 0)) as investigation_total
 
 		FROM enterprise_report_info eri
+		LEFT JOIN report_info ri ON eri.report_id = ri.report_id
 		LEFT JOIN enterprise_info ei ON eri.enterprise_id = ei.enterprise_id
 
 		WHERE 1=1

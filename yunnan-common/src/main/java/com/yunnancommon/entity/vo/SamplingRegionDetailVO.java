@@ -15,4 +15,12 @@ public class SamplingRegionDetailVO {
     private String regionName;
     private Integer enterpriseCount;
     private Double percentage;
+    // 建档期总岗位数
+    private Integer constructionTotal;
+    // 调查期总岗位数
+    private Integer investigationTotal;
+    // 岗位变化总数
+    private Integer changeTotal;
+    // 岗位变化占比
+    private Double changeRatio;
 }

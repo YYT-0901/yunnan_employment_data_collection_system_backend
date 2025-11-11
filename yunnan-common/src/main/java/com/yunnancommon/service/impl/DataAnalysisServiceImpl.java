@@ -82,7 +82,11 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
         // 调试：输出原始SQL查询结果
         logger.info("SQL查询返回 {} 条原始数据", rawData.size());
         if (!rawData.isEmpty()) {
-            logger.info("第一条数据示例: {}", rawData.get(0));
+            Map<String, Object> firstRow = rawData.get(0);
+            logger.info("第一条数据示例: {}", firstRow);
+            logger.info("第一条数据包含的字段: {}", firstRow.keySet());
+            logger.info("construction_total值: {}, investigation_total值: {}", 
+                    firstRow.get("construction_total"), firstRow.get("investigation_total"));
         }
 
         Map<Integer, List<Map<String, Object>>> groupedByCity = groupSamplingDataByTopLevel(rawData);
@@ -464,6 +468,17 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
         int cityTotal = rows.stream()
                 .mapToInt(row -> safeInt(row.get("enterprise_count")))
                 .sum();
+        
+        // 汇总岗位数据
+        int constructionTotal = rows.stream()
+                .mapToInt(row -> safeInt(row.get("construction_total")))
+                .sum();
+        int investigationTotal = rows.stream()
+                .mapToInt(row -> safeInt(row.get("investigation_total")))
+                .sum();
+        
+        logger.info("市级 {} 岗位汇总 - 建档期: {}, 调查期: {}", 
+                RegionUtils.getNameByCode(topLevelCode), constructionTotal, investigationTotal);
 
         double percentage = totalEnterpriseCount > 0
                 ? (cityTotal * 100.0 / totalEnterpriseCount)
@@ -475,17 +490,30 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
         vo.setEnterpriseCount(cityTotal);
         vo.setPercentage(Math.round(percentage * 100.0) / 100.0);
         
+        // 设置岗位数据
+        vo.setConstructionTotal(constructionTotal);
+        vo.setInvestigationTotal(investigationTotal);
+        
+        // 计算派生指标
+        int changeTotal = investigationTotal - constructionTotal;
+        vo.setChangeTotal(changeTotal);
+        
+        // 计算变化占比（失业率）
+        Double changeRatio = calculateChangeRatio(constructionTotal, investigationTotal);
+        vo.setChangeRatio(changeRatio);
+        
         List<SamplingRegionDetailVO> children = buildChildDetails(rows, cityTotal);
         vo.setChildren(children);
         
-        logger.info("市级 {} 构建完成 - 企业总数: {}, children数量: {}", 
-                vo.getRegionName(), cityTotal, children.size());
+        logger.info("市级 {} 构建完成 - 企业总数: {}, 建档期岗位: {}, 调查期岗位: {}, children数量: {}", 
+                vo.getRegionName(), cityTotal, constructionTotal, investigationTotal, children.size());
 
         return vo;
     }
 
     private List<SamplingRegionDetailVO> buildChildDetails(List<Map<String, Object>> rows, int cityTotal) {
-        Map<Integer, Integer> secondLevelAggregated = new LinkedHashMap<>();
+        // 存储每个二级地区的汇总数据：企业数、建档期岗位、调查期岗位
+        Map<Integer, Map<String, Integer>> secondLevelAggregated = new LinkedHashMap<>();
 
         for (Map<String, Object> row : rows) {
             Integer originalCode = parseRegionCode(row.get("region_code"));
@@ -503,13 +531,26 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
             logger.debug("originalCode: {} -> secondLevelCode: {}", originalCode, secondLevelCode);
             
             int enterpriseCount = safeInt(row.get("enterprise_count"));
-            secondLevelAggregated.merge(secondLevelCode != null ? secondLevelCode : originalCode,
-                    enterpriseCount, Integer::sum);
+            int constructionTotal = safeInt(row.get("construction_total"));
+            int investigationTotal = safeInt(row.get("investigation_total"));
+            
+            Integer targetCode = secondLevelCode != null ? secondLevelCode : originalCode;
+            
+            secondLevelAggregated.putIfAbsent(targetCode, new HashMap<>());
+            Map<String, Integer> aggregated = secondLevelAggregated.get(targetCode);
+            
+            aggregated.put("enterpriseCount", aggregated.getOrDefault("enterpriseCount", 0) + enterpriseCount);
+            aggregated.put("constructionTotal", aggregated.getOrDefault("constructionTotal", 0) + constructionTotal);
+            aggregated.put("investigationTotal", aggregated.getOrDefault("investigationTotal", 0) + investigationTotal);
         }
 
         List<SamplingRegionDetailVO> result = secondLevelAggregated.entrySet().stream()
                 .map(entry -> {
-                    int enterpriseCount = entry.getValue();
+                    Map<String, Integer> data = entry.getValue();
+                    int enterpriseCount = data.get("enterpriseCount");
+                    int constructionTotal = data.get("constructionTotal");
+                    int investigationTotal = data.get("investigationTotal");
+                    
                     double percentage = cityTotal > 0
                             ? (enterpriseCount * 100.0 / cityTotal)
                             : 0.0;
@@ -519,6 +560,18 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
                     detailVO.setRegionName(resolveRegionName(entry.getKey()));
                     detailVO.setEnterpriseCount(enterpriseCount);
                     detailVO.setPercentage(Math.round(percentage * 100.0) / 100.0);
+                    
+                    // 设置岗位数据
+                    detailVO.setConstructionTotal(constructionTotal);
+                    detailVO.setInvestigationTotal(investigationTotal);
+                    
+                    // 计算派生指标
+                    int changeTotal = investigationTotal - constructionTotal;
+                    detailVO.setChangeTotal(changeTotal);
+                    
+                    Double changeRatio = calculateChangeRatio(constructionTotal, investigationTotal);
+                    detailVO.setChangeRatio(changeRatio);
+                    
                     return detailVO;
                 })
                 .filter(Objects::nonNull)
