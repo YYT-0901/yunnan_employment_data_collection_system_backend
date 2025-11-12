@@ -2,10 +2,10 @@ package com.yunnancommon.entity.po;
 
 import java.io.Serializable;
 import java.util.Date;
-import com.fasterxml.jackson.annotation.JsonFormat;
+
 import org.springframework.format.annotation.DateTimeFormat;
-import com.yunnancommon.enums.DateTimePatternEnum;
-import com.yunnancommon.utils.DateUtils;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * @Description:调查期信息表
@@ -31,7 +31,7 @@ public class PeriodInfo implements Serializable {
 	private Date periodStartTime;
 
 	/**
-	 * 填报结束时间(T1)
+	 * 填报截止时间(T1)
 	 */
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -114,6 +114,14 @@ public class PeriodInfo implements Serializable {
 
 	@Override
 	public String toString() {
-		return "调查期ID(自增主键):" + (periodId == null ? "空" : periodId) + ",调查期标识(格式: YYYY-MM, 如2025-01):" + (investigateTime == null ? "空" : investigateTime) + ",填报开始时间(T0):" + (periodStartTime == null ? "空" : DateUtils.format(periodStartTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",填报结束时间(T1):" + (periodEndTime == null ? "空" : DateUtils.format(periodEndTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",此调查期之前的企业总数:" + (enterpriseCount == null ? "空" : enterpriseCount) + ",创建时间:" + (createdAt == null ? "空" : DateUtils.format(createdAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",更新时间:" + (updatedAt == null ? "空" : DateUtils.format(updatedAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()));
+		return "PeriodInfo{" +
+				"periodId=" + periodId +
+				", investigateTime='" + investigateTime + '\'' +
+				", periodStartTime=" + periodStartTime +
+				", periodEndTime=" + periodEndTime +
+				", enterpriseCount=" + enterpriseCount +
+				", createdAt=" + createdAt +
+				", updatedAt=" + updatedAt +
+				'}';
 	}
 }

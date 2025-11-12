@@ -1,6 +1,10 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+
+-- ----------------------------
+-- Table structure for account_info
+-- ----------------------------
 DROP TABLE IF EXISTS `account_info`;
 CREATE TABLE `account_info`  (
   `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户名',
@@ -16,21 +20,23 @@ CREATE TABLE `account_info`  (
   INDEX `idx_account_enterprise_id`(`enterprise_id` ASC) USING BTREE,
   INDEX `idx_account_city_code`(`city_code` ASC) USING BTREE,
   INDEX `idx_account_status`(`status` ASC) USING BTREE,
-  INDEX `idx_account_last_login_time`(`last_login_time` ASC) USING BTREE
+  INDEX `idx_account_last_login_time`(`last_login_time` ASC) USING BTREE,
+  CONSTRAINT `fk_account_enterprise` FOREIGN KEY (`enterprise_id`) REFERENCES `enterprise_info` (`enterprise_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '账号信息表' ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for enterprise_info
+-- ----------------------------
 DROP TABLE IF EXISTS `enterprise_info`;
 CREATE TABLE `enterprise_info`  (
   `enterprise_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '企业ID',
   `org_code` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '组织机构代码',
-  `name_zh` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '企业名称中文',
-  `name_en` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '企业名称英文',
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '企业名称',
   `region` int NULL DEFAULT NULL COMMENT '所属地区',
   `nature` int NULL DEFAULT NULL COMMENT '所属性质',
   `industry` int NULL DEFAULT NULL COMMENT '所属行业',
   `industry_desc` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '主要经营业务详情',
-  `contact_name_zh` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '联系人中文名',
-  `contact_name_en` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '联系人英文名',
+  `contact_name` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '联系人',
   `address` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '联系人地址',
   `postal_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '邮政编码',
   `phone_num` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '联系电话',
@@ -48,10 +54,13 @@ CREATE TABLE `enterprise_info`  (
   INDEX `idx_enterprise_org_code`(`org_code` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '企业信息表' ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for enterprise_report_info
+-- ----------------------------
 DROP TABLE IF EXISTS `enterprise_report_info`;
 CREATE TABLE `enterprise_report_info`  (
   `enterprise_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '企业ID',
-  `period_id` int NOT NULL COMMENT '调查期ID',
+  `period_id` bigint NOT NULL COMMENT '调查期ID',
   `report_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '数据填报ID',
   `old_report_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '旧数据填报ID',
   `reason_return` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '退回原因',
@@ -72,9 +81,16 @@ CREATE TABLE `enterprise_report_info`  (
   INDEX `idx_enterprise_report_nature`(`enterprise_nature` ASC) USING BTREE,
   INDEX `idx_enterprise_report_industry`(`enterprise_industry` ASC) USING BTREE,
   INDEX `idx_enterprise_report_region`(`enterprise_region` ASC) USING BTREE,
-  INDEX `idx_enterprise_report_old_report_id`(`old_report_id` ASC) USING BTREE
+  INDEX `idx_enterprise_report_old_report_id`(`old_report_id` ASC) USING BTREE,
+  CONSTRAINT `fk_enterprise_report_enterprise` FOREIGN KEY (`enterprise_id`) REFERENCES `enterprise_info` (`enterprise_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_enterprise_report_old_report` FOREIGN KEY (`old_report_id`) REFERENCES `report_info` (`report_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_enterprise_report_period` FOREIGN KEY (`period_id`) REFERENCES `period_info` (`period_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_enterprise_report_report` FOREIGN KEY (`report_id`) REFERENCES `report_info` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '企业上报信息表' ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for log_info
+-- ----------------------------
 DROP TABLE IF EXISTS `log_info`;
 CREATE TABLE `log_info`  (
   `log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '日志ID',
@@ -94,9 +110,14 @@ CREATE TABLE `log_info`  (
   INDEX `idx_log_username`(`username` ASC) USING BTREE,
   INDEX `idx_log_operation_time`(`operation_time` ASC) USING BTREE,
   INDEX `idx_log_enterprise_id`(`enterprise_id` ASC) USING BTREE,
-  INDEX `idx_log_module`(`operation_module` ASC) USING BTREE
+  INDEX `idx_log_module`(`operation_module` ASC) USING BTREE,
+  CONSTRAINT `fk_log_account` FOREIGN KEY (`username`) REFERENCES `account_info` (`username`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_log_enterprise` FOREIGN KEY (`enterprise_id`) REFERENCES `enterprise_info` (`enterprise_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '操作日志表' ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for notice_info
+-- ----------------------------
 DROP TABLE IF EXISTS `notice_info`;
 CREATE TABLE `notice_info`  (
   `notice_id` bigint NOT NULL AUTO_INCREMENT COMMENT '通知ID',
@@ -120,9 +141,13 @@ CREATE TABLE `notice_info`  (
   INDEX `idx_notice_publish_time`(`publish_time` ASC) USING BTREE,
   INDEX `idx_notice_publisher`(`publisher` ASC) USING BTREE,
   INDEX `idx_notice_start_end_time`(`start_time` ASC, `end_time` ASC) USING BTREE,
-  INDEX `idx_notice_create_time`(`created_at` ASC) USING BTREE
+  INDEX `idx_notice_create_time`(`created_at` ASC) USING BTREE,
+  CONSTRAINT `fk_notice_publisher` FOREIGN KEY (`publisher`) REFERENCES `account_info` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '通知消息表' ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for notice_read_info
+-- ----------------------------
 DROP TABLE IF EXISTS `notice_read_info`;
 CREATE TABLE `notice_read_info`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '记录ID',
@@ -135,16 +160,25 @@ CREATE TABLE `notice_read_info`  (
   UNIQUE INDEX `uk_notice_user`(`notice_id` ASC, `username` ASC) USING BTREE,
   INDEX `idx_notice_read_time`(`read_time` ASC) USING BTREE,
   INDEX `idx_notice_read_user`(`username` ASC) USING BTREE,
-  INDEX `idx_notice_read_enterprise`(`enterprise_id` ASC) USING BTREE
+  INDEX `idx_notice_read_enterprise`(`enterprise_id` ASC) USING BTREE,
+  CONSTRAINT `fk_notice_read_account` FOREIGN KEY (`username`) REFERENCES `account_info` (`username`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_notice_read_enterprise` FOREIGN KEY (`enterprise_id`) REFERENCES `enterprise_info` (`enterprise_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_notice_read_notice` FOREIGN KEY (`notice_id`) REFERENCES `notice_info` (`notice_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '通知阅读记录表' ROW_FORMAT = Dynamic;
 
-DROP TABLE IF EXISTS `period_info`;
-CREATE TABLE `period_info`  (
-  `period_id` int NOT NULL COMMENT '调查期ID(月)(时间戳)',
-  `enterprise_count` int NULL DEFAULT NULL COMMENT '此调查期之前的企业总数',
-  PRIMARY KEY (`period_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '调查期信息表' ROW_FORMAT = Dynamic;
+-- ----------------------------
+-- Table structure for period_info
+-- ----------------------------
+# DROP TABLE IF EXISTS `period_info`;
+# CREATE TABLE `period_info`  (
+#   `period_id` int NOT NULL COMMENT '调查期ID(月)(时间戳)',
+#   `enterprise_count` int NULL DEFAULT NULL COMMENT '此调查期之前的企业总数',
+#   PRIMARY KEY (`period_id`) USING BTREE
+# ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '调查期信息表' ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for report_info
+-- ----------------------------
 DROP TABLE IF EXISTS `report_info`;
 CREATE TABLE `report_info`  (
   `report_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '数据填报ID',
@@ -167,4 +201,42 @@ CREATE TABLE `report_info`  (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+# 更改period_info:
+DROP TABLE IF EXISTS `period_info`;
+CREATE TABLE `period_info` (
+  `period_id` bigint NOT NULL AUTO_INCREMENT COMMENT '调查期ID(自增主键)',
+  `investigate_time` varchar(7) NOT NULL COMMENT '调查期标识(格式: YYYY-MM, 如2025-01)',
+  `period_start_time` datetime NOT NULL COMMENT '填报开始时间(T0)',
+  `period_end_time` datetime NOT NULL COMMENT '填报截止时间(T1)',
+  `enterprise_count` int NULL DEFAULT NULL COMMENT '此调查期之前的企业总数',
+  `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`period_id`) USING BTREE,
+  UNIQUE KEY `uk_investigate_time` (`investigate_time`) USING BTREE,
+  INDEX `idx_period_start_time`(`period_start_time` ASC) USING BTREE,
+  INDEX `idx_period_end_time`(`period_end_time` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '调查期信息表' ROW_FORMAT = Dynamic;
 
+# report_audit_history（审核历史表）数据填报部分
+DROP TABLE IF EXISTS `report_audit_history`;
+CREATE TABLE `report_audit_history` (
+  `audit_id` bigint NOT NULL AUTO_INCREMENT COMMENT '审核记录ID',
+  `enterprise_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '企业ID',
+  `period_id` bigint NOT NULL COMMENT '调查期ID',
+  `report_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '被审核的报表ID',
+  `audit_level` int NOT NULL COMMENT '审核层级: 1-市级审核 2-省级审核',
+  `auditor` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '审核人username',
+  `audit_result` int NOT NULL COMMENT '审核结果: 1-通过 2-驳回',
+  `audit_opinion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '审核意见',
+  `audit_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '审核时间',
+  PRIMARY KEY (`audit_id`) USING BTREE,
+  INDEX `idx_audit_enterprise_period`(`enterprise_id` ASC, `period_id` ASC) USING BTREE,
+  INDEX `idx_audit_report`(`report_id` ASC) USING BTREE,
+  INDEX `idx_audit_time`(`audit_time` ASC) USING BTREE,
+  INDEX `idx_audit_auditor`(`auditor` ASC) USING BTREE,
+  INDEX `idx_audit_level_result`(`audit_level` ASC, `audit_result` ASC) USING BTREE,
+  CONSTRAINT `fk_audit_enterprise` FOREIGN KEY (`enterprise_id`) REFERENCES `enterprise_info` (`enterprise_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_audit_period` FOREIGN KEY (`period_id`) REFERENCES `period_info` (`period_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_audit_report` FOREIGN KEY (`report_id`) REFERENCES `report_info` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_audit_auditor` FOREIGN KEY (`auditor`) REFERENCES `account_info` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '审核历史表' ROW_FORMAT = Dynamic;

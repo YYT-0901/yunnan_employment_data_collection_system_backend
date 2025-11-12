@@ -32,13 +32,8 @@ spring:
           min-idle: 0
       timeout: 2000
 
-#MyBatis的配置信息
-mybatis:
-  configuration:
-    map-underscore-to-camel-case: true
-
 project:
-  folder: D:\\STUDY\\beijing_universiti_folder7\\excellent_engineering_code\\yunnan\\
+  folder: ./yunnan
 
 log:
   root:

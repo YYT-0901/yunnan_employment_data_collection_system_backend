@@ -6,7 +6,7 @@ spring:
       max-file-size: 10MB
       max-request-size: 15MB
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/yunnan_system
+    url: jdbc:mysql://127.0.0.1:3306/yunnan_system?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -33,7 +33,7 @@ spring:
       timeout: 2000
 
 project:
-  folder: D:\\STUDY\\beijing_universiti_folder7\\excellent_engineering_code\\yunnan\\
+  folder: ./yunnan
 
 log:
   root:
