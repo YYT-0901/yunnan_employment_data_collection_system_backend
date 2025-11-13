@@ -85,7 +85,7 @@ public class ReportAssembler {
     public EnterpriseReportInfo toEnterpriseReportInfoForDraft(ReportCommand cmd, String reportId, Integer periodId, Date now) {
         EnterpriseReportInfo e = new EnterpriseReportInfo();
         e.setEnterpriseId(cmd.getEnterpriseId());
-        e.setPeriodId(periodId);
+        e.setPeriodId(Long.valueOf(periodId));
         e.setReportId(reportId);
         e.setStatus(0); // 0-已暂存
         e.setUpdatedAt(now);
@@ -98,7 +98,7 @@ public class ReportAssembler {
     public EnterpriseReportInfo toEnterpriseReportInfoForSubmit(ReportCommand cmd, String reportId, Integer periodId, Date now) {
         EnterpriseReportInfo e = new EnterpriseReportInfo();
         e.setEnterpriseId(cmd.getEnterpriseId());
-        e.setPeriodId(periodId);
+        e.setPeriodId(Long.valueOf(periodId));
         e.setReportId(reportId);
         e.setStatus(1); // 1-待市级审核
         e.setUpdatedAt(now);
@@ -111,8 +111,9 @@ public class ReportAssembler {
     public ReportV0 toVO(EnterpriseReportInfo e, ReportInfo r) {
         ReportV0 v = new ReportV0();
         v.setId(r != null ? r.getReportId() : null);
+        v.setOldId(e.getOldReportId() != null ? e.getOldReportId() : null);
         v.setEnterpriseId(e != null ? e.getEnterpriseId() : null);
-        v.setReportingPeriod(e != null ? PeriodUtils.fromPeriodId(e.getPeriodId()) : null);
+        v.setReportingPeriod(e != null ? PeriodUtils.fromPeriodId((long) Math.toIntExact(e.getPeriodId())) : null);
         v.setStatus(e != null && e.getStatus() != null ? String.valueOf(e.getStatus()) : "");
 
         if (r != null) {

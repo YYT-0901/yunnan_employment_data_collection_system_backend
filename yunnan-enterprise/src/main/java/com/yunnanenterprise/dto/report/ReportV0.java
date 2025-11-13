@@ -13,6 +13,9 @@ public class ReportV0 {
     @JsonProperty("id")
     private String id;
 
+    @JsonProperty("old_id")
+    private String oldId;
+
     @JsonProperty("enterprise_id")
     private String enterpriseId;
 
@@ -99,6 +102,9 @@ public class ReportV0 {
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getOldId() { return oldId; }
+    public void setOldId(String oldId) { this.oldId = oldId; }
 
     public String getEnterpriseId() { return enterpriseId; }
     public void setEnterpriseId(String enterpriseId) { this.enterpriseId = enterpriseId; }

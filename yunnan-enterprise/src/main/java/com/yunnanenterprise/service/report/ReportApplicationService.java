@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import com.yunnanenterprise.dictionary.DictionaryService;
 import org.apache.ibatis.binding.BindingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,6 @@ import java.util.*;
  * 应用服务：聚合多个表的操作（enterprise_report_info + report_info）
  */
 @Service
-@Profile("db")
 public class ReportApplicationService {
 
     private static final Logger log = LoggerFactory.getLogger(ReportApplicationService.class);
@@ -59,7 +59,13 @@ public class ReportApplicationService {
     private final ReportAssembler assembler;
 
     @Resource
+    private DictionaryService dictionaryService;
+
+    @Resource
     private ReportAuditHistoryService reportAuditHistoryService;
+
+    @Resource
+    private ReportInfoService reportInfoCommonService;
 
     @Resource
     private PeriodInfoService periodInfoService;
@@ -122,7 +128,7 @@ public class ReportApplicationService {
         // 查询该企业在该调查期的报表数据
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(enterpriseId);
-        q.setPeriodId(periodId);  // 使用真实的 period_id
+        q.setPeriodId(Long.valueOf(periodId));  // 使用真实的 period_id
         q.setOrderBy("updated_at desc");  // 按更新时间倒序，获取最新版本
         q.setPageNo(1);
         q.setPageSize(1);
@@ -144,7 +150,7 @@ public class ReportApplicationService {
             // 返回空壳，仅带 period 信息
             EnterpriseReportInfo e = new EnterpriseReportInfo();
             e.setEnterpriseId(enterpriseId);
-            e.setPeriodId(periodId);
+            e.setPeriodId(Long.valueOf(periodId));
             
             ReportV0 vo = assembler.toVO(e, null);
             vo.setReportingPeriod(yyyyMm);
@@ -273,7 +279,7 @@ public class ReportApplicationService {
         }
         EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
         query.setEnterpriseId(enterpriseId);
-        query.setPeriodId(periodId);
+        query.setPeriodId(Long.valueOf(periodId));
         query.setOldReportId(reportId);
         query.setPageNo(1);
         query.setPageSize(1);
@@ -296,7 +302,7 @@ public class ReportApplicationService {
         ReportStatusEnum statusEnum = ReportStatusEnum.getByCode(status);
         boolean editable = (statusEnum == null) || statusEnum.canEdit();
 
-        if (editable && hasNewerVersion(entity.getEnterpriseId(), entity.getPeriodId(), entity.getReportId())) {
+        if (editable && hasNewerVersion(entity.getEnterpriseId(), Math.toIntExact(entity.getPeriodId()), entity.getReportId())) {
             editable = false;
         }
 
@@ -427,7 +433,7 @@ public class ReportApplicationService {
         // 查询该企业在该调查期是否已有报表记录
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(cmd.getEnterpriseId());
-        q.setPeriodId(periodId);
+        q.setPeriodId(Long.valueOf(periodId));
         q.setOrderBy("updated_at desc");
         q.setPageNo(1);
         q.setPageSize(1);
@@ -477,7 +483,7 @@ public class ReportApplicationService {
         // 再次拿最新记录
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(cmd.getEnterpriseId());
-        q.setPeriodId(periodId);
+        q.setPeriodId(Long.valueOf(periodId));
         q.setOrderBy("updated_at desc");
         q.setPageNo(1);
         q.setPageSize(1);
@@ -519,17 +525,18 @@ public class ReportApplicationService {
             if (e == null) {
                 continue;
             }
-            Integer periodId = e.getPeriodId();
+            Integer periodId = Math.toIntExact(e.getPeriodId());
             if (periodId != null) {
-                periodInfoMap.computeIfAbsent(periodId, id -> periodInfoService.getPeriodInfoByPeriodId(id));
+                periodInfoMap.computeIfAbsent(periodId, id -> periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(id)));
             }
         }
         for (EnterpriseReportInfo e : list) {
             if (e == null) {
                 continue;
             }
-            PeriodInfo periodInfo = periodInfoMap.get(e.getPeriodId());
+            PeriodInfo periodInfo = periodInfoMap.get(e.getPeriodId().intValue());
             if (periodInfo != null) {
+                System.out.println("periodInfo: " + periodInfo.getInvestigateTime());
                 if (e.getPeriodStartTime() == null) {
                     e.setPeriodStartTime(periodInfo.getPeriodStartTime());
                 }
@@ -544,7 +551,7 @@ public class ReportApplicationService {
         for (EnterpriseReportInfo e : list) {
             ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
             ReportV0 vo = assembler.toVO(e, r);
-            PeriodInfo periodInfo = periodInfoMap.get(e.getPeriodId());
+            PeriodInfo periodInfo = periodInfoMap.get(e.getPeriodId().intValue());
             if (periodInfo != null && periodInfo.getInvestigateTime() != null) {
                 vo.setReportingPeriod(periodInfo.getInvestigateTime());
             }
@@ -651,7 +658,7 @@ public class ReportApplicationService {
 
         // 步骤2：通过 investigate_time 获取真实的 period_id并检查窗口时间
         Integer periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
-        PeriodInfo period = periodInfoService.getPeriodInfoByPeriodId(periodId);
+        PeriodInfo period = periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(periodId));
         if (period == null) {
             throw new BusinessException("调查期不存在");
         }
@@ -695,7 +702,7 @@ public class ReportApplicationService {
 
         // 步骤2：通过 investigate_time 获取真实的 period_id并检查窗口时间
         Integer periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
-        PeriodInfo period = periodInfoService.getPeriodInfoByPeriodId(periodId);
+        PeriodInfo period = periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(periodId));
         
         // 检查填报窗口时间
         Date now = new Date();
@@ -706,7 +713,7 @@ public class ReportApplicationService {
         // 步骤3：查询旧报表
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(cmd.getEnterpriseId());
-        q.setPeriodId(periodId);
+        q.setPeriodId(Long.valueOf(periodId));
         q.setOrderBy("updated_at desc");
         q.setPageNo(1);
         q.setPageSize(1);
@@ -815,5 +822,21 @@ public class ReportApplicationService {
         result.put("investigate_time", reportingPeriod);
 
         return result;
+    }
+
+    public ReportV0 getReportById(String reportId) {
+        ReportInfo reportInfo = reportInfoCommonService.getReportInfoByReportId(reportId);
+        ReportV0 reportV0 = new ReportV0();
+        reportV0.setId(reportInfo.getReportId());
+        reportV0.setCurrentEmployees(reportInfo.getInvestigationCount());
+        reportV0.setInitialEmployees(reportInfo.getConstructionCount());
+        reportV0.setReductionTypeCode(dictionaryService.typeIdToCode(reportInfo.getReductionType()));
+        reportV0.setPrimaryReasonCode(dictionaryService.causeIdToCode(reportInfo.getReason1()));
+        reportV0.setPrimaryReasonDesc(reportInfo.getReason1Desc());
+        reportV0.setSecondaryReasonCode(dictionaryService.causeIdToCode(reportInfo.getReason2()));
+        reportV0.setPrimaryReasonDesc(reportInfo.getReason2Desc());
+        reportV0.setTertiaryReasonCode(dictionaryService.causeIdToCode(reportInfo.getReason3()));
+        reportV0.setPrimaryReasonDesc(reportInfo.getReason3Desc());
+        return reportV0;
     }
 }
