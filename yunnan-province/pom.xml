@@ -36,6 +36,20 @@
             <groupId>com</groupId>
             <artifactId>yunnan-common</artifactId>
             <version>1.0</version>
+            <exclusions>
+                <!-- 排除 Avatica 自带的旧版 slf4j，避免日志冲突 -->
+                <exclusion>
+                    <groupId>org.apache.calcite.avatica</groupId>
+                    <artifactId>avatica</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
+        <!-- 显式引入兼容的 Avatica 版本 -->
+        <dependency>
+            <groupId>org.apache.calcite.avatica</groupId>
+            <artifactId>avatica-core</artifactId>
+            <version>1.25.0</version>
         </dependency>
     </dependencies>
 

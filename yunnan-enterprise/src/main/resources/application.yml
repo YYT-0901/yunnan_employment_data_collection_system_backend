@@ -31,6 +31,9 @@ spring:
           max-idle: 10
           min-idle: 0
       timeout: 2000
+  druid:
+    url: jdbc:avatica:remote:url=http://localhost:8888/druid/v2/sql/avatica/
+    driver-class-name: org.apache.calcite.avatica.remote.Driver
 
 project:
   folder: ./yunnan
