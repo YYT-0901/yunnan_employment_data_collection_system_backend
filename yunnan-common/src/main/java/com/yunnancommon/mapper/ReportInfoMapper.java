@@ -1,5 +1,6 @@
 package com.yunnancommon.mapper;
 
+import com.yunnancommon.entity.vo.ReportInfoDetailVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 /**
@@ -25,5 +26,9 @@ public interface ReportInfoMapper<T, P> extends BaseMapper {
 	 */
 	Integer deleteByReportId(@Param("reportId") String reportId);
 
-
+    
+	/**
+	 * 根据ReportId查询详情，包含企业名称和调查期时间
+	 */
+	ReportInfoDetailVO selectDetailByReportId(@Param("reportId") String reportId);
 }

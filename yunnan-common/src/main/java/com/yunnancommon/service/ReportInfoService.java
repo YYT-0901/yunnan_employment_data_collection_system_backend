@@ -4,6 +4,7 @@ package com.yunnancommon.service;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.ReportInfo;
 import com.yunnancommon.entity.query.ReportInfoQuery;
+import com.yunnancommon.entity.vo.ReportInfoDetailVO;
 
 import java.util.List;
 /**
@@ -58,5 +59,8 @@ public interface ReportInfoService {
 	 */
 	Integer deleteReportInfoByReportId(String reportId);
 
-
+	/**
+	 * 根据ReportId查询详情
+	 */
+	ReportInfoDetailVO getReportInfoDetailByReportId(String reportId);
 }

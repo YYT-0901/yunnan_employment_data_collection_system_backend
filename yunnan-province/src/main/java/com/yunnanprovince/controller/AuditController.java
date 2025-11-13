@@ -8,11 +8,14 @@ import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.enums.ReportStatusEnum;
 import com.yunnancommon.service.EnterpriseReportInfoService;
+import com.yunnancommon.service.ReportInfoService;
+import com.yunnancommon.entity.vo.ReportInfoDetailVO;
 
 import org.springframework.web.bind.annotation.*;
 
 
 import javax.annotation.Resource;
+import java.util.List;
 
 
 /**
@@ -24,6 +27,9 @@ public class AuditController extends ABaseController {
 
     @Resource
     private EnterpriseReportInfoService enterpriseReportInfoService;
+    
+    @Resource
+    private ReportInfoService reportInfoService;
 
     @PostMapping("/loadDataList")
     public ResponseVO loadDataList(@RequestBody LoadReportDataDto loadReportDataDto) {
@@ -77,5 +83,16 @@ public class AuditController extends ABaseController {
                 enterpriseInfoReportDto.getReportId()
         );
         return getSuccessResponseVO(null);
+    }
+
+    // ... existing code ...
+    @GetMapping("/{reportId}/detail")
+    public ResponseVO getReportDetail(@PathVariable("reportId") String reportId) {
+        // 使用ReportInfoService获取包含企业名称和调查期时间的报表详情
+        ReportInfoDetailVO reportDetail = reportInfoService.getReportInfoDetailByReportId(reportId);
+        if (reportDetail == null) {
+            return getErrorResponseVO("未找到该报表详情");
+        }
+        return getSuccessResponseVO(reportDetail);
     }
 }
