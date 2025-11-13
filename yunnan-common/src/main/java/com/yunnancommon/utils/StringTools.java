@@ -1,5 +1,7 @@
 package com.yunnancommon.utils;
 
+import com.yunnancommon.entity.constants.Constants;
+
 public class StringTools {
 
     private static final String CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -21,5 +23,13 @@ public class StringTools {
             sb.append(NUMBERS.charAt(index));
         }
         return sb.toString();
+    }
+
+    public static Integer getTopCategoryCode(Integer code, String category) {
+        return switch (category) {
+            case Constants.REGION -> code / 10000;
+            case Constants.NATURE, Constants.INDUSTRY -> code / 100;
+            default -> null;
+        };
     }
 }

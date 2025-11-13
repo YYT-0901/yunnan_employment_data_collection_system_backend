@@ -3,9 +3,11 @@ package com.yunnanenterprise.controller.report;
 import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.po.EnterpriseInfo;
+import com.yunnancommon.entity.po.ReportInfo;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
 import com.yunnancommon.exception.BusinessException;
+import com.yunnancommon.service.ReportInfoService;
 import com.yunnanenterprise.constants.ReportConstants;
 import com.yunnanenterprise.dto.report.ReportCommand;
 import com.yunnanenterprise.dto.report.ReportV0;
@@ -49,7 +51,6 @@ import java.util.Map;
  * @date 2025-01-27
  */
 @RestController
-@Profile("db")
 @RequestMapping("/api/enterprise")
 public class ReportController extends ABaseController {
 
@@ -57,6 +58,8 @@ public class ReportController extends ABaseController {
     
     @Resource
     private RedisComponent redisComponent;
+
+
 
     public ReportController(ReportApplicationService app) {
         this.app = app;
@@ -283,7 +286,13 @@ public class ReportController extends ABaseController {
         List<ReportV0> list = app.getReportList(enterpriseId, pageNo, pageSize);
         return getSuccessResponseVO(list);
     }
-    
+
+    @GetMapping("/report/get/{reportId}")
+    public ResponseVO<ReportV0> getReportById(
+            @PathVariable("reportId") String reportId) throws BusinessException {
+        return getSuccessResponseVO(app.getReportById(reportId));
+    }
+
     /**
      * 获取当前登录企业ID（核心安全方法）
      * 
