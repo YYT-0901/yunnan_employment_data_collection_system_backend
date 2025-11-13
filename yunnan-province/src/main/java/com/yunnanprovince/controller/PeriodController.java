@@ -1,6 +1,7 @@
 package com.yunnanprovince.controller;
 
 import com.yunnancommon.controller.ABaseController;
+import com.yunnancommon.entity.constants.Constants;
 import com.yunnancommon.entity.dto.PeriodInfoDto;
 import com.yunnancommon.entity.po.PeriodInfo;
 import com.yunnancommon.entity.query.PeriodInfoQuery;
@@ -10,6 +11,8 @@ import com.yunnancommon.service.PeriodInfoService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
 
 @RestController
 @RequestMapping("/period")
@@ -39,6 +42,8 @@ public class PeriodController extends ABaseController {
     public ResponseVO add(@RequestBody PeriodInfoDto periodInfoDto) throws BusinessException {
         PeriodInfo periodInfo = new PeriodInfo();
         BeanUtils.copyProperties(periodInfoDto, periodInfo);
+        periodInfo.setEnterpriseCount(Constants.ZERO);
+        periodInfo.setCreatedAt(new Date());
         periodInfoService.add(periodInfo);
         return getSuccessResponseVO(null);
     }
@@ -47,6 +52,7 @@ public class PeriodController extends ABaseController {
     public ResponseVO update(@RequestBody PeriodInfoDto periodInfoDto) throws BusinessException {
         PeriodInfo periodInfo = new PeriodInfo();
         BeanUtils.copyProperties(periodInfoDto, periodInfo);
+        periodInfo.setUpdatedAt(new Date());
         periodInfoService.updatePeriodInfoByPeriodId(periodInfo, periodInfoDto.getPeriodId());
         return getSuccessResponseVO(null);
     }

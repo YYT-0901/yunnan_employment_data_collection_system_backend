@@ -11,4 +11,10 @@ public class Constants {
     public static final String REDIS_KEY_TOKEN_PROVINCE = REDIS_KEY_PREFIX + "token:province:";
     public static final String REDIS_KEY_TOKEN_CITY = REDIS_KEY_PREFIX + "token:city:";
     public static final String ENTERPRISE_ID_PREFIX = "E";
+    public static final Integer ZERO = 0;
+    public static final Integer ONE = 1;
+    public static final String PATTERN_INVESTIGATE_TIME = "yyyy-MM";
+    public static final String REGION = "region";
+    public static final String NATURE = "nature";
+    public static final String INDUSTRY = "industry";
 }

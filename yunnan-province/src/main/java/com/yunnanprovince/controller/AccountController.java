@@ -8,8 +8,10 @@ import com.yunnancommon.entity.dto.CreateAccountDto;
 import com.yunnancommon.entity.dto.LoginDto;
 import com.yunnancommon.entity.po.AccountInfo;
 import com.yunnancommon.entity.po.EnterpriseInfo;
+import com.yunnancommon.entity.po.PeriodInfo;
 import com.yunnancommon.entity.query.AccountInfoQuery;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
+import com.yunnancommon.entity.query.PeriodInfoQuery;
 import com.yunnancommon.entity.vo.CreatedAccountVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.vo.ResponseVO;
@@ -18,7 +20,9 @@ import com.yunnancommon.enums.ResponseCodeEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.AccountInfoService;
 import com.yunnancommon.service.EnterpriseInfoService;
+import com.yunnancommon.service.PeriodInfoService;
 import com.yunnancommon.service.impl.EnterpriseInfoServiceImpl;
+import com.yunnancommon.utils.DateUtils;
 import com.yunnancommon.utils.TokenUtils;
 import com.yunnanprovince.config.AppConfig;
 import jakarta.annotation.Resource;
@@ -32,6 +36,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 
+import java.util.Date;
+
 @RestController
 @RequestMapping("/account")
 public class AccountController extends ABaseController {
@@ -44,6 +50,8 @@ public class AccountController extends ABaseController {
     private EnterpriseInfoService enterpriseInfoService;
     @Resource
     private AccountInfoService accountInfoService;
+    @Resource
+    private PeriodInfoService periodInfoService;
 
     @PostMapping("/login")
     public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @RequestBody LoginDto loginDto) throws BusinessException {
@@ -130,5 +138,38 @@ public class AccountController extends ABaseController {
         accountInfo.setStatus(changeStatusDto.getStatus());
         accountInfoService.updateAccountInfoByUsername(accountInfo,  changeStatusDto.getUsername());
         return getSuccessResponseVO(null);
+    }
+
+    @GetMapping("/autoLogin")
+    public ResponseVO autoLogin(HttpServletRequest request, HttpServletResponse response) throws BusinessException {
+        String token = getTokenFromCookie(request);
+        if (StringUtils.isEmpty(token)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_901);
+        }
+        if (redisComponent.getProvinceTokenInfo(token) == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_901);
+        }
+        try {
+            token = TokenUtils.generateToken();
+            saveToken2Cookie(response, token);
+
+            redisComponent.saveProvinceTokenInfo(token);
+
+            return getSuccessResponseVO(null);
+        } finally {
+            // 清除旧的token
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                token = null;
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equals(Constants.TOKEN_KEY)) {
+                        token = cookie.getValue();
+                    }
+                }
+                if (!StringUtils.isEmpty(token)) {
+                    redisComponent.cleanProvinceTokenInfo(token);
+                }
+            }
+        }
     }
 }

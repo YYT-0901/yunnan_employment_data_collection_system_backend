@@ -17,17 +17,12 @@
 		<result column="created_at" property="createdAt" />
 		<!--更新时间-->
 		<result column="updated_at" property="updatedAt" />
-		<!--创建时间-->
-		<result column="created_at" property="createdAt" />
-		<!--更新时间-->
-		<result column="updated_at" property="updatedAt" />
 	</resultMap>
 
 	<!--通用查询结果-->
 	<sql id="base_column_list">
 		period_id,investigate_time,period_start_time,period_end_time,enterprise_count,created_at,updated_at
-		period_id,investigate_time,period_start_time,period_end_time,enterprise_count,created_at,updated_at
-		</sql>
+	</sql>
 
 	<!--基础查询条件-->
 	<sql id="base_query_condition">
@@ -111,128 +106,125 @@
 
 	<!--单条插入-->
 	<insert id="insert" parameterType="com.yunnancommon.entity.po.PeriodInfo">
-		<selectKey keyProperty="bean.periodId" resultType="Long" order="AFTER"> select
-		last_insert_id() </selectKey> insert into period_info <trim prefix="(" suffix=")"
-			suffixOverrides=",">
-			<if test="bean.periodId != null"> period_id, </if>
-			<if
-				test="bean.investigateTime != null"> investigate_time, </if>
-			<if
-				test="bean.periodStartTime != null"> period_start_time, </if>
-			<if
-				test="bean.periodEndTime != null"> period_end_time, </if>
-			<if
-				test="bean.investigateTime != null"> investigate_time, </if>
-			<if
-				test="bean.periodStartTime != null"> period_start_time, </if>
-			<if
-				test="bean.periodEndTime != null"> period_end_time, </if>
-			<if
-				test="bean.enterpriseCount != null"> enterprise_count, </if>
-			<if
-				test="bean.createdAt != null"> created_at, </if>
+
+		insert into period_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.periodId != null">
+				period_id,
+			</if>
+			<if test="bean.investigateTime != null">
+				investigate_time,
+			</if>
+			<if test="bean.periodStartTime != null">
+				period_start_time,
+			</if>
+			<if test="bean.periodEndTime != null">
+				period_end_time,
+			</if>
+			<if test="bean.enterpriseCount != null">
+				enterprise_count,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
 			<if test="bean.updatedAt != null">
-		updated_at, </if>
-			<if test="bean.createdAt != null"> created_at, </if>
-			<if
-				test="bean.updatedAt != null"> updated_at, </if>
+				updated_at,
+			</if>
 		</trim>
-		<trim
-			prefix="values (" suffix=")" suffixOverrides=",">
-			<if test="bean.periodId != null"> #{bean.periodId}, </if>
-			<if
-				test="bean.investigateTime != null"> #{bean.investigateTime}, </if>
-			<if
-				test="bean.periodStartTime != null"> #{bean.periodStartTime}, </if>
-			<if
-				test="bean.periodEndTime != null"> #{bean.periodEndTime}, </if>
-			<if
-				test="bean.investigateTime != null"> #{bean.investigateTime}, </if>
-			<if
-				test="bean.periodStartTime != null"> #{bean.periodStartTime}, </if>
-			<if
-				test="bean.periodEndTime != null"> #{bean.periodEndTime}, </if>
-			<if
-				test="bean.enterpriseCount != null"> #{bean.enterpriseCount}, </if>
-			<if
-				test="bean.createdAt != null"> #{bean.createdAt}, </if>
-			<if
-				test="bean.updatedAt != null"> #{bean.updatedAt}, </if>
-			<if
-				test="bean.createdAt != null"> #{bean.createdAt}, </if>
-			<if
-				test="bean.updatedAt != null"> #{bean.updatedAt}, </if>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.periodId != null">
+				#{bean.periodId},
+			</if>
+			<if test="bean.investigateTime != null">
+				#{bean.investigateTime},
+			</if>
+			<if test="bean.periodStartTime != null">
+				#{bean.periodStartTime},
+			</if>
+			<if test="bean.periodEndTime != null">
+				#{bean.periodEndTime},
+			</if>
+			<if test="bean.enterpriseCount != null">
+				#{bean.enterpriseCount},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
 		</trim>
 	</insert>
 
 	<!--插入或更新-->
-	<insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.PeriodInfo"> insert into
-		period_info <trim prefix="(" suffix=")" suffixOverrides=",">
-			<if test="bean.periodId != null"> period_id, </if>
-			<if
-				test="bean.investigateTime != null"> investigate_time, </if>
-			<if
-				test="bean.periodStartTime != null"> period_start_time, </if>
-			<if
-				test="bean.periodEndTime != null"> period_end_time, </if>
-			<if
-				test="bean.investigateTime != null"> investigate_time, </if>
-			<if
-				test="bean.periodStartTime != null"> period_start_time, </if>
-			<if
-				test="bean.periodEndTime != null"> period_end_time, </if>
-			<if
-				test="bean.enterpriseCount != null"> enterprise_count, </if>
-			<if
-				test="bean.createdAt != null"> created_at, </if>
+	<insert id="insertOrUpdate" parameterType="com.yunnancommon.entity.po.PeriodInfo">
+		insert into period_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.periodId != null">
+				period_id,
+			</if>
+			<if test="bean.investigateTime != null">
+				investigate_time,
+			</if>
+			<if test="bean.periodStartTime != null">
+				period_start_time,
+			</if>
+			<if test="bean.periodEndTime != null">
+				period_end_time,
+			</if>
+			<if test="bean.enterpriseCount != null">
+				enterprise_count,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
 			<if test="bean.updatedAt != null">
-		updated_at, </if>
-			<if test="bean.createdAt != null"> created_at, </if>
-			<if
-				test="bean.updatedAt != null"> updated_at, </if>
+				updated_at,
+			</if>
 		</trim>
-		<trim
-			prefix="values (" suffix=")" suffixOverrides=",">
-			<if test="bean.periodId != null"> #{bean.periodId}, </if>
-			<if
-				test="bean.investigateTime != null"> #{bean.investigateTime}, </if>
-			<if
-				test="bean.periodStartTime != null"> #{bean.periodStartTime}, </if>
-			<if
-				test="bean.periodEndTime != null"> #{bean.periodEndTime}, </if>
-			<if
-				test="bean.investigateTime != null"> #{bean.investigateTime}, </if>
-			<if
-				test="bean.periodStartTime != null"> #{bean.periodStartTime}, </if>
-			<if
-				test="bean.periodEndTime != null"> #{bean.periodEndTime}, </if>
-			<if
-				test="bean.enterpriseCount != null"> #{bean.enterpriseCount}, </if>
-			<if
-				test="bean.createdAt != null"> #{bean.createdAt}, </if>
-			<if
-				test="bean.updatedAt != null"> #{bean.updatedAt}, </if>
-			<if
-				test="bean.createdAt != null"> #{bean.createdAt}, </if>
-			<if
-				test="bean.updatedAt != null"> #{bean.updatedAt}, </if>
-		</trim> on DUPLICATE
-		key update <trim prefix="" suffix="" suffixOverrides=",">
-			<if test="bean.investigateTime != null"> investigate_time = VALUES(investigate_time), </if>
-			<if
-				test="bean.periodStartTime != null"> period_start_time = VALUES(period_start_time), </if>
-			<if
-				test="bean.periodEndTime != null"> period_end_time = VALUES(period_end_time), </if>
-			<if
-				test="bean.enterpriseCount != null"> enterprise_count = VALUES(enterprise_count), </if>
-			<if
-				test="bean.createdAt != null"> created_at = VALUES(created_at), </if>
-			<if
-				test="bean.updatedAt != null"> updated_at = VALUES(updated_at), </if>
-			<if
-				test="bean.createdAt != null"> created_at = VALUES(created_at), </if>
-			<if
-				test="bean.updatedAt != null"> updated_at = VALUES(updated_at), </if>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="bean.periodId != null">
+				#{bean.periodId},
+			</if>
+			<if test="bean.investigateTime != null">
+				#{bean.investigateTime},
+			</if>
+			<if test="bean.periodStartTime != null">
+				#{bean.periodStartTime},
+			</if>
+			<if test="bean.periodEndTime != null">
+				#{bean.periodEndTime},
+			</if>
+			<if test="bean.enterpriseCount != null">
+				#{bean.enterpriseCount},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.investigateTime != null">
+				investigate_time = VALUES(investigate_time),
+			</if>
+			<if test="bean.periodStartTime != null">
+				period_start_time = VALUES(period_start_time),
+			</if>
+			<if test="bean.periodEndTime != null">
+				period_end_time = VALUES(period_end_time),
+			</if>
+			<if test="bean.enterpriseCount != null">
+				enterprise_count = VALUES(enterprise_count),
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = VALUES(created_at),
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = VALUES(updated_at),
+			</if>
 		</trim>
 	</insert>
 
@@ -262,31 +254,30 @@
 			refid="base_column_list" /> from period_info where period_id = #{periodId} </select>
 
 	<!--根据PeriodId更新-->
-	<update id="updateByPeriodId" parameterType="com.yunnancommon.entity.po.PeriodInfo"> update
-		period_info <set>
-			<if test="bean.periodId != null"> period_id = #{bean.periodId}, </if>
-			<if
-				test="bean.investigateTime != null"> investigate_time = #{bean.investigateTime}, </if>
-			<if
-				test="bean.periodStartTime != null"> period_start_time = #{bean.periodStartTime}, </if>
-			<if
-				test="bean.periodEndTime != null"> period_end_time = #{bean.periodEndTime}, </if>
-			<if
-				test="bean.investigateTime != null"> investigate_time = #{bean.investigateTime}, </if>
-			<if
-				test="bean.periodStartTime != null"> period_start_time = #{bean.periodStartTime}, </if>
-			<if
-				test="bean.periodEndTime != null"> period_end_time = #{bean.periodEndTime}, </if>
-			<if
-				test="bean.enterpriseCount != null"> enterprise_count = #{bean.enterpriseCount}, </if>
-			<if
-				test="bean.createdAt != null"> created_at = #{bean.createdAt}, </if>
-			<if
-				test="bean.updatedAt != null"> updated_at = #{bean.updatedAt}, </if>
-			<if
-				test="bean.createdAt != null"> created_at = #{bean.createdAt}, </if>
-			<if
-				test="bean.updatedAt != null"> updated_at = #{bean.updatedAt}, </if>
+	<update id="updateByPeriodId" parameterType="com.yunnancommon.entity.po.PeriodInfo">
+		update period_info
+		<set>
+			<if test="bean.periodId != null">
+				period_id = #{bean.periodId},
+			</if>
+			<if test="bean.investigateTime != null">
+				investigate_time = #{bean.investigateTime},
+			</if>
+			<if test="bean.periodStartTime != null">
+				period_start_time = #{bean.periodStartTime},
+			</if>
+			<if test="bean.periodEndTime != null">
+				period_end_time = #{bean.periodEndTime},
+			</if>
+			<if test="bean.enterpriseCount != null">
+				enterprise_count = #{bean.enterpriseCount},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
 		</set>
 		where period_id = #{periodId} </update>
 
@@ -345,5 +336,6 @@
 	<!--根据params删除-->
 	<delete id="deleteByParams"> delete from period_info <include refid="query_condition" />
 	</delete>
+
 
 </mapper>

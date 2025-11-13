@@ -8,12 +8,12 @@ public final class PeriodUtils {
     private PeriodUtils() {
     }
 
-    public static Integer toPeriodId(String yyyyMm) {
+    public static Long toPeriodId(String yyyyMm) {
         if (yyyyMm == null || yyyyMm.length() != 7 || yyyyMm.charAt(4) != '-') {
             throw new IllegalArgumentException("reporting_period 格式必须是 YYYY-MM");
         }
         String compact = yyyyMm.substring(0, 4) + yyyyMm.substring(5, 7);
-        return Integer.parseInt(compact);
+        return (long) Integer.parseInt(compact);
     }
 
     public static String fromPeriodId(Long periodId) {
