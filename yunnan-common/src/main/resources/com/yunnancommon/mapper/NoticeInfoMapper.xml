@@ -111,31 +111,31 @@
 			<![CDATA[ and publish_time >= str_to_date(#{query.publishTimeStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.publishTimeEnd != null and query.publishTimeEnd != ''">
-			<![CDATA[ and publish_time < str_to_date(#{query.publishTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and publish_time < str_to_date(#{query.publishTimeEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 		<if test="query.startTimeStart != null and query.startTimeStart != ''">
 			<![CDATA[ and start_time >= str_to_date(#{query.startTimeStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.startTimeEnd != null and query.startTimeEnd != ''">
-			<![CDATA[ and start_time < str_to_date(#{query.startTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and start_time < str_to_date(#{query.startTimeEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 		<if test="query.endTimeStart != null and query.endTimeStart != ''">
 			<![CDATA[ and end_time >= str_to_date(#{query.endTimeStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.endTimeEnd != null and query.endTimeEnd != ''">
-			<![CDATA[ and end_time < str_to_date(#{query.endTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and end_time < str_to_date(#{query.endTimeEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 		<if test="query.createdAtStart != null and query.createdAtStart != ''">
 			<![CDATA[ and created_at >= str_to_date(#{query.createdAtStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
-			<![CDATA[ and created_at < str_to_date(#{query.createdAtEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and created_at < str_to_date(#{query.createdAtEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 		<if test="query.updatedAtStart != null and query.updatedAtStart != ''">
 			<![CDATA[ and updated_at >= str_to_date(#{query.updatedAtStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
-			<![CDATA[ and updated_at < str_to_date(#{query.updatedAtEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and updated_at < str_to_date(#{query.updatedAtEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 	</sql>
 

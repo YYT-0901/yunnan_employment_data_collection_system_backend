@@ -40,3 +40,9 @@ build/
 
 ### JDK ###
 .jdk/
+
+### Logs and Temporary Files ###
+*.log
+dump.rdb
+yunnan/
+log.path_IS_UNDEFINED/
