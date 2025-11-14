@@ -101,19 +101,19 @@ public class OverviewServiceImpl implements OverviewService {
         statisticsDataVO.setProgressDataList(progressDataList);
 
         // 各地市分布数据
-        List<DistributionData> regionCode = processDistributionData(
+        processDistributionData(
                 "region_code",
                 CityDict::getNameByCode,
                 statisticsDataVO::setRegionDistributionDataList
         );
 
-        List<DistributionData> natureCode = processDistributionData(
+        processDistributionData(
                 "nature_code",
                 NatureDict::getNameByCode,
                 statisticsDataVO::setNatureDistributionDataList  // 修正：使用正确的setter
         );
 
-        List<DistributionData> industryCode = processDistributionData(
+        processDistributionData(
                 "industry_code",
                 IndustryDict::getNameByCode,
                 statisticsDataVO::setIndustryDistributionDataList
@@ -121,7 +121,7 @@ public class OverviewServiceImpl implements OverviewService {
         return statisticsDataVO;
     }
 
-    private List<DistributionData> processDistributionData(
+    private void processDistributionData(
             String field,
             Function<Integer, String> nameMapper,
             Consumer<List<DistributionData>> setter) {
@@ -132,6 +132,5 @@ public class OverviewServiceImpl implements OverviewService {
             item.setName(nameMapper.apply(code));
         });
         setter.accept(dataList);
-        return dataList;
     }
 }
