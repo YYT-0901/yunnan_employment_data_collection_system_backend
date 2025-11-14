@@ -32,6 +32,11 @@
 		<result column="enterprise_region" property="enterpriseRegion" />
 	</resultMap>
 
+	<resultMap id="detail_result_map" type="com.yunnancommon.entity.vo.EnterpriseReportVO" extends="base_result_map">
+		<!--企业名称映射-->
+		<result column="enterprise_name" property="enterpriseName" />
+	</resultMap>
+
 	<!--通用查询结果-->
 	<sql id="base_column_list">
 		enterprise_id,period_id,report_id,old_report_id,reason_return,status,period_start_time,period_end_time,created_at,updated_at,enterprise_nature,enterprise_industry,enterprise_region
@@ -389,8 +394,9 @@
 		select <include refid="base_column_list" /> from enterprise_report_info where enterprise_id = #{enterpriseId} and period_id = #{periodId} and report_id = #{reportId}
 	</select>
 
-	<select id="selectListWithAssociated" resultType="com.yunnancommon.entity.vo.EnterpriseReportVO">
-		SELECT eri.enterprise_id,eri.period_id,eri.report_id,eri.old_report_id,eri.reason_return,eri.status,eri.period_start_time,eri.period_end_time,eri.created_at,eri.updated_at,eri.enterprise_nature,eri.enterprise_industry,eri.enterprise_region, ei.name AS enterprise_name FROM enterprise_report_info eri
+	<select id="selectListWithAssociated" resultMap="detail_result_map">
+		SELECT eri.enterprise_id,eri.period_id,eri.report_id,eri.old_report_id,eri.reason_return,eri.status,eri.period_start_time,eri.period_end_time,eri.created_at,eri.updated_at,eri.enterprise_nature,eri.enterprise_industry,eri.enterprise_region, ei.name AS enterprise_name
+		FROM enterprise_report_info eri
 		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
 		<include refid="query_condition" />
 		<if test="query.orderBy != null">order by ${query.orderBy}</if>
