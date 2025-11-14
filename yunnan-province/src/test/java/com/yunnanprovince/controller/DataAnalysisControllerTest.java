@@ -9,13 +9,18 @@ import com.yunnancommon.service.DruidQueryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import com.yunnanprovince.config.TestConfig;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -23,7 +28,19 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(DataAnalysisController.class)
+@WebMvcTest(controllers = DataAnalysisController.class)
+@Import(TestConfig.class)
+@TestPropertySource(properties = {
+    "spring.datasource.url=jdbc:h2:mem:testdb",
+    "spring.datasource.username=sa",
+    "spring.datasource.password=",
+    "spring.datasource.driver-class-name=org.h2.Driver",
+    "spring.jpa.hibernate.ddl-auto=create-drop"
+})
+@EnableAutoConfiguration(exclude = {
+    org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
+    org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class
+})
 public class DataAnalysisControllerTest {
 
     @Autowired
@@ -213,7 +230,7 @@ public class DataAnalysisControllerTest {
     void testMultiDimensionalWithLargeDataSet() throws Exception {
         // Test performance with larger dataset
         when(druidQueryService.getMultiDimensionalData(any(), any(), any(), any()))
-                .thenReturn(Collections.nCopies(1000, new Object()));  // 1000 data points
+                .thenReturn(Collections.nCopies(1000, new HashMap<String, Object>()));  // 1000 data points
 
         AnalysisQueryDto query = new AnalysisQueryDto();
         query.setPeriodIds(Arrays.asList(1L, 2L, 3L));  // 3 periods
