@@ -15,6 +15,7 @@ import com.yunnancommon.entity.vo.StatisticsDataVO;
 import com.yunnancommon.enums.CityDict;
 import com.yunnancommon.enums.IndustryDict;
 import com.yunnancommon.enums.NatureDict;
+import com.yunnancommon.enums.ReportStatusEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.mapper.EnterpriseInfoMapper;
 import com.yunnancommon.mapper.EnterpriseReportInfoMapper;
@@ -22,6 +23,7 @@ import com.yunnancommon.mapper.OverviewMapper;
 import com.yunnancommon.mapper.PeriodInfoMapper;
 import com.yunnancommon.service.OverviewService;
 import com.yunnancommon.utils.DateUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,6 +36,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 @Service
+@Slf4j
 public class OverviewServiceImpl implements OverviewService {
 
     @Resource
@@ -65,10 +68,11 @@ public class OverviewServiceImpl implements OverviewService {
 
         StatisticsDataQuery statisticsDataQuery = new StatisticsDataQuery();
         statisticsDataQuery.setPeriodId(periodInfo.getPeriodId());
+        statisticsDataQuery.setStatus(List.of(ReportStatusEnum.ARCHIVED.getCode(), ReportStatusEnum.APPROVED.getCode(), ReportStatusEnum.CITY_AUDITING.getCode(), ReportStatusEnum.PROVINCE_AUDITING.getCode()));
         List<OverviewStatisticsDataDto> statisticList = overviewMapper.getStatisticList(statisticsDataQuery);
 
-        Integer constructionCount = statisticList.stream().mapToInt(OverviewStatisticsDataDto::getConstructionCount).sum();
-        Integer investigationCount = statisticList.stream().mapToInt(OverviewStatisticsDataDto::getInvestigationCount).sum();
+        Integer constructionCount = statisticList.stream().mapToInt(item -> item.getConstructionCount() != null ? item.getConstructionCount() : 0).sum();
+        Integer investigationCount = statisticList.stream().mapToInt(item -> item.getInvestigationCount() != null ? item.getInvestigationCount() : 0).sum();
         statisticsDataVO.setConstructionCount(constructionCount);
         statisticsDataVO.setInvestigationCount(investigationCount);
         statisticsDataVO.setPositionChanges(investigationCount - constructionCount);
@@ -82,7 +86,7 @@ public class OverviewServiceImpl implements OverviewService {
             enterpriseInfoQuery.setRegionCode(city.getCode());
             Integer totalCount = enterpriseInfoMapper.selectCount(enterpriseInfoQuery);
             progressData.setTotal(totalCount);
-            Integer currentCount = (int) statisticList.stream().filter(item -> item.getEnterpriseRegion().equals(city.getCode())).count();
+            Integer currentCount = (int) statisticList.stream().filter(item -> city.getCode().equals(item.getEnterpriseRegion())).count();
             progressData.setValue(currentCount);
 
             // 防止 totalCount 为 0 导致除零异常

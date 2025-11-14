@@ -4,20 +4,20 @@
 <mapper namespace="com.yunnancommon.mapper.OverviewMapper">
 
     <select id="getStatisticList" resultType="com.yunnancommon.entity.dto.OverviewStatisticsDataDto">
-        SELECT eri.period_id,
-        eri.report_id,
-        eri.old_report_id,
-        eri.reason_return,
-        eri.status,
-        eri.period_start_time,
-        eri.period_end_time,
-        eri.created_at,
-        eri.updated_at,
-        eri.enterprise_nature,
-        eri.enterprise_industry,
-        eri.enterprise_region,
-        ri.construction_count,
-        ri.investigation_count
+        SELECT eri.period_id as periodId,
+        eri.report_id as reportId,
+        eri.old_report_id as oldReportId,
+        eri.reason_return as reasonReturn,
+        eri.status as status,
+        eri.period_start_time as periodStartTime,
+        eri.period_end_time as periodEndTime,
+        eri.created_at as createdAt,
+        eri.updated_at as updatedAt,
+        eri.enterprise_nature as enterpriseNature,
+        eri.enterprise_industry as enterpriseIndustry,
+        eri.enterprise_region as enterpriseRegion,
+        ri.construction_count as constructionCount,
+        ri.investigation_count as investigationCount
         FROM enterprise_report_info eri
         LEFT JOIN report_info ri ON eri.report_id = ri.report_id
         <where>
@@ -26,6 +26,12 @@
             </if>
             <if test="query.enterpriseRegion != null">
                 AND eri.enterprise_region = #{query.enterpriseRegion}
+            </if>
+            <if test="query.status != null and query.status.size() > 0">
+                AND eri.status IN
+                <foreach collection="query.status" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
