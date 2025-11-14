@@ -31,11 +31,15 @@ spring:
           max-idle: 10
           min-idle: 0
       timeout: 2000
-
   # Druid 数据源配置
   druid:
     url: jdbc:avatica:remote:url=http://localhost:8888/druid/v2/sql/avatica/
     driver-class-name: org.apache.calcite.avatica.remote.Driver
+
+#mybatis自动转驼峰
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
 
 project:
   folder: ./yunnan
