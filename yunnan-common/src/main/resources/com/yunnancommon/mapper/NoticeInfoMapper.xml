@@ -494,5 +494,33 @@
 		delete from notice_info where notice_id = #{noticeId}
 	</delete>
 
+	<!--根据用户名查询未读通知数量-->
+	<select id="countNoReadNoticeInfoByUsername" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM notice_info n 
+		WHERE n.status = 1 
+		AND (n.notice_status = 1 OR n.notice_status = 4)
+		AND n.notice_id NOT IN (SELECT nr.notice_id FROM notice_read_info nr WHERE nr.username = #{username})
+		<![CDATA[ and n.start_time < str_to_date(#{curTime}, '%Y-%m-%d') + interval 1 day ]]>
+		<![CDATA[ and n.end_time >= str_to_date(#{curTime}, '%Y-%m-%d') ]]>
+	</select>
+
+	<!--查询通知列表并判断是否已读-->
+	<select id="selectListWithReadStatus" resultMap="base_result_map_with_read_status">
+		SELECT 
+			n.notice_id, n.title, n.content, n.attachment, n.attachment_name, n.is_important, 
+			n.notice_status, n.publisher, n.publish_time, n.start_time, n.end_time, n.read_count, 
+			n.status, n.created_at, n.updated_at,
+			CASE WHEN nr.notice_id IS NOT NULL THEN 1 ELSE 0 END as is_read
+		FROM notice_info n
+		LEFT JOIN notice_read_info nr ON n.notice_id = nr.notice_id AND nr.username = #{username}
+		where n.status = 1 AND (n.notice_status = 1 OR n.notice_status = 4)
+		<![CDATA[ and n.start_time < str_to_date(#{curTime}, '%Y-%m-%d') + interval 1 day ]]>
+		<![CDATA[ and n.end_time >= str_to_date(#{curTime}, '%Y-%m-%d') ]]>
+	</select>
+
+	<resultMap id="base_result_map_with_read_status" type="com.yunnancommon.entity.dto.NoticeInfoDto" extends="base_result_map">
+		<result column="is_read" property="isRead" />
+	</resultMap>
+
 
 </mapper>

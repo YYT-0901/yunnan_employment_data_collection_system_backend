@@ -1,30 +1,20 @@
 package com.yunnanprovince.controller;
 
-import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.dto.EnterpriseInfoReportDto;
 import com.yunnancommon.entity.dto.LoadReportDataDto;
 import com.yunnancommon.entity.po.EnterpriseReportInfo;
-import com.yunnancommon.entity.po.PeriodInfo;
-import com.yunnancommon.entity.po.ReportAuditHistory;
 import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
-import com.yunnancommon.entity.query.PeriodInfoQuery;
 import com.yunnancommon.entity.vo.ResponseVO;
-import com.yunnancommon.enums.ReportAuditLevelEnum;
-import com.yunnancommon.enums.ReportAuditResult;
 import com.yunnancommon.enums.ReportStatusEnum;
 import com.yunnancommon.service.EnterpriseReportInfoService;
-import com.yunnancommon.service.PeriodInfoService;
-import com.yunnancommon.service.ReportAuditHistoryService;
 import com.yunnancommon.service.ReportInfoService;
 import com.yunnancommon.entity.vo.ReportInfoDetailVO;
 
-import com.yunnanprovince.config.AppConfig;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
+
 import javax.annotation.Resource;
-import java.net.http.HttpRequest;
 import java.util.List;
 
 
@@ -41,29 +31,14 @@ public class AuditController extends ABaseController {
     @Resource
     private ReportInfoService reportInfoService;
 
-    @Resource
-    private ReportAuditHistoryService reportAuditHistoryService;
-
-    @Resource
-    private AppConfig appConfig;
-
-    @Resource
-    private PeriodInfoService periodInfoService;
-
-
     @PostMapping("/loadDataList")
     public ResponseVO loadDataList(@RequestBody LoadReportDataDto loadReportDataDto) {
         EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
-        if(loadReportDataDto.getInvestigateTime() != null) {
-            PeriodInfo periodInfo = periodInfoService.getPeriodInfoByInvestigateTime(loadReportDataDto.getInvestigateTime());
-            if(periodInfo != null) {
-                query.setPeriodId(periodInfo.getPeriodId());
-            }
-        }
         query.setPageNo(loadReportDataDto.getPage());
         query.setPageSize(loadReportDataDto.getPageSize());
         query.setEnterpriseIndustry(loadReportDataDto.getIndustry());
         query.setEnterpriseNature(loadReportDataDto.getNature());
+        query.setPeriodId(loadReportDataDto.getPeriodId());
         query.setEnterpriseRegion(loadReportDataDto.getRegion());
         query.setEnterpriseNameFuzzy(loadReportDataDto.getEnterpriseName());
         query.setStatus(loadReportDataDto.getStatus());
@@ -72,7 +47,6 @@ public class AuditController extends ABaseController {
 
     @PostMapping("/approve")
     public ResponseVO approve(@RequestBody EnterpriseInfoReportDto enterpriseInfoReportDto) {
-
         EnterpriseReportInfo enterpriseReportInfo = new EnterpriseReportInfo();
         enterpriseReportInfo.setStatus(ReportStatusEnum.APPROVED.getCode());
         enterpriseReportInfoService.updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(
@@ -81,17 +55,6 @@ public class AuditController extends ABaseController {
                 enterpriseInfoReportDto.getPeriodId(),
                 enterpriseInfoReportDto.getReportId()
         );
-
-        // 记录审核历史
-        ReportAuditHistory auditHistory = new ReportAuditHistory();
-        auditHistory.setEnterpriseId(enterpriseInfoReportDto.getEnterpriseId());
-        auditHistory.setPeriodId(enterpriseInfoReportDto.getPeriodId());
-        auditHistory.setReportId(enterpriseInfoReportDto.getReportId());
-        auditHistory.setAuditLevel(ReportAuditLevelEnum.PROVINCIAL.getCode());
-        auditHistory.setAuditResult(ReportAuditResult.APPROVED.getCode());
-        auditHistory.setAuditor(appConfig.getUsername());
-        reportAuditHistoryService.add(auditHistory);
-
         return getSuccessResponseVO(null);
     }
 
@@ -106,16 +69,6 @@ public class AuditController extends ABaseController {
                 enterpriseInfoReportDto.getPeriodId(),
                 enterpriseInfoReportDto.getReportId()
         );
-
-        ReportAuditHistory auditHistory = new ReportAuditHistory();
-        auditHistory.setEnterpriseId(enterpriseInfoReportDto.getEnterpriseId());
-        auditHistory.setPeriodId(enterpriseInfoReportDto.getPeriodId());
-        auditHistory.setReportId(enterpriseInfoReportDto.getReportId());
-        auditHistory.setAuditLevel(ReportAuditLevelEnum.PROVINCIAL.getCode());
-        auditHistory.setAuditResult(ReportAuditResult.REJECTED.getCode());
-        auditHistory.setAuditor(appConfig.getUsername());
-        reportAuditHistoryService.add(auditHistory);
-
         return getSuccessResponseVO(null);
     }
 

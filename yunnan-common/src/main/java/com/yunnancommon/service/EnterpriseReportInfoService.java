@@ -1,6 +1,7 @@
 package com.yunnancommon.service;
 
 
+import com.yunnancommon.entity.vo.CurrentVO;
 import com.yunnancommon.entity.vo.EnterpriseReportVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.EnterpriseReportInfo;
@@ -61,4 +62,6 @@ public interface EnterpriseReportInfoService {
 
 
 	PaginationResultVO<EnterpriseReportVO> findListByPageWithAssociatedEnterpriseName(EnterpriseReportInfoQuery query);
+
+    void getStatisticCount(CurrentVO currentVO);
 }

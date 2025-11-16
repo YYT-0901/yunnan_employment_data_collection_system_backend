@@ -12,6 +12,4 @@ public class AppConfig {
 
     @Value("${admin.password:}")
     private String password;
-
-
 }
