@@ -1,17 +1,25 @@
 package com.yunnancommon.service.impl;
 
 
+import com.yunnancommon.entity.dto.NoticeInfoDto;
+import com.yunnancommon.entity.po.NoticeReadInfo;
 import com.yunnancommon.entity.query.SimplePage;
+import com.yunnancommon.entity.vo.CurrentVO;
+import com.yunnancommon.enums.DateTimePatternEnum;
 import com.yunnancommon.enums.PageSize;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.NoticeInfo;
 import com.yunnancommon.entity.query.NoticeInfoQuery;
 import com.yunnancommon.mapper.NoticeInfoMapper;
+import com.yunnancommon.mapper.NoticeReadInfoMapper;
 import com.yunnancommon.service.NoticeInfoService;
+import com.yunnancommon.service.NoticeReadInfoService;
+import com.yunnancommon.utils.DateUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
+import java.util.Date;
 import java.util.List;
 /**
  * @Description:通知消息表ServiceImpl
@@ -23,6 +31,12 @@ public class NoticeInfoServiceImpl implements NoticeInfoService {
 
 	@Resource
 	private NoticeInfoMapper<NoticeInfo, NoticeInfoQuery> noticeInfoMapper;
+
+	@Resource
+	private NoticeReadInfoService noticeReadInfoService;
+
+	@Resource
+	private NoticeReadInfoMapper<NoticeReadInfo, Object> noticeReadInfoMapper;
 
 	/**
 	 * 根据条件查询列表
@@ -108,5 +122,11 @@ public class NoticeInfoServiceImpl implements NoticeInfoService {
 		return this.noticeInfoMapper.deleteByNoticeId(noticeId);
 	}
 
-
+	@Override
+	public void getCurrentNoticeInfo(String username, CurrentVO currentVO) {
+		String curTime = DateUtils.format(new Date(), DateTimePatternEnum.YYYY_MM_DD.getPattern());
+		List<NoticeInfoDto> noticeInfoDtoList = this.noticeInfoMapper.selectListWithReadStatus(curTime, username);
+        currentVO.setNoticeInfoList(noticeInfoDtoList);
+        currentVO.setNoReadCount(this.noticeInfoMapper.countNoReadNoticeInfoByUsername(curTime,username));
+	}
 }
