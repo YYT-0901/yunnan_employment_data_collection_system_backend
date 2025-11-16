@@ -33,8 +33,10 @@
 	</resultMap>
 
 	<resultMap id="detail_result_map" type="com.yunnancommon.entity.vo.EnterpriseReportVO" extends="base_result_map">
-		<!--企业名称映射-->
 		<result column="enterprise_name" property="enterpriseName" />
+		<result column="construction_count" property="constructionCount" />
+		<result column="investigation_count" property="investigationCount" />
+		<result column="investigate_time" property="investigateTime" />
 	</resultMap>
 
 	<!--通用查询结果-->
@@ -83,6 +85,7 @@
 		<if test="query.enterpriseRegion != null">
 			and enterprise_region = #{query.enterpriseRegion}
 		</if>
+
 	</sql>
 
 	<!--扩展查询条件-->
@@ -141,7 +144,6 @@
 		select
 		<include refid="base_column_list" />
 		from enterprise_report_info
-		<include refid="query_condition" />
 		<if test="query.orderBy != null">order by ${query.orderBy}</if>
 		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
 	</select>
@@ -395,10 +397,69 @@
 	</select>
 
 	<select id="selectListWithAssociated" resultMap="detail_result_map">
-		SELECT eri.enterprise_id,eri.period_id,eri.report_id,eri.old_report_id,eri.reason_return,eri.status,eri.period_start_time,eri.period_end_time,eri.created_at,eri.updated_at,eri.enterprise_nature,eri.enterprise_industry,eri.enterprise_region, ei.name AS enterprise_name
+		SELECT eri.enterprise_id,
+		       eri.period_id,
+		       eri.report_id,
+		       eri.old_report_id,
+		       eri.reason_return,
+		       eri.status,
+		       eri.period_start_time,
+		       eri.period_end_time,
+		       eri.created_at,
+		       eri.updated_at,
+		       eri.enterprise_nature,
+		       eri.enterprise_industry,
+		       eri.enterprise_region,
+		       ei.name AS enterprise_name,
+		       ri.construction_count,
+		       ri.investigation_count,
+		       pi.investigate_time
 		FROM enterprise_report_info eri
 		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
-		<include refid="query_condition" />
+		LEFT JOIN report_info ri ON eri.report_id = ri.report_id
+		LEFT JOIN period_info pi ON eri.period_id = pi.period_id
+		<where>
+			<if test="query.enterpriseId != null and query.enterpriseId != ''">
+				and eri.enterprise_id = #{query.enterpriseId}
+			</if>
+			<if test="query.periodId != null">
+				and eri.period_id = #{query.periodId}
+			</if>
+			<if test="query.reportId != null and query.reportId != ''">
+				and eri.report_id = #{query.reportId}
+			</if>
+			<if test="query.oldReportId != null and query.oldReportId != ''">
+				and eri.old_report_id = #{query.oldReportId}
+			</if>
+			<if test="query.reasonReturn != null and query.reasonReturn != ''">
+				and eri.reason_return = #{query.reasonReturn}
+			</if>
+			<if test="query.status != null">
+				and eri.status = #{query.status}
+			</if>
+			<if test="query.periodStartTime != null">
+				and eri.period_start_time = #{query.periodStartTime}
+			</if>
+			<if test="query.periodEndTime != null">
+				and eri.period_end_time = #{query.periodEndTime}
+			</if>
+			<if test="query.createdAt != null">
+				and eri.created_at = #{query.createdAt}
+			</if>
+			<if test="query.updatedAt != null">
+				and eri.updated_at = #{query.updatedAt}
+			</if>
+			<if test="query.enterpriseNature != null">
+				and eri.enterprise_nature = #{query.enterpriseNature}
+			</if>
+			<if test="query.enterpriseIndustry != null">
+				and eri.enterprise_industry = #{query.enterpriseIndustry}
+			</if>
+			<if test="query.enterpriseRegion != null">
+				and eri.enterprise_region = #{query.enterpriseRegion}
+			</if>
+			<include refid="base_query_condition_extend" />
+		</where>
 		<if test="query.orderBy != null">order by ${query.orderBy}</if>
 		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
 	</select>
