@@ -10,6 +10,7 @@ import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
 import com.yunnancommon.mapper.EnterpriseReportInfoMapper;
 import com.yunnancommon.service.EnterpriseReportInfoService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -108,6 +109,7 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
 	 * 根据EnterpriseIdAndPeriodIdAndReportId更新
 	 */
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public Integer updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(EnterpriseReportInfo bean, String enterpriseId, Long periodId, String reportId) {
 		return this.enterpriseReportInfoMapper.updateByEnterpriseIdAndPeriodIdAndReportId(bean, enterpriseId, periodId, reportId);
 	}
