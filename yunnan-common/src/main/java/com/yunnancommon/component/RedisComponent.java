@@ -40,4 +40,12 @@ public class RedisComponent {
     public void cleanCityTokenInfo(String token) {
         redisUtils.delete(Constants.REDIS_KEY_TOKEN_CITY + token);
     }
+
+    public void saveCityTokenInfo(TokenInfoVO tokenInfoVO) {
+        redisUtils.setex(Constants.REDIS_KEY_TOKEN_CITY + tokenInfoVO.getToken(), tokenInfoVO, Constants.REDIS_KEY_EXPIRES_ONE_DAY);
+    }
+
+    public TokenInfoVO getCityTokenInfo(String token) {
+        return (TokenInfoVO) redisUtils.get(Constants.REDIS_KEY_TOKEN_CITY + token);
+    }
 }

@@ -145,4 +145,12 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
         enterpriseInfoQuery.setStatus(EnterpriseStatusEnum.FILED.getCode());
         currentVO.setAuditEnterpriseCount(this.enterpriseInfoMapper.selectCount(enterpriseInfoQuery));
     }
+
+    @Override
+    public void getCityStatisticCount(CurrentVO currentVO, Integer cityCode) {
+        EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
+        query.setStatus(ReportStatusEnum.CITY_AUDITING.getCode());
+        query.setEnterpriseRegion(cityCode);
+        currentVO.setAuditDataCount(this.enterpriseReportInfoMapper.selectCount(query));
+    }
 }

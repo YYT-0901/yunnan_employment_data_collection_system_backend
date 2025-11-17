@@ -62,4 +62,5 @@ public interface NoticeInfoService {
 
 
     void getCurrentNoticeInfo(String username, CurrentVO currentVO);
+    void getCityCurrentNoticeInfo(String username, CurrentVO currentVO);
 }

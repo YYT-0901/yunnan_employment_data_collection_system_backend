@@ -33,11 +33,11 @@ public interface NoticeInfoMapper<T, P> extends BaseMapper {
 	/**
 	 * 根据用户名查询未读通知数量
 	 */
-	Integer countNoReadNoticeInfoByUsername(@Param("curTime") String curTime, @Param("username") String username);
+	Integer countNoReadNoticeInfoByUsername(@Param("curTime") String curTime, @Param("username") String username, @Param("noticeStatus") Integer noticeStatus);
 
 	/**
 	 * 查询通知列表并判断是否已读
 	 */
-	List<NoticeInfoDto> selectListWithReadStatus(@Param("curTime") String curTime, @Param("username") String username);
+	List<NoticeInfoDto> selectListWithReadStatus(@Param("curTime") String curTime, @Param("username") String username, @Param("noticeStatus") Integer noticeStatus);
 
 }
