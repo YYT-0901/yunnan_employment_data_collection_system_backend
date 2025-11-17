@@ -5,15 +5,18 @@ import com.yunnancommon.entity.dto.NoticeAddDto;
 import com.yunnancommon.entity.po.NoticeInfo;
 import com.yunnancommon.entity.po.NoticeReadInfo;
 import com.yunnancommon.entity.query.NoticeInfoQuery;
+import com.yunnancommon.entity.vo.CurrentVO;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.enums.DateTimePatternEnum;
 import com.yunnancommon.service.NoticeInfoService;
 import com.yunnancommon.service.NoticeReadInfoService;
+import com.yunnancommon.service.impl.EnterpriseReportInfoServiceImpl;
+import com.yunnancommon.service.impl.ReportInfoServiceImpl;
 import com.yunnancommon.utils.DateUtils;
-import com.yunnancommon.utils.StringTools;
-import org.apache.commons.lang3.StringUtils;
+import com.yunnanprovince.config.AppConfig;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -27,6 +30,12 @@ public class NoticeController extends ABaseController {
 
     @Resource
     private NoticeReadInfoService noticeReadInfoService;
+    @Resource
+    private AppConfig appConfig;
+    @Autowired
+    private ReportInfoServiceImpl reportInfoService;
+    @Autowired
+    private EnterpriseReportInfoServiceImpl enterpriseReportInfoService;
 
     @GetMapping("list")
     public ResponseVO getList(@RequestParam Integer page,
@@ -99,7 +108,7 @@ public class NoticeController extends ABaseController {
     public ResponseVO read(@PathVariable Long id) {
         NoticeReadInfo noticeReadInfo = new NoticeReadInfo();
         noticeReadInfo.setNoticeId( id);
-        noticeReadInfo.setUsername("省级管理员");
+        noticeReadInfo.setUsername(appConfig.getUsername());
         noticeReadInfo.setReadTime(new Date());
         noticeReadInfo.setUserType(AccountTypeEnum.PROVINCE.getCode());
         noticeReadInfoService.add(noticeReadInfo);
@@ -111,6 +120,12 @@ public class NoticeController extends ABaseController {
         return getSuccessResponseVO(null);
     }
 
-
+    @GetMapping("/current")
+    public ResponseVO getCurrentInfo() {
+        CurrentVO currentVO = new CurrentVO();
+        noticeInfoService.getCurrentNoticeInfo(appConfig.getUsername(), currentVO);
+        enterpriseReportInfoService.getStatisticCount(currentVO);
+        return getSuccessResponseVO(currentVO);
+    }
 
 }
