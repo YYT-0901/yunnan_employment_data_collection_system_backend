@@ -23,4 +23,6 @@ public class TokenInfoVO {
      * 企业信息
      */
     private EnterpriseInfo enterpriseInfo;
+
+    private Integer cityCode;
 }

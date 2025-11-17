@@ -64,4 +64,6 @@ public interface EnterpriseReportInfoService {
 	PaginationResultVO<EnterpriseReportVO> findListByPageWithAssociatedEnterpriseName(EnterpriseReportInfoQuery query);
 
     void getStatisticCount(CurrentVO currentVO);
+
+	void getCityStatisticCount(CurrentVO currentVO, Integer cityCode);
 }

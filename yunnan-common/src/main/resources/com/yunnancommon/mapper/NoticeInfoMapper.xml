@@ -498,7 +498,7 @@
 	<select id="countNoReadNoticeInfoByUsername" resultType="java.lang.Integer">
 		SELECT COUNT(1) FROM notice_info n 
 		WHERE n.status = 1 
-		AND (n.notice_status = 1 OR n.notice_status = 4)
+		AND (n.notice_status = 1 OR n.notice_status = #{noticeStatus})
 		AND n.notice_id NOT IN (SELECT nr.notice_id FROM notice_read_info nr WHERE nr.username = #{username})
 		<![CDATA[ and n.start_time < str_to_date(#{curTime}, '%Y-%m-%d') + interval 1 day ]]>
 		<![CDATA[ and n.end_time >= str_to_date(#{curTime}, '%Y-%m-%d') ]]>
@@ -513,7 +513,7 @@
 			CASE WHEN nr.notice_id IS NOT NULL THEN 1 ELSE 0 END as is_read
 		FROM notice_info n
 		LEFT JOIN notice_read_info nr ON n.notice_id = nr.notice_id AND nr.username = #{username}
-		where n.status = 1 AND (n.notice_status = 1 OR n.notice_status = 4)
+		where n.status = 1 AND (n.notice_status = 1 OR n.notice_status = #{noticeStatus})
 		<![CDATA[ and n.start_time < str_to_date(#{curTime}, '%Y-%m-%d') + interval 1 day ]]>
 		<![CDATA[ and n.end_time >= str_to_date(#{curTime}, '%Y-%m-%d') ]]>
 	</select>

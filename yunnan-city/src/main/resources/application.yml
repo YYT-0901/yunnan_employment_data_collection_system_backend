@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/yunnan_system?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
     username: root
-    password: 1234
+    password: MySQL@4869
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       pool-name: HikariCPDatasource
@@ -19,6 +19,9 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
       connection-test-query: SELECT 1
+  druid:
+    url: jdbc:avatica:remote:url=http://localhost:8888/druid/v2/sql/avatica/
+    driver-class-name: org.apache.calcite.avatica.remote.Driver
   data:
     redis:
       database: 1
@@ -37,7 +40,9 @@ project:
 
 log:
   root:
-    level: INFO
+    level: DEBUG
 
 server:
   port: 8081
+  servlet:
+    context-path: /api
