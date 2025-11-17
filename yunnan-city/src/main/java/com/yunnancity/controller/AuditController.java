@@ -34,7 +34,7 @@ public class AuditController extends ABaseController {
     private RedisComponent redisComponent;
 
     @PostMapping("/loadDataList")
-    public ResponseVO loadDataList(HttpServletRequest request, @RequestBody LoadReportDataDto loadReportDataDto) {
+    public ResponseVO loadDataList(HttpServletRequest request, @RequestBody LoadReportDataDto loadReportDataDto)  {
         EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
         query.setEnterpriseRegion(redisComponent.getCityTokenInfo(getTokenFromCookie(request)).getCityCode());
         query.setPageNo(loadReportDataDto.getPage());
