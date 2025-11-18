@@ -8,6 +8,8 @@ import com.yunnancommon.entity.query.SimplePage;
 import com.yunnancommon.entity.vo.AccountEnterpriseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
 import com.yunnancommon.enums.AccountStatusEnum;
+import com.yunnancommon.enums.AccountTypeEnum;
+import com.yunnancommon.enums.CityDict;
 import com.yunnancommon.enums.PageSize;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.AccountInfo;
@@ -141,6 +143,9 @@ public class AccountInfoServiceImpl implements AccountInfoService {
 		if(accountInfo == null || !accountInfo.getPassword().equals(password)) {
 			throw new BusinessException("账号或密码错误");
 		}
+		if(!AccountTypeEnum.ENTERPRISE.getCode().equals(accountInfo.getType())) {
+			throw new BusinessException("账号或密码错误");
+		}
 		if(AccountStatusEnum.DISABLE.getCode().equals(accountInfo.getStatus())) {
 			throw new BusinessException("账号被禁用");
 		}
@@ -161,5 +166,31 @@ public class AccountInfoServiceImpl implements AccountInfoService {
 		return tokenInfoVO;
 	}
 
+	@Override
+	public TokenInfoVO cityLogin(String account, String password) throws BusinessException {
+		AccountInfo accountInfo = accountInfoMapper.selectByUsername(account);
+		if(accountInfo == null || !accountInfo.getPassword().equals(password)) {
+			throw new BusinessException("账号或密码错误");
+		}
+		if(!AccountTypeEnum.CITY.getCode().equals(accountInfo.getType())) {
+			throw new BusinessException("账号或密码错误");
+		}
+		if(AccountStatusEnum.DISABLE.getCode().equals(accountInfo.getStatus())) {
+			throw new BusinessException("账号被禁用");
+		}
+
+		String token = TokenUtils.generateToken();
+		TokenInfoVO tokenInfoVO = new TokenInfoVO();
+		tokenInfoVO.setToken(token);
+		tokenInfoVO.setUsername(accountInfo.getUsername());
+		tokenInfoVO.setCityCode(accountInfo.getCityCode());
+
+		redisComponent.saveCityTokenInfo(tokenInfoVO);
+
+		accountInfo.setLastLoginTime(new Date());
+		accountInfoMapper.updateByUsername(accountInfo, account);
+
+		return tokenInfoVO;
+	}
 
 }

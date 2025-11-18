@@ -6,6 +6,7 @@ import com.yunnancommon.entity.po.NoticeReadInfo;
 import com.yunnancommon.entity.query.SimplePage;
 import com.yunnancommon.entity.vo.CurrentVO;
 import com.yunnancommon.enums.DateTimePatternEnum;
+import com.yunnancommon.enums.NoticeTypeEnum;
 import com.yunnancommon.enums.PageSize;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.NoticeInfo;
@@ -125,8 +126,16 @@ public class NoticeInfoServiceImpl implements NoticeInfoService {
 	@Override
 	public void getCurrentNoticeInfo(String username, CurrentVO currentVO) {
 		String curTime = DateUtils.format(new Date(), DateTimePatternEnum.YYYY_MM_DD.getPattern());
-		List<NoticeInfoDto> noticeInfoDtoList = this.noticeInfoMapper.selectListWithReadStatus(curTime, username);
+		List<NoticeInfoDto> noticeInfoDtoList = this.noticeInfoMapper.selectListWithReadStatus(curTime, username, NoticeTypeEnum.PROVINCE.getCode());
         currentVO.setNoticeInfoList(noticeInfoDtoList);
-        currentVO.setNoReadCount(this.noticeInfoMapper.countNoReadNoticeInfoByUsername(curTime,username));
+        currentVO.setNoReadCount(this.noticeInfoMapper.countNoReadNoticeInfoByUsername(curTime,username, NoticeTypeEnum.PROVINCE.getCode()));
+	}
+
+	@Override
+	public void getCityCurrentNoticeInfo(String username, CurrentVO currentVO) {
+		String curTime = DateUtils.format(new Date(), DateTimePatternEnum.YYYY_MM_DD.getPattern());
+		List<NoticeInfoDto> noticeInfoDtoList = this.noticeInfoMapper.selectListWithReadStatus(curTime, username, NoticeTypeEnum.CITY.getCode());
+        currentVO.setNoticeInfoList(noticeInfoDtoList);
+        currentVO.setNoReadCount(this.noticeInfoMapper.countNoReadNoticeInfoByUsername(curTime,username, NoticeTypeEnum.CITY.getCode()));
 	}
 }

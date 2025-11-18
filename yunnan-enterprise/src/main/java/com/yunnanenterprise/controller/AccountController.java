@@ -2,7 +2,6 @@ package com.yunnanenterprise.controller;
 
 import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
-import com.yunnancommon.entity.constants.Constants;
 import com.yunnancommon.entity.dto.LoginDto;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
@@ -10,7 +9,6 @@ import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.enums.ResponseCodeEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.AccountInfoService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -49,7 +47,7 @@ public class AccountController extends ABaseController {
 
     @GetMapping("/getEnterpriseInfo")
     public ResponseVO getEnterpriseInfo(HttpServletRequest request) throws BusinessException {
-        String token = getTokenFromCookie(request);
+        String token = getTokenFromCookie(request, AccountTypeEnum.ENTERPRISE);
         if (StringUtils.isEmpty(token)) {
             throw new BusinessException(ResponseCodeEnum.CODE_901);
         }
@@ -69,7 +67,7 @@ public class AccountController extends ABaseController {
         }
         try {
             TokenInfoVO tokenVO = accountInfoService.login(username, password);
-            saveToken2Cookie(response, tokenVO.getToken());
+            saveToken2Cookie(response, tokenVO.getToken(), AccountTypeEnum.ENTERPRISE);
             return getSuccessResponseVO(tokenVO);
         } finally {
             cleanOldToken(request);
@@ -77,17 +75,9 @@ public class AccountController extends ABaseController {
     }
 
     private void cleanOldToken(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return;
-        }
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(Constants.TOKEN_KEY)) {
-                if (!StringUtils.isEmpty(cookie.getValue())) {
-                    redisComponent.cleanEnterpriseTokenInfo(cookie.getValue());
-                }
-                break;
-            }
+        String token = getTokenFromCookie(request, AccountTypeEnum.ENTERPRISE);
+        if (!StringUtils.isEmpty(token)) {
+            redisComponent.cleanEnterpriseTokenInfo(token);
         }
     }
 }

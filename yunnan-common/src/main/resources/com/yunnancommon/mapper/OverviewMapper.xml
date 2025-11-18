@@ -43,4 +43,11 @@
         GROUP BY ${groupBy}
         ORDER BY value DESC
     </select>
+    <select id="getCityDistributionDataList" resultType="com.yunnancommon.entity.dto.DistributionData">
+        select ${groupBy} as code, count(*) as value
+        FROM enterprise_info
+        WHERE ${groupBy} IS NOT NULL AND region_code = #{regionCode}
+        GROUP BY ${groupBy}
+        ORDER BY value DESC
+    </select>
 </mapper>

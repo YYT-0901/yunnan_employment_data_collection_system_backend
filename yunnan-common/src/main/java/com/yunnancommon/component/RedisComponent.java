@@ -17,6 +17,33 @@ public class RedisComponent {
     @Resource
     private RedisUtils redisUtils;
 
+    private <T> T getFromFallback(Map<String, CacheEntry<T>> cache, String key) {
+    CacheEntry<T> entry = cache.get(key);
+    if (entry == null) {
+        return null;
+    }
+    if (entry.isExpired()) {
+        cache.remove(key);
+        return null;
+    }
+    return entry.getValue();
+}
+
+private static final class CacheEntry<T> {
+    private final T value;
+    private final long expireAt;
+
+    CacheEntry(T value, long ttlMillis) {
+        this.value = value;
+        this.expireAt = System.currentTimeMillis() + ttlMillis;
+    }
+
+    T getValue() { return value; }
+    boolean isExpired() { return System.currentTimeMillis() >= expireAt; }
+}
+
+
+
     private static final long TOKEN_TTL = Constants.REDIS_KEY_EXPIRES_ONE_DAY.longValue();
     private final Map<String, CacheEntry<TokenInfoVO>> enterpriseTokenFallback = new ConcurrentHashMap<>();
     private final Map<String, CacheEntry<String>> provinceTokenFallback = new ConcurrentHashMap<>();
@@ -118,29 +145,11 @@ public class RedisComponent {
         }
     }
 
-    private <T> T getFromFallback(Map<String, CacheEntry<T>> cache, String key) {
-        CacheEntry<T> entry = cache.get(key);
-        if (entry == null) {
-            return null;
-        }
-        if (entry.isExpired()) {
-            cache.remove(key);
-            return null;
-        }
-        return entry.value;
+    public void saveCityTokenInfo(TokenInfoVO tokenInfoVO) {
+        redisUtils.setex(Constants.REDIS_KEY_TOKEN_CITY + tokenInfoVO.getToken(), tokenInfoVO, Constants.REDIS_KEY_EXPIRES_ONE_DAY);
     }
 
-    private static final class CacheEntry<T> {
-        private final T value;
-        private final long expireAt;
-
-        private CacheEntry(T value, long ttlMillis) {
-            this.value = value;
-            this.expireAt = System.currentTimeMillis() + ttlMillis;
-        }
-
-        private boolean isExpired() {
-            return System.currentTimeMillis() > expireAt;
-        }
+    public TokenInfoVO getCityTokenInfo(String token) {
+        return (TokenInfoVO) redisUtils.get(Constants.REDIS_KEY_TOKEN_CITY + token);
     }
 }
