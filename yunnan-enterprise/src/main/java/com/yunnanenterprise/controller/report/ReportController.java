@@ -294,6 +294,13 @@ public class ReportController extends ABaseController {
         return getSuccessResponseVO(app.getReportById(reportId));
     }
 
+    @GetMapping("/report/history")
+    public ResponseVO<List<ReportV0>> getReportHistory(HttpServletRequest request,
+            @RequestParam("reporting_period") String reportingPeriod) throws BusinessException {
+        String enterpriseId = getCurrentEnterpriseId(request);
+        return getSuccessResponseVO(app.getReportHistory(enterpriseId, reportingPeriod));
+    }
+
     /**
      * 获取当前登录企业ID（核心安全方法）
      * 

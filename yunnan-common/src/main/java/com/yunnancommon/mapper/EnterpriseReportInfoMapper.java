@@ -48,4 +48,10 @@ public interface EnterpriseReportInfoMapper<T, P> extends BaseMapper {
 	 * 趋势分析 - 按时间序列查询
 	 */
 	List<Map<String, Object>> selectTrendData(@Param("query") AnalysisQueryDto query);
+
+	List<T> selectLatestByEnterprise(@Param("enterpriseId") String enterpriseId,
+			@Param("offset") Integer offset, @Param("pageSize") Integer pageSize);
+
+	List<T> selectHistoryByEnterpriseAndPeriod(@Param("enterpriseId") String enterpriseId,
+			@Param("periodId") Long periodId);
 }

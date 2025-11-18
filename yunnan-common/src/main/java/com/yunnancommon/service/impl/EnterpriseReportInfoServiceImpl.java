@@ -22,11 +22,6 @@ import javax.annotation.Resource;
 
 import java.util.List;
 
-/**
- * @Description:企业上报信息表ServiceImpl
- * @auther:group2
- * @date:2025/10/22
- */
 @Service("enterpriseReportInfoService")
 public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoService {
 
@@ -147,10 +142,27 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
     }
 
     @Override
-    public void getCityStatisticCount(CurrentVO currentVO, Integer cityCode) {
-        EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
-        query.setStatus(ReportStatusEnum.CITY_AUDITING.getCode());
-        query.setEnterpriseRegion(cityCode);
-        currentVO.setAuditDataCount(this.enterpriseReportInfoMapper.selectCount(query));
-    }
+	public void getCityStatisticCount(CurrentVO currentVO, Integer cityCode) {
+		EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
+		query.setStatus(ReportStatusEnum.CITY_AUDITING.getCode());
+		query.setEnterpriseRegion(cityCode);
+		currentVO.setAuditDataCount(this.enterpriseReportInfoMapper.selectCount(query));
+	}
+
+	@Override
+	public List<EnterpriseReportInfo> findLatestByEnterprise(String enterpriseId, Integer pageNo, Integer pageSize) {
+		if (pageNo == null || pageNo < 1) {
+			pageNo = 1;
+		}
+		if (pageSize == null || pageSize < 1) {
+			pageSize = PageSize.SIZE15.getSize();
+		}
+		int offset = (pageNo - 1) * pageSize;
+		return this.enterpriseReportInfoMapper.selectLatestByEnterprise(enterpriseId, offset, pageSize);
+	}
+
+	@Override
+	public List<EnterpriseReportInfo> findHistoryByEnterpriseAndPeriod(String enterpriseId, Long periodId) {
+		return this.enterpriseReportInfoMapper.selectHistoryByEnterpriseAndPeriod(enterpriseId, periodId);
+	}
 }

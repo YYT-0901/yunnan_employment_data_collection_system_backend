@@ -44,3 +44,7 @@ log:
 
 server:
   port: 8082
+
+mybatis:
+  mapper-locations: classpath*:com/yunnancommon/mapper/*.xml
+  type-aliases-package: com.yunnancommon.entity.po

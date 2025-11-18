@@ -100,6 +100,9 @@ public class ReportV0 {
     @JsonProperty("reason_return")
     private String reasonReturn;
 
+    @JsonProperty("version_count")
+    private Integer versionCount;
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -193,4 +196,7 @@ public class ReportV0 {
 
     public String getReasonReturn() { return reasonReturn; }
     public void setReasonReturn(String reasonReturn) { this.reasonReturn = reasonReturn; }
+
+    public Integer getVersionCount() { return versionCount; }
+    public void setVersionCount(Integer versionCount) { this.versionCount = versionCount; }
 }

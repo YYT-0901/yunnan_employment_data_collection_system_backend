@@ -63,7 +63,11 @@ public interface EnterpriseReportInfoService {
 
 	PaginationResultVO<EnterpriseReportVO> findListByPageWithAssociatedEnterpriseName(EnterpriseReportInfoQuery query);
 
-    void getStatisticCount(CurrentVO currentVO);
+	void getStatisticCount(CurrentVO currentVO);
 
 	void getCityStatisticCount(CurrentVO currentVO, Integer cityCode);
+
+	List<EnterpriseReportInfo> findLatestByEnterprise(String enterpriseId, Integer pageNo, Integer pageSize);
+
+	List<EnterpriseReportInfo> findHistoryByEnterpriseAndPeriod(String enterpriseId, Long periodId);
 }

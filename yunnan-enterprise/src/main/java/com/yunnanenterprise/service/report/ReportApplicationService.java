@@ -507,13 +507,7 @@ public class ReportApplicationService {
      * @return 报表列表
      */
     public List<ReportV0> getReportList(String enterpriseId, Integer pageNo, Integer pageSize) {
-        EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
-        q.setEnterpriseId(enterpriseId);
-        q.setOrderBy("updated_at desc"); // 按更新时间倒序
-        q.setPageNo(pageNo);
-        q.setPageSize(pageSize);
-
-        List<EnterpriseReportInfo> list = enterpriseReportInfoService.findListByParam(q);
+        List<EnterpriseReportInfo> list = enterpriseReportInfoService.findLatestByEnterprise(enterpriseId, pageNo, pageSize);
 
         if (list == null || list.isEmpty()) {
             return new ArrayList<>();
@@ -575,6 +569,54 @@ public class ReportApplicationService {
             applyLatestAuditSnapshot(vo, pair != null ? pair[0] : null, pair != null ? pair[1] : null);
         }
 
+        return result;
+    }
+
+    public List<ReportV0> getReportHistory(String enterpriseId, String reportingPeriod) throws BusinessException {
+        if (!StringUtils.isNotBlank(reportingPeriod)) {
+            throw new BusinessException("reporting_period 不能为空");
+        }
+        Integer periodId = getPeriodIdByInvestigateTime(reportingPeriod);
+        List<EnterpriseReportInfo> list = enterpriseReportInfoService.findHistoryByEnterpriseAndPeriod(enterpriseId, Long.valueOf(periodId));
+        if (list == null || list.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        PeriodInfo periodInfo = periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(periodId));
+        List<ReportV0> result = new ArrayList<>();
+        for (EnterpriseReportInfo e : list) {
+            if (e == null) {
+                continue;
+            }
+            if (periodInfo != null) {
+                if (e.getPeriodStartTime() == null) {
+                    e.setPeriodStartTime(periodInfo.getPeriodStartTime());
+                }
+                if (e.getPeriodEndTime() == null) {
+                    e.setPeriodEndTime(periodInfo.getPeriodEndTime());
+                }
+            }
+            ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
+            ReportV0 vo = assembler.toVO(e, r);
+            vo.setReportingPeriod(reportingPeriod);
+            applyEditabilityFlags(vo, e);
+            result.add(vo);
+        }
+
+        List<String> reportIds = new ArrayList<>();
+        for (ReportV0 vo : result) {
+            if (vo != null && vo.getId() != null) {
+                reportIds.add(vo.getId());
+            }
+        }
+        Map<String, ReportAuditHistory[]> snapshots = loadLatestAuditSnapshots(reportIds);
+        for (ReportV0 vo : result) {
+            if (vo == null) {
+                continue;
+            }
+            ReportAuditHistory[] pair = vo.getId() != null ? snapshots.get(vo.getId()) : null;
+            applyLatestAuditSnapshot(vo, pair != null ? pair[0] : null, pair != null ? pair[1] : null);
+        }
         return result;
     }
 
