@@ -14,4 +14,6 @@ public interface OverviewMapper {
     List<OverviewStatisticsDataDto> getStatisticList(@Param("query") StatisticsDataQuery statisticsDataQuery);
 
     List<DistributionData> getDistributionDataList(@Param("groupBy") String groupBy);
+
+    List<DistributionData> getCityDistributionDataList(@Param("groupBy") String groupBy, @Param("regionCode") Integer regionCode);
 }
