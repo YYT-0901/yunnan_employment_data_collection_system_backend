@@ -56,8 +56,11 @@ public class AuditController extends ABaseController {
         EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
         if(loadReportDataDto.getInvestigateTime() != null) {
             PeriodInfo periodInfo = periodInfoService.getPeriodInfoByInvestigateTime(loadReportDataDto.getInvestigateTime());
-            if(periodInfo != null) {
+            if(periodInfo != null && periodInfo.getPeriodId() != null) {
                 query.setPeriodId(periodInfo.getPeriodId());
+            }
+            else {
+
             }
         }
         query.setPageNo(loadReportDataDto.getPage());
