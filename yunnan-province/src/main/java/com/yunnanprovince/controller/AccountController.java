@@ -2,7 +2,6 @@ package com.yunnanprovince.controller;
 
 import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
-import com.yunnancommon.entity.constants.Constants;
 import com.yunnancommon.entity.dto.ChangeStatusDto;
 import com.yunnancommon.entity.dto.CreateAccountDto;
 import com.yunnancommon.entity.dto.LoginDto;
@@ -26,15 +25,12 @@ import com.yunnancommon.utils.DateUtils;
 import com.yunnancommon.utils.TokenUtils;
 import com.yunnanprovince.config.AppConfig;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.annotation.Resource;
 
 import java.util.Date;
 
@@ -61,24 +57,15 @@ public class AccountController extends ABaseController {
             }
 
             String token = TokenUtils.generateToken();
-            saveToken2Cookie(response, token);
+            saveToken2Cookie(response, token, AccountTypeEnum.PROVINCE);
 
             redisComponent.saveProvinceTokenInfo(token);
 
             return getSuccessResponseVO(token);
         } finally {
-            // 清除旧的token
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                String token = null;
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals(Constants.TOKEN_KEY)) {
-                        token = cookie.getValue();
-                    }
-                }
-                if (!StringUtils.isEmpty(token)) {
-                    redisComponent.cleanProvinceTokenInfo(token);
-                }
+            String token = getTokenFromCookie(request, AccountTypeEnum.PROVINCE);
+            if (!StringUtils.isEmpty(token)) {
+                redisComponent.cleanProvinceTokenInfo(token);
             }
         }
     }
@@ -138,5 +125,29 @@ public class AccountController extends ABaseController {
         accountInfo.setStatus(changeStatusDto.getStatus());
         accountInfoService.updateAccountInfoByUsername(accountInfo,  changeStatusDto.getUsername());
         return getSuccessResponseVO(null);
+    }
+
+    @GetMapping("/autoLogin")
+    public ResponseVO autoLogin(HttpServletRequest request, HttpServletResponse response) throws BusinessException {
+        String token = getTokenFromCookie(request, AccountTypeEnum.PROVINCE);
+        if (StringUtils.isEmpty(token)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_901);
+        }
+        if (redisComponent.getProvinceTokenInfo(token) == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_901);
+        }
+        try {
+            token = TokenUtils.generateToken();
+            saveToken2Cookie(response, token, AccountTypeEnum.PROVINCE);
+
+            redisComponent.saveProvinceTokenInfo(token);
+
+            return getSuccessResponseVO(null);
+        } finally {
+            token = getTokenFromCookie(request, AccountTypeEnum.PROVINCE);
+            if (!StringUtils.isEmpty(token)) {
+                redisComponent.cleanProvinceTokenInfo(token);
+            }
+        }
     }
 }

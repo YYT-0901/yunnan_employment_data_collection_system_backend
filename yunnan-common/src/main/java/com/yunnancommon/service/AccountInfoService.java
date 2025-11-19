@@ -63,6 +63,7 @@ public interface AccountInfoService {
 	Integer deleteAccountInfoByUsername(String username);
 
     TokenInfoVO login(String account, String password) throws BusinessException;
+    TokenInfoVO cityLogin(String account, String password) throws BusinessException;
 
 	PaginationResultVO<AccountEnterpriseVO> findListByPageWithAssociated(AccountInfoQuery query);
 }

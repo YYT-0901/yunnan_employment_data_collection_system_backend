@@ -17,4 +17,5 @@ public class LoadReportDataDto {
     private Long periodId;
     private Integer region;
     private Integer status;
+    private String investigateTime;
 }

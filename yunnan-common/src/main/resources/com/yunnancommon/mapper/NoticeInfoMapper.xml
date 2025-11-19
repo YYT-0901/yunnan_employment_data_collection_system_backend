@@ -111,31 +111,31 @@
 			<![CDATA[ and publish_time >= str_to_date(#{query.publishTimeStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.publishTimeEnd != null and query.publishTimeEnd != ''">
-			<![CDATA[ and publish_time < str_to_date(#{query.publishTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and publish_time < str_to_date(#{query.publishTimeEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 		<if test="query.startTimeStart != null and query.startTimeStart != ''">
 			<![CDATA[ and start_time >= str_to_date(#{query.startTimeStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.startTimeEnd != null and query.startTimeEnd != ''">
-			<![CDATA[ and start_time < str_to_date(#{query.startTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and start_time < str_to_date(#{query.startTimeEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 		<if test="query.endTimeStart != null and query.endTimeStart != ''">
 			<![CDATA[ and end_time >= str_to_date(#{query.endTimeStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.endTimeEnd != null and query.endTimeEnd != ''">
-			<![CDATA[ and end_time < str_to_date(#{query.endTimeEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and end_time < str_to_date(#{query.endTimeEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 		<if test="query.createdAtStart != null and query.createdAtStart != ''">
 			<![CDATA[ and created_at >= str_to_date(#{query.createdAtStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
-			<![CDATA[ and created_at < str_to_date(#{query.createdAtEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and created_at < str_to_date(#{query.createdAtEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 		<if test="query.updatedAtStart != null and query.updatedAtStart != ''">
 			<![CDATA[ and updated_at >= str_to_date(#{query.updatedAtStart}, '%Y-%m-%d') ]]>
 		</if>
 		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
-			<![CDATA[ and updated_at < str_to_date(#{query.updatedAtEnd}, '%Y-%m-%d', interval -1 day) ]]>
+			<![CDATA[ and updated_at < str_to_date(#{query.updatedAtEnd}, '%Y-%m-%d') + interval 1 day ]]>
 		</if>
 	</sql>
 
@@ -493,6 +493,34 @@
 	<delete id="deleteByNoticeId">
 		delete from notice_info where notice_id = #{noticeId}
 	</delete>
+
+	<!--根据用户名查询未读通知数量-->
+	<select id="countNoReadNoticeInfoByUsername" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM notice_info n 
+		WHERE n.status = 1 
+		AND (n.notice_status = 1 OR n.notice_status = #{noticeStatus})
+		AND n.notice_id NOT IN (SELECT nr.notice_id FROM notice_read_info nr WHERE nr.username = #{username})
+		<![CDATA[ and n.start_time < str_to_date(#{curTime}, '%Y-%m-%d') + interval 1 day ]]>
+		<![CDATA[ and n.end_time >= str_to_date(#{curTime}, '%Y-%m-%d') ]]>
+	</select>
+
+	<!--查询通知列表并判断是否已读-->
+	<select id="selectListWithReadStatus" resultMap="base_result_map_with_read_status">
+		SELECT 
+			n.notice_id, n.title, n.content, n.attachment, n.attachment_name, n.is_important, 
+			n.notice_status, n.publisher, n.publish_time, n.start_time, n.end_time, n.read_count, 
+			n.status, n.created_at, n.updated_at,
+			CASE WHEN nr.notice_id IS NOT NULL THEN 1 ELSE 0 END as is_read
+		FROM notice_info n
+		LEFT JOIN notice_read_info nr ON n.notice_id = nr.notice_id AND nr.username = #{username}
+		where n.status = 1 AND (n.notice_status = 1 OR n.notice_status = #{noticeStatus})
+		<![CDATA[ and n.start_time < str_to_date(#{curTime}, '%Y-%m-%d') + interval 1 day ]]>
+		<![CDATA[ and n.end_time >= str_to_date(#{curTime}, '%Y-%m-%d') ]]>
+	</select>
+
+	<resultMap id="base_result_map_with_read_status" type="com.yunnancommon.entity.dto.NoticeInfoDto" extends="base_result_map">
+		<result column="is_read" property="isRead" />
+	</resultMap>
 
 
 </mapper>

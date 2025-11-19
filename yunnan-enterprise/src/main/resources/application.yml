@@ -1,20 +1,12 @@
 spring:
   application:
     name: yunnan-enterprise
-  profiles:
-    active: db
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 15MB
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-      settings:
-        web-allow-others: true
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/project1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/yunnan_database_1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
     username: root
     password: 1234567890
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -39,6 +31,9 @@ spring:
           max-idle: 10
           min-idle: 0
       timeout: 2000
+  druid:
+    url: jdbc:avatica:remote:url=http://localhost:8888/druid/v2/sql/avatica/
+    driver-class-name: org.apache.calcite.avatica.remote.Driver
 
 project:
   folder: ./yunnan
@@ -49,3 +44,7 @@ log:
 
 server:
   port: 8082
+
+mybatis:
+  mapper-locations: classpath*:com/yunnancommon/mapper/*.xml
+  type-aliases-package: com.yunnancommon.entity.po

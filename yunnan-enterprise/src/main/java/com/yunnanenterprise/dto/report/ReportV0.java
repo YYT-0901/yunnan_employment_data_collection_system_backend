@@ -13,6 +13,9 @@ public class ReportV0 {
     @JsonProperty("id")
     private String id;
 
+    @JsonProperty("old_id")
+    private String oldId;
+
     @JsonProperty("enterprise_id")
     private String enterpriseId;
 
@@ -97,8 +100,14 @@ public class ReportV0 {
     @JsonProperty("reason_return")
     private String reasonReturn;
 
+    @JsonProperty("version_count")
+    private Integer versionCount;
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getOldId() { return oldId; }
+    public void setOldId(String oldId) { this.oldId = oldId; }
 
     public String getEnterpriseId() { return enterpriseId; }
     public void setEnterpriseId(String enterpriseId) { this.enterpriseId = enterpriseId; }
@@ -187,4 +196,7 @@ public class ReportV0 {
 
     public String getReasonReturn() { return reasonReturn; }
     public void setReasonReturn(String reasonReturn) { this.reasonReturn = reasonReturn; }
+
+    public Integer getVersionCount() { return versionCount; }
+    public void setVersionCount(Integer versionCount) { this.versionCount = versionCount; }
 }

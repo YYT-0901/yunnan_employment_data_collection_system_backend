@@ -10,6 +10,10 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import com.yunnanenterprise.dictionary.DictionaryService;
+import com.yunnancommon.service.EnterpriseInfoService;
+import com.yunnancommon.entity.po.EnterpriseInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.binding.BindingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,34 +23,36 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.yunnancommon.entity.po.EnterpriseReportInfo;
 import com.yunnancommon.entity.po.PeriodInfo;
-import com.yunnancommon.entity.po.ReportAuditHistory;
 import com.yunnancommon.entity.po.ReportInfo;
 import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
 import com.yunnancommon.entity.query.PeriodInfoQuery;
-import com.yunnancommon.entity.query.ReportAuditHistoryQuery;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.redis.RedisUtils;
 import com.yunnancommon.service.EnterpriseReportInfoService;
 import com.yunnancommon.service.PeriodInfoService;
-import com.yunnancommon.service.ReportAuditHistoryService;
 import com.yunnancommon.service.ReportInfoService;
+import com.yunnancommon.entity.po.ReportAuditHistory;
 import com.yunnanenterprise.assembler.ReportAssembler;
 import com.yunnanenterprise.dto.report.ReportCommand;
 import com.yunnanenterprise.dto.report.ReportV0;
+import org.apache.ibatis.binding.BindingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.yunnanenterprise.enums.ReportStatusEnum;
 import org.springframework.stereotype.Service;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
+import com.yunnancommon.service.ReportAuditHistoryService;
+import com.yunnancommon.entity.query.ReportAuditHistoryQuery;
+import java.text.SimpleDateFormat;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import javax.annotation.Resource;
+import java.util.*;
 
 /**
  * 应用服务：聚合多个表的操作（enterprise_report_info + report_info）
  */
 @Service
-@Profile("db")
 public class ReportApplicationService {
 
     private static final Logger log = LoggerFactory.getLogger(ReportApplicationService.class);
@@ -56,10 +62,19 @@ public class ReportApplicationService {
     private final ReportAssembler assembler;
 
     @Resource
+    private DictionaryService dictionaryService;
+
+    @Resource
     private ReportAuditHistoryService reportAuditHistoryService;
 
     @Resource
+    private ReportInfoService reportInfoCommonService;
+
+    @Resource
     private PeriodInfoService periodInfoService;
+
+    @Resource
+    private EnterpriseInfoService enterpriseInfoService;
 
     @Resource
     private RedisUtils redisUtils;
@@ -74,12 +89,12 @@ public class ReportApplicationService {
 
     /**
      * 辅助方法：通过 investigate_time 获取真实的 period_id
-     *
+     * 
      * @param investigateTime 调查期标识（如 "2025-01"）
      * @return 数据库中的真实 period_id（自增ID）
      * @throws BusinessException 如果调查期不存在
      */
-    private Long getPeriodIdByInvestigateTime(String investigateTime) throws BusinessException {
+    private Integer getPeriodIdByInvestigateTime(String investigateTime) throws BusinessException {
         // 查询所有调查期（由于PeriodInfoQuery没有investigateTime字段，所以查询所有然后过滤）
         PeriodInfoQuery periodQuery = new PeriodInfoQuery();
         periodQuery.setPageNo(1);
@@ -90,8 +105,8 @@ public class ReportApplicationService {
         if (allPeriods != null) {
             for (PeriodInfo period : allPeriods) {
                 if (investigateTime.equals(period.getInvestigateTime())) {
-                    // 找到了，返回 period_id
-                    return period.getPeriodId();
+                    // 找到了，返回 period_id（Long转Integer）
+                    return period.getPeriodId().intValue();
                 }
             }
         }
@@ -102,7 +117,7 @@ public class ReportApplicationService {
 
     /**
      * 根据企业ID和调查期获取报表数据
-     *
+     * 
      * @param enterpriseId 企业ID（如 "TEST_ENT_002"）
      * @param yyyyMm       调查期（如 "2025-01"）
      * @return 报表视图对象，包含所有报表数据和锁定状态
@@ -113,13 +128,13 @@ public class ReportApplicationService {
         System.out.println("enterpriseId: " + enterpriseId + ", period: " + yyyyMm);
 
         // ✅ 通过 investigate_time 获取真实的 period_id
-        Long periodId = getPeriodIdByInvestigateTime(yyyyMm);
+        Integer periodId = getPeriodIdByInvestigateTime(yyyyMm);
         System.out.println("Real periodId: " + periodId + " for investigate_time: " + yyyyMm);
 
         // 查询该企业在该调查期的报表数据
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(enterpriseId);
-        q.setPeriodId(periodId); // 使用真实的 period_id
+        q.setPeriodId(Long.valueOf(periodId)); // 使用真实的 period_id
         q.setOrderBy("updated_at desc"); // 按更新时间倒序，获取最新版本
         q.setPageNo(1);
         q.setPageSize(1);
@@ -141,7 +156,7 @@ public class ReportApplicationService {
             // 返回空壳，仅带 period 信息
             EnterpriseReportInfo e = new EnterpriseReportInfo();
             e.setEnterpriseId(enterpriseId);
-            e.setPeriodId(periodId);
+            e.setPeriodId(Long.valueOf(periodId));
 
             ReportV0 vo = assembler.toVO(e, null);
             vo.setReportingPeriod(yyyyMm);
@@ -171,6 +186,9 @@ public class ReportApplicationService {
 
         System.out.println("Found existing report - entering edit mode");
         EnterpriseReportInfo e = list.get(0);
+        System.out.println("Existing report_id: " + e.getReportId());
+        System.out.println("Existing report enterprise_id: " + e.getEnterpriseId()
+                + ", period_id: " + e.getPeriodId());
         ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
         ReportV0 vo = assembler.toVO(e, r);
         vo.setReportingPeriod(yyyyMm);
@@ -188,17 +206,36 @@ public class ReportApplicationService {
         // ⚠️ 关键逻辑：已有报表时，直接返回数据库中的数据，不做任何自动填充
         // 报送期次、建档期人数、调查期人数 都应该锁定
 
-        // 建档期人数：如果已填写就锁定
-        if (vo.getInitialEmployees() != null && vo.getInitialEmployees() > 0) {
-            vo.setIsInitialEmployeesLocked(true);
-        } else {
-            vo.setIsInitialEmployeesLocked(false);
-        }
+        // 建档期人数：如果已填写就锁定(旧的逻辑)
+        // if (vo.getInitialEmployees() != null && vo.getInitialEmployees() > 0) {
+        // vo.setIsInitialEmployeesLocked(true);
+        // } else {
+        // vo.setIsInitialEmployeesLocked(false);
+        // }
 
         // 调查期人数：已有报表时始终锁定（无论是暂存、提交、驳回等任何状态）
-        vo.setIsCurrentEmployeesLocked(true);
+        // vo.setIsCurrentEmployeesLocked(true);
+
+        Integer status = e.getStatus();
+        boolean hasHistory = getPreviousPeriodEmployeeCount(
+                e.getEnterpriseId(),
+                Math.toIntExact(e.getPeriodId())) != null;
+        boolean isEditableStatus = (status != null && (status == 0 || status == 5));
+
+        boolean isLatestVersion = !hasNewerVersion(e.getEnterpriseId(), Math.toIntExact(e.getPeriodId()),
+                e.getReportId());
+
+        if (isEditableStatus && isLatestVersion) {
+            vo.setIsCurrentEmployeesLocked(false);
+            vo.setIsInitialEmployeesLocked(hasHistory); // 首次填报 -> false
+        } else {
+            vo.setIsCurrentEmployeesLocked(true);
+            vo.setIsInitialEmployeesLocked(true); // 非可编辑状态直接锁死
+        }
 
         System.out.println("Final VO (existing report):");
+        System.out.println("hasHistory: " + hasHistory);
+
         System.out.println(
                 "  - initial_employees: " + vo.getInitialEmployees() + ", locked: " + vo.getIsInitialEmployeesLocked());
         System.out.println(
@@ -209,12 +246,12 @@ public class ReportApplicationService {
 
     /**
      * 获取上一期的调查期就业人数
-     *
+     * 
      * @param enterpriseId    企业ID
      * @param currentPeriodId 当前调查期ID
      * @return 上一期的调查期就业人数，如果不存在返回null
      */
-    private Integer getPreviousPeriodEmployeeCount(String enterpriseId, Long currentPeriodId) {
+    private Integer getPreviousPeriodEmployeeCount(String enterpriseId, Integer currentPeriodId) {
         System.out.println("===== start to query the history data =====");
         System.out.println("enterpreiseID: " + enterpriseId);
         System.out.println("currentPeriodID: " + currentPeriodId);
@@ -237,9 +274,11 @@ public class ReportApplicationService {
         // 找到小于当前period_id的最大period_id记录（即上一期）
         EnterpriseReportInfo previousReport = null;
         for (EnterpriseReportInfo report : historyList) {
-            System.out.println("checked report - period_id" + report.getPeriodId() + ", status:" + report.getStatus());
-            // 只考虑已审核通过或已归档的记录
-            if (report.getStatus() != null && (report.getStatus() == 3 || report.getStatus() == 4)) {
+            System.out.println("checked report - period_id" + report.getPeriodId()
+                    + ", report_id:" + report.getReportId()
+                    + ", status:" + report.getStatus());
+            // 只考虑已归档（status=4）的记录
+            if (report.getStatus() != null && report.getStatus() == 4) {
                 if (report.getPeriodId() < currentPeriodId) {
                     if (previousReport == null || report.getPeriodId() > previousReport.getPeriodId()) {
                         previousReport = report;
@@ -250,7 +289,7 @@ public class ReportApplicationService {
         }
 
         if (previousReport == null) {
-            System.out.println("没有找到符合条件的上一期报表（需要status=3或4，且period_id < " + currentPeriodId + "）");
+            System.out.println("没有找到符合条件的上一期报表（需要status=4，且period_id < " + currentPeriodId + "）");
             return null;
         }
 
@@ -269,13 +308,13 @@ public class ReportApplicationService {
         return null;
     }
 
-    private boolean hasNewerVersion(String enterpriseId, Long periodId, String reportId) {
+    private boolean hasNewerVersion(String enterpriseId, Integer periodId, String reportId) {
         if (reportId == null) {
             return false;
         }
         EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
         query.setEnterpriseId(enterpriseId);
-        query.setPeriodId(periodId);
+        query.setPeriodId(Long.valueOf(periodId));
         query.setOldReportId(reportId);
         query.setPageNo(1);
         query.setPageSize(1);
@@ -298,7 +337,8 @@ public class ReportApplicationService {
         ReportStatusEnum statusEnum = ReportStatusEnum.getByCode(status);
         boolean editable = (statusEnum == null) || statusEnum.canEdit();
 
-        if (editable && hasNewerVersion(entity.getEnterpriseId(), entity.getPeriodId(), entity.getReportId())) {
+        if (editable && hasNewerVersion(entity.getEnterpriseId(), Math.toIntExact(entity.getPeriodId()),
+                entity.getReportId())) {
             editable = false;
         }
 
@@ -415,7 +455,7 @@ public class ReportApplicationService {
 
     /**
      * 保存草稿（暂存）
-     *
+     * 
      * @param cmd 报表命令对象，包含用户填写的所有数据
      * @throws BusinessException 如果调查期不存在
      */
@@ -424,12 +464,12 @@ public class ReportApplicationService {
         Date now = new Date();
 
         // ✅ 通过 investigate_time 获取真实的 period_id
-        Long periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
+        Integer periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
 
         // 查询该企业在该调查期是否已有报表记录
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(cmd.getEnterpriseId());
-        q.setPeriodId(periodId);
+        q.setPeriodId(Long.valueOf(periodId));
         q.setOrderBy("updated_at desc");
         q.setPageNo(1);
         q.setPageSize(1);
@@ -440,6 +480,12 @@ public class ReportApplicationService {
             reportId = list.get(0).getReportId();
         } else {
             reportId = assembler.newReportId();
+        }
+
+        // 业务规则：如果没该企业的历史报表（建档期），则强制 建档期就业人数 = 调查期就业人数
+        Integer previousEmployeeCount = getPreviousPeriodEmployeeCount(cmd.getEnterpriseId(), periodId);
+        if (previousEmployeeCount == null && cmd.getCurrentEmployees() != null) {
+            cmd.setInitialEmployees(cmd.getCurrentEmployees());
         }
 
         // 写 report_info
@@ -453,6 +499,8 @@ public class ReportApplicationService {
 
         // 写 enterprise_report_info（状态=0）
         EnterpriseReportInfo e = assembler.toEnterpriseReportInfoForDraft(cmd, reportId, periodId, now);
+        populateExtendedInfo(e);
+
         if (list == null || list.isEmpty()) {
             enterpriseReportInfoService.add(e);
         } else {
@@ -463,7 +511,7 @@ public class ReportApplicationService {
 
     /**
      * 提交报表（不带幂等键的简单版本）
-     *
+     * 
      * @param cmd 报表命令对象
      * @throws BusinessException 如果调查期不存在
      */
@@ -474,12 +522,12 @@ public class ReportApplicationService {
         Date now = new Date();
 
         // ✅ 通过 investigate_time 获取真实的 period_id
-        Long periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
+        Integer periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
 
         // 再次拿最新记录
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(cmd.getEnterpriseId());
-        q.setPeriodId(periodId);
+        q.setPeriodId(Long.valueOf(periodId));
         q.setOrderBy("updated_at desc");
         q.setPageNo(1);
         q.setPageSize(1);
@@ -491,48 +539,47 @@ public class ReportApplicationService {
         EnterpriseReportInfo latest = list.get(0);
         EnterpriseReportInfo submit = assembler.toEnterpriseReportInfoForSubmit(cmd, latest.getReportId(), periodId,
                 now);
+        populateExtendedInfo(submit);
+
         enterpriseReportInfoService.updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(
                 submit, submit.getEnterpriseId(), submit.getPeriodId(), submit.getReportId());
     }
 
     /**
      * 获取企业的所有报表列表
-     *
+     * 
      * @param enterpriseId 企业ID
      * @param pageNo       页码
      * @param pageSize     每页数量
      * @return 报表列表
      */
     public List<ReportV0> getReportList(String enterpriseId, Integer pageNo, Integer pageSize) {
-        EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
-        q.setEnterpriseId(enterpriseId);
-        q.setOrderBy("updated_at desc"); // 按更新时间倒序
-        q.setPageNo(pageNo);
-        q.setPageSize(pageSize);
-
-        List<EnterpriseReportInfo> list = enterpriseReportInfoService.findListByParam(q);
+        List<EnterpriseReportInfo> list = enterpriseReportInfoService.findLatestByEnterprise(enterpriseId, pageNo,
+                pageSize);
 
         if (list == null || list.isEmpty()) {
             return new ArrayList<>();
         }
 
         // 若缺少时间范围信息，补充 period_info 的起止时间
-        Map<Long, PeriodInfo> periodInfoMap = new HashMap<>();
+        Map<Integer, PeriodInfo> periodInfoMap = new HashMap<>();
         for (EnterpriseReportInfo e : list) {
             if (e == null) {
                 continue;
             }
-            Long periodId = e.getPeriodId();
+            Integer periodId = Math.toIntExact(e.getPeriodId());
             if (periodId != null) {
-                periodInfoMap.computeIfAbsent(periodId, id -> periodInfoService.getPeriodInfoByPeriodId(id));
+                periodInfoMap.computeIfAbsent(periodId,
+                        id -> periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(id)));
             }
         }
         for (EnterpriseReportInfo e : list) {
             if (e == null) {
                 continue;
             }
-            PeriodInfo periodInfo = periodInfoMap.get(e.getPeriodId());
+            PeriodInfo periodInfo = periodInfoMap.get(e.getPeriodId().intValue());
             if (periodInfo != null) {
+                System.out.println("periodInfo: " + periodInfo.getInvestigateTime());
                 if (e.getPeriodStartTime() == null) {
                     e.setPeriodStartTime(periodInfo.getPeriodStartTime());
                 }
@@ -547,7 +594,7 @@ public class ReportApplicationService {
         for (EnterpriseReportInfo e : list) {
             ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
             ReportV0 vo = assembler.toVO(e, r);
-            PeriodInfo periodInfo = periodInfoMap.get(e.getPeriodId());
+            PeriodInfo periodInfo = periodInfoMap.get(e.getPeriodId().intValue());
             if (periodInfo != null && periodInfo.getInvestigateTime() != null) {
                 vo.setReportingPeriod(periodInfo.getInvestigateTime());
             }
@@ -574,14 +621,63 @@ public class ReportApplicationService {
         return result;
     }
 
+    public List<ReportV0> getReportHistory(String enterpriseId, String reportingPeriod) throws BusinessException {
+        if (StringUtils.isBlank(reportingPeriod)) {
+            throw new BusinessException("reporting_period 不能为空");
+        }
+        Integer periodId = getPeriodIdByInvestigateTime(reportingPeriod);
+        List<EnterpriseReportInfo> list = enterpriseReportInfoService.findHistoryByEnterpriseAndPeriod(enterpriseId,
+                Long.valueOf(periodId));
+        if (list == null || list.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        PeriodInfo periodInfo = periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(periodId));
+        List<ReportV0> result = new ArrayList<>();
+        for (EnterpriseReportInfo e : list) {
+            if (e == null) {
+                continue;
+            }
+            if (periodInfo != null) {
+                if (e.getPeriodStartTime() == null) {
+                    e.setPeriodStartTime(periodInfo.getPeriodStartTime());
+                }
+                if (e.getPeriodEndTime() == null) {
+                    e.setPeriodEndTime(periodInfo.getPeriodEndTime());
+                }
+            }
+            ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
+            ReportV0 vo = assembler.toVO(e, r);
+            vo.setReportingPeriod(reportingPeriod);
+            applyEditabilityFlags(vo, e);
+            result.add(vo);
+        }
+
+        List<String> reportIds = new ArrayList<>();
+        for (ReportV0 vo : result) {
+            if (vo != null && vo.getId() != null) {
+                reportIds.add(vo.getId());
+            }
+        }
+        Map<String, ReportAuditHistory[]> snapshots = loadLatestAuditSnapshots(reportIds);
+        for (ReportV0 vo : result) {
+            if (vo == null) {
+                continue;
+            }
+            ReportAuditHistory[] pair = vo.getId() != null ? snapshots.get(vo.getId()) : null;
+            applyLatestAuditSnapshot(vo, pair != null ? pair[0] : null, pair != null ? pair[1] : null);
+        }
+        return result;
+    }
+
     /**
      * 获取当前可填报的调查期列表
-     *
+     * 
      * 业务逻辑：
      * 1. 查询 period_info，条件：NOW() BETWEEN period_start_time AND period_end_time
      * 2. 返回所有符合条件的调查期（可能有多个，如有重叠窗口）
      * 3. 前端会显示列表让用户选择
-     *
+     * 
      * @return Map包含periods列表
      */
     public Map<String, Object> getCurrentPeriods() {
@@ -631,14 +727,14 @@ public class ReportApplicationService {
 
     /**
      * 提交报表（带幂等键）
-     *
+     * 
      * 业务逻辑：
      * 1. 检查幂等键（Redis）- 防止重复提交
      * 2. 检查窗口时间 - 确保在填报期内
      * 3. 严格数据校验
      * 4. 更新状态为"待市级审核"
      * 5. 记录幂等键到Redis
-     *
+     * 
      * @param cmd            报表数据
      * @param idempotencyKey 幂等键（UUID）
      */
@@ -653,8 +749,8 @@ public class ReportApplicationService {
         }
 
         // 步骤2：通过 investigate_time 获取真实的 period_id并检查窗口时间
-        Long periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
-        PeriodInfo period = periodInfoService.getPeriodInfoByPeriodId(periodId);
+        Integer periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
+        PeriodInfo period = periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(periodId));
         if (period == null) {
             throw new BusinessException("调查期不存在");
         }
@@ -673,7 +769,7 @@ public class ReportApplicationService {
 
     /**
      * 驳回后重新提交
-     *
+     * 
      * 业务逻辑：
      * 1. 检查幂等键 - 防止重复提交
      * 2. 检查窗口时间 - 确保在填报期内
@@ -682,7 +778,7 @@ public class ReportApplicationService {
      * 5. 复制数据 + 用户修改
      * 6. 插入新版本，old_report_id指向旧版本
      * 7. 更新状态为"待市级审核"
-     *
+     * 
      * @param cmd            报表数据
      * @param idempotencyKey 幂等键（UUID）
      */
@@ -697,8 +793,8 @@ public class ReportApplicationService {
         }
 
         // 步骤2：通过 investigate_time 获取真实的 period_id并检查窗口时间
-        Long periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
-        PeriodInfo period = periodInfoService.getPeriodInfoByPeriodId(periodId);
+        Integer periodId = getPeriodIdByInvestigateTime(cmd.getReportingPeriod());
+        PeriodInfo period = periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(periodId));
 
         // 检查填报窗口时间
         Date now = new Date();
@@ -709,7 +805,7 @@ public class ReportApplicationService {
         // 步骤3：查询旧报表
         EnterpriseReportInfoQuery q = new EnterpriseReportInfoQuery();
         q.setEnterpriseId(cmd.getEnterpriseId());
-        q.setPeriodId(periodId);
+        q.setPeriodId(Long.valueOf(periodId));
         q.setOrderBy("updated_at desc");
         q.setPageNo(1);
         q.setPageSize(1);
@@ -737,6 +833,8 @@ public class ReportApplicationService {
         EnterpriseReportInfo newEnterpriseReport = assembler.toEnterpriseReportInfoForSubmit(cmd, newReportId, periodId,
                 now);
         newEnterpriseReport.setOldReportId(oldReportId); // 关联旧版本
+        populateExtendedInfo(newEnterpriseReport);
+
         enterpriseReportInfoService.add(newEnterpriseReport);
 
         // 步骤7：记录幂等键
@@ -744,14 +842,41 @@ public class ReportApplicationService {
     }
 
     /**
+     * 填充扩展信息（调查期起止时间、企业性质/行业/地区）
+     */
+    private void populateExtendedInfo(EnterpriseReportInfo eri) {
+        if (eri == null)
+            return;
+
+        // 1. 填充调查期起止时间
+        if (eri.getPeriodId() != null) {
+            PeriodInfo period = periodInfoService.getPeriodInfoByPeriodId(eri.getPeriodId());
+            if (period != null) {
+                eri.setPeriodStartTime(period.getPeriodStartTime());
+                eri.setPeriodEndTime(period.getPeriodEndTime());
+            }
+        }
+
+        // 2. 填充企业性质/行业/地区
+        if (eri.getEnterpriseId() != null) {
+            EnterpriseInfo ent = enterpriseInfoService.getEnterpriseInfoByEnterpriseId(eri.getEnterpriseId());
+            if (ent != null) {
+                eri.setEnterpriseNature(ent.getNatureCode());
+                eri.setEnterpriseIndustry(ent.getIndustryCode());
+                eri.setEnterpriseRegion(ent.getRegionCode());
+            }
+        }
+    }
+
+    /**
      * 查询审核历史
-     *
+     * 
      * 业务逻辑：
      * 1. 通过 investigate_time 查询真实的 period_id
      * 2. 查询 report_audit_history 表
      * 3. 按审核时间倒序排列
      * 4. 格式化返回数据（增加可读性字段：审核层级名称、审核结果名称等）
-     *
+     * 
      * @param enterpriseId    企业ID（如 "TEST_ENT_002"）
      * @param reportingPeriod 调查期（如 "2025-01"）
      * @return 审核历史列表，包含审核时间、审核人、审核意见等信息
@@ -760,7 +885,7 @@ public class ReportApplicationService {
         // 步骤1：通过 investigate_time 获取真实的 period_id
         // 如果调查期不存在，getPeriodIdByInvestigateTime 会抛出 BusinessException（运行时异常）
         // 我们捕获它并返回空的审核历史
-        Long periodId;
+        Integer periodId;
         try {
             periodId = getPeriodIdByInvestigateTime(reportingPeriod);
         } catch (BusinessException e) {
@@ -775,7 +900,7 @@ public class ReportApplicationService {
         // 步骤2：构建查询条件
         ReportAuditHistoryQuery query = new ReportAuditHistoryQuery();
         query.setEnterpriseId(enterpriseId);
-        query.setPeriodId(periodId); // 使用真实的 period_id
+        query.setPeriodId(Long.valueOf(periodId)); // 使用真实的 period_id
         query.setOrderBy("audit_time DESC"); // 按审核时间倒序，最新的审核记录在前
         query.setPageNo(1);
         query.setPageSize(100); // 假设一个调查期不会有超过100条审核记录
@@ -820,4 +945,79 @@ public class ReportApplicationService {
 
         return result;
     }
+
+    public ReportV0 getReportById(String reportId) {
+        ReportInfo reportInfo = reportInfoCommonService.getReportInfoByReportId(reportId);
+        ReportV0 reportV0 = new ReportV0();
+        reportV0.setId(reportInfo.getReportId());
+        reportV0.setCurrentEmployees(reportInfo.getInvestigationCount());
+        reportV0.setInitialEmployees(reportInfo.getConstructionCount());
+        reportV0.setReductionTypeCode(dictionaryService.typeIdToCode(reportInfo.getReductionType()));
+        reportV0.setPrimaryReasonCode(dictionaryService.causeIdToCode(reportInfo.getReason1()));
+        reportV0.setPrimaryReasonDesc(reportInfo.getReason1Desc());
+        reportV0.setSecondaryReasonCode(dictionaryService.causeIdToCode(reportInfo.getReason2()));
+        reportV0.setPrimaryReasonDesc(reportInfo.getReason2Desc());
+        reportV0.setTertiaryReasonCode(dictionaryService.causeIdToCode(reportInfo.getReason3()));
+        reportV0.setPrimaryReasonDesc(reportInfo.getReason3Desc());
+        return reportV0;
+    }
+
+    /**
+     * 获取企业就业人数趋势数据
+     * 
+     * 业务逻辑：
+     * 1. 获取企业最近的12期报表（按调查期倒序）
+     * 2. 过滤掉没有调查期人数的报表
+     * 3. 补充调查期名称
+     * 4. 按时间正序排列返回
+     * 
+     * @param enterpriseId 企业ID
+     * @return 趋势数据列表
+     */
+    public List<Map<String, Object>> getEmploymentTrend(String enterpriseId) {
+        // 获取最近12期报表
+        List<EnterpriseReportInfo> list = enterpriseReportInfoService.findLatestByEnterprise(enterpriseId, 1, 12);
+
+        if (list == null || list.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 收集 periodId 以批量查询 PeriodInfo
+        Map<Integer, PeriodInfo> periodInfoMap = new HashMap<>();
+        for (EnterpriseReportInfo e : list) {
+            if (e != null && e.getPeriodId() != null) {
+                Integer pid = e.getPeriodId().intValue();
+                periodInfoMap.computeIfAbsent(pid, id -> periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(id)));
+            }
+        }
+
+        List<Map<String, Object>> trendList = new ArrayList<>();
+        for (EnterpriseReportInfo e : list) {
+            if (e == null) continue;
+
+            // 获取报表详情（为了拿人数）
+            ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
+            if (r == null || r.getInvestigationCount() == null) {
+                continue; // 跳过没有人数的数据
+            }
+
+            PeriodInfo p = periodInfoMap.get(e.getPeriodId().intValue());
+            String periodName = (p != null) ? p.getInvestigateTime() : "未知期次";
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("period", periodName);
+            item.put("count", r.getInvestigationCount());
+            trendList.add(item);
+        }
+
+        // 按调查期名称排序（假设格式为 YYYY-MM，可以直接字符串排序）
+        trendList.sort((a, b) -> {
+            String p1 = (String) a.get("period");
+            String p2 = (String) b.get("period");
+            return p1.compareTo(p2);
+        });
+
+        return trendList;
+    }
 }
+

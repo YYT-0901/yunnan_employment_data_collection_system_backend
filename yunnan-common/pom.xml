@@ -31,7 +31,7 @@
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <skipTests>true</skipTests>
+        <skipTests>false</skipTests>
     </properties>
 
     <dependencies>
@@ -39,6 +39,21 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${springboot.version}</version>
+        </dependency>
+
+        <!-- Apache Druid JDBC Driver -->
+        <!-- 使用 avatica-core 并排除所有日志相关依赖 -->
+        <dependency>
+            <groupId>org.apache.calcite.avatica</groupId>
+            <artifactId>avatica-core</artifactId>
+            <version>1.23.0</version>
+            <exclusions>
+                <!-- 排除所有 SLF4J 相关依赖，使用 Spring Boot 自带的 -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!--mybatis-->

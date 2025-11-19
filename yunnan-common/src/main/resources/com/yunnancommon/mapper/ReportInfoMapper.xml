@@ -28,6 +28,14 @@
 		<result column="other_reason" property="otherReason" />
 	</resultMap>
 
+	<!--详情VO映射-->
+	<resultMap id="detail_result_map" type="com.yunnancommon.entity.vo.ReportInfoDetailVO" extends="base_result_map">
+		<!--企业名称-->
+		<result column="enterprise_name" property="enterpriseName" />
+		<!--调查期时间-->
+		<result column="investigate_time" property="investigateTime" />
+	</resultMap>
+
 	<!--通用查询结果-->
 	<sql id="base_column_list">
 		report_id,construction_count,investigation_count,reduction_type,reason1,reason1_desc,reason2,reason2_desc,reason3,reason3_desc,other_reason
@@ -319,9 +327,32 @@
 			report_id = VALUES(report_id),construction_count = VALUES(construction_count),investigation_count = VALUES(investigation_count),reduction_type = VALUES(reduction_type),reason1 = VALUES(reason1),reason1_desc = VALUES(reason1_desc),reason2 = VALUES(reason2),reason2_desc = VALUES(reason2_desc),reason3 = VALUES(reason3),reason3_desc = VALUES(reason3_desc),other_reason = VALUES(other_reason)
 	</insert>
 
-	<!--根据ReportId查询-->
+		<!--根据ReportId查询-->
 	<select id="selectByReportId" resultMap="base_result_map">
 		select <include refid="base_column_list" /> from report_info where report_id = #{reportId}
+	</select>
+	
+	<!--根据ReportId查询详情，包含企业名称和调查期时间-->
+	<select id="selectDetailByReportId" resultMap="detail_result_map">
+		SELECT
+			r.report_id,
+			r.construction_count,
+			r.investigation_count,
+			r.reduction_type,
+			r.reason1,
+			r.reason1_desc,
+			r.reason2,
+			r.reason2_desc,
+			r.reason3,
+			r.reason3_desc,
+			r.other_reason,
+			ei.name AS enterprise_name,
+			pi.investigate_time
+		FROM report_info r
+		LEFT JOIN enterprise_report_info eri ON r.report_id = eri.report_id
+		LEFT JOIN enterprise_info ei ON eri.enterprise_id = ei.enterprise_id
+		LEFT JOIN period_info pi ON eri.period_id = pi.period_id
+		WHERE r.report_id = #{reportId}
 	</select>
 
 	<!--根据ReportId更新-->
