@@ -129,6 +129,9 @@
 		<if test="query.enterpriseNameFuzzy != null and query.enterpriseNameFuzzy != ''">
 			and ei.name like concat('%',#{query.enterpriseNameFuzzy},'%')
 		</if>
+		<if test="query.investigateTime != null and query.investigateTime != ''">
+			and pi.investigate_time = #{query.investigateTime}
+		</if>
 	</sql>
 
 	<!--通用查询条件-->
@@ -160,6 +163,8 @@
 		select count(1)
 		from enterprise_report_info eri
 		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
+		LEFT JOIN report_info ri ON eri.report_id = ri.report_id
+		LEFT JOIN period_info pi ON eri.period_id = pi.period_id
 		<include refid="query_condition" />
 	</select>
 

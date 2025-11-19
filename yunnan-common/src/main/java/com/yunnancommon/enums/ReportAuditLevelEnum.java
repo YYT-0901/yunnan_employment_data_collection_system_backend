@@ -4,11 +4,11 @@ public enum ReportAuditLevelEnum {
     /**
      * 省级审核
      */
-    PROVINCIAL(1, "省级审核"),
+    PROVINCIAL(2, "省级审核"),
     /**
      * 市级审核
      */
-    CITY(2, "市级审核");
+    CITY(1, "市级审核");
 
     private final Integer code;
     private final String desc;

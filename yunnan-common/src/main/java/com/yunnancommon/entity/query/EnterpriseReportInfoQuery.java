@@ -99,6 +99,20 @@ public class EnterpriseReportInfoQuery extends BaseQuery{
 
 	private String enterpriseNameFuzzy;
 
+	// 添加investigateTime字段
+	private String investigateTime;
+
+	// 添加getter/setter方法
+	public String getInvestigateTime() {
+		return investigateTime;
+	}
+
+	public void setInvestigateTime(String investigateTime) {
+		this.investigateTime = investigateTime;
+	}
+
+// ... 现有代码 ...
+
 	public String getEnterpriseNameFuzzy() {
 		return enterpriseNameFuzzy;
 	}
