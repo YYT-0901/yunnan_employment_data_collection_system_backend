@@ -5,4 +5,6 @@ import com.yunnancommon.exception.BusinessException;
 
 public interface OverviewService {
     StatisticsDataVO getStatisticsData() throws BusinessException;
+
+    StatisticsDataVO getCityStatisticsData(Integer regionCode) throws BusinessException;
 }

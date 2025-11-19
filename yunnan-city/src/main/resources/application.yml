@@ -19,6 +19,9 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
       connection-test-query: SELECT 1
+  druid:
+    url: jdbc:avatica:remote:url=http://localhost:8888/druid/v2/sql/avatica/
+    driver-class-name: org.apache.calcite.avatica.remote.Driver
   data:
     redis:
       database: 1
@@ -37,7 +40,9 @@ project:
 
 log:
   root:
-    level: INFO
+    level: DEBUG
 
 server:
   port: 8081
+  servlet:
+    context-path: /api

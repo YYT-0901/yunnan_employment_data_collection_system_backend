@@ -102,6 +102,7 @@ public class ReportAssembler {
         e.setReportId(reportId);
         e.setStatus(1); // 1-待市级审核
         e.setUpdatedAt(now);
+
         if (e.getCreatedAt() == null) {
             e.setCreatedAt(now);
         }
