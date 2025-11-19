@@ -206,18 +206,20 @@ public class ReportApplicationService {
         // ⚠️ 关键逻辑：已有报表时，直接返回数据库中的数据，不做任何自动填充
         // 报送期次、建档期人数、调查期人数 都应该锁定
 
-        // 建档期人数：如果已填写就锁定
-        if (vo.getInitialEmployees() != null && vo.getInitialEmployees() > 0) {
-            vo.setIsInitialEmployeesLocked(true);
-        } else {
-            vo.setIsInitialEmployeesLocked(false);
-        }
+        // 建档期人数：如果已填写就锁定(旧的逻辑)
+        // if (vo.getInitialEmployees() != null && vo.getInitialEmployees() > 0) {
+        // vo.setIsInitialEmployeesLocked(true);
+        // } else {
+        // vo.setIsInitialEmployeesLocked(false);
+        // }
 
         // 调查期人数：已有报表时始终锁定（无论是暂存、提交、驳回等任何状态）
         // vo.setIsCurrentEmployeesLocked(true);
 
         Integer status = e.getStatus();
-
+        boolean hasHistory = getPreviousPeriodEmployeeCount(
+                e.getEnterpriseId(),
+                Math.toIntExact(e.getPeriodId())) != null;
         boolean isEditableStatus = (status != null && (status == 0 || status == 5));
 
         boolean isLatestVersion = !hasNewerVersion(e.getEnterpriseId(), Math.toIntExact(e.getPeriodId()),
@@ -225,19 +227,15 @@ public class ReportApplicationService {
 
         if (isEditableStatus && isLatestVersion) {
             vo.setIsCurrentEmployeesLocked(false);
-            vo.setIsInitialEmployeesLocked(true);
-
-            System.out.println(">> Unlocking fields for Status " + status);
+            vo.setIsInitialEmployeesLocked(hasHistory); // 首次填报 -> false
         } else {
             vo.setIsCurrentEmployeesLocked(true);
-            if (vo.getInitialEmployees() != null && vo.getInitialEmployees() > 0) {
-                vo.setIsInitialEmployeesLocked(true);
-            } else {
-                vo.setIsInitialEmployeesLocked(false);
-            }
+            vo.setIsInitialEmployeesLocked(true); // 非可编辑状态直接锁死
         }
 
         System.out.println("Final VO (existing report):");
+        System.out.println("hasHistory: " + hasHistory);
+
         System.out.println(
                 "  - initial_employees: " + vo.getInitialEmployees() + ", locked: " + vo.getIsInitialEmployeesLocked());
         System.out.println(
@@ -482,6 +480,12 @@ public class ReportApplicationService {
             reportId = list.get(0).getReportId();
         } else {
             reportId = assembler.newReportId();
+        }
+
+        // 业务规则：如果没该企业的历史报表（建档期），则强制 建档期就业人数 = 调查期就业人数
+        Integer previousEmployeeCount = getPreviousPeriodEmployeeCount(cmd.getEnterpriseId(), periodId);
+        if (previousEmployeeCount == null && cmd.getCurrentEmployees() != null) {
+            cmd.setInitialEmployees(cmd.getCurrentEmployees());
         }
 
         // 写 report_info
