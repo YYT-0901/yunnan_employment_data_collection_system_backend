@@ -5,7 +5,6 @@ import com.yunnancommon.entity.dto.DistributionData;
 import com.yunnancommon.entity.dto.OverviewStatisticsDataDto;
 import com.yunnancommon.entity.dto.ProgressData;
 import com.yunnancommon.entity.po.EnterpriseInfo;
-import com.yunnancommon.entity.po.EnterpriseReportInfo;
 import com.yunnancommon.entity.po.PeriodInfo;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
 import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
@@ -44,7 +43,7 @@ public class OverviewServiceImpl implements OverviewService {
     @Resource
     private PeriodInfoMapper<PeriodInfo, PeriodInfoQuery> periodInfoMapper;
     @Resource
-    private EnterpriseReportInfoMapper<EnterpriseReportInfo, EnterpriseReportInfoQuery> enterpriseReportInfoMapper;
+    private EnterpriseReportInfoMapper enterpriseReportInfoMapper;
     @Resource
     private EnterpriseInfoMapper<EnterpriseInfo, EnterpriseInfoQuery> enterpriseInfoMapper;
 
@@ -68,11 +67,14 @@ public class OverviewServiceImpl implements OverviewService {
 
         StatisticsDataQuery statisticsDataQuery = new StatisticsDataQuery();
         statisticsDataQuery.setPeriodId(periodInfo.getPeriodId());
-        statisticsDataQuery.setStatus(List.of(ReportStatusEnum.ARCHIVED.getCode(), ReportStatusEnum.APPROVED.getCode(), ReportStatusEnum.CITY_AUDITING.getCode(), ReportStatusEnum.PROVINCE_AUDITING.getCode()));
+        statisticsDataQuery.setStatus(List.of(ReportStatusEnum.ARCHIVED.getCode(), ReportStatusEnum.APPROVED.getCode(),
+                ReportStatusEnum.CITY_AUDITING.getCode(), ReportStatusEnum.PROVINCE_AUDITING.getCode()));
         List<OverviewStatisticsDataDto> statisticList = overviewMapper.getStatisticList(statisticsDataQuery);
 
-        Integer constructionCount = statisticList.stream().mapToInt(item -> item.getConstructionCount() != null ? item.getConstructionCount() : 0).sum();
-        Integer investigationCount = statisticList.stream().mapToInt(item -> item.getInvestigationCount() != null ? item.getInvestigationCount() : 0).sum();
+        Integer constructionCount = statisticList.stream()
+                .mapToInt(item -> item.getConstructionCount() != null ? item.getConstructionCount() : 0).sum();
+        Integer investigationCount = statisticList.stream()
+                .mapToInt(item -> item.getInvestigationCount() != null ? item.getInvestigationCount() : 0).sum();
         statisticsDataVO.setConstructionCount(constructionCount);
         statisticsDataVO.setInvestigationCount(investigationCount);
         statisticsDataVO.setPositionChanges(investigationCount - constructionCount);
@@ -86,7 +88,8 @@ public class OverviewServiceImpl implements OverviewService {
             enterpriseInfoQuery.setRegionCode(city.getCode());
             Integer totalCount = enterpriseInfoMapper.selectCount(enterpriseInfoQuery);
             progressData.setTotal(totalCount);
-            Integer currentCount = (int) statisticList.stream().filter(item -> city.getCode().equals(item.getEnterpriseRegion())).count();
+            Integer currentCount = (int) statisticList.stream()
+                    .filter(item -> city.getCode().equals(item.getEnterpriseRegion())).count();
             progressData.setValue(currentCount);
 
             // 防止 totalCount 为 0 导致除零异常
@@ -104,20 +107,18 @@ public class OverviewServiceImpl implements OverviewService {
         processDistributionData(
                 "region_code",
                 CityDict::getNameByCode,
-                statisticsDataVO::setRegionDistributionDataList
-        );
+                statisticsDataVO::setRegionDistributionDataList);
 
         processDistributionData(
                 "nature_code",
                 NatureDict::getNameByCode,
-                statisticsDataVO::setNatureDistributionDataList  // 修正：使用正确的setter
+                statisticsDataVO::setNatureDistributionDataList // 修正：使用正确的setter
         );
 
         processDistributionData(
                 "industry_code",
                 IndustryDict::getNameByCode,
-                statisticsDataVO::setIndustryDistributionDataList
-        );
+                statisticsDataVO::setIndustryDistributionDataList);
         return statisticsDataVO;
     }
 
@@ -144,11 +145,14 @@ public class OverviewServiceImpl implements OverviewService {
         StatisticsDataQuery statisticsDataQuery = new StatisticsDataQuery();
         statisticsDataQuery.setPeriodId(periodInfo.getPeriodId());
         statisticsDataQuery.setEnterpriseRegion(regionCode);
-        statisticsDataQuery.setStatus(List.of(ReportStatusEnum.ARCHIVED.getCode(), ReportStatusEnum.APPROVED.getCode(), ReportStatusEnum.CITY_AUDITING.getCode(), ReportStatusEnum.PROVINCE_AUDITING.getCode()));
+        statisticsDataQuery.setStatus(List.of(ReportStatusEnum.ARCHIVED.getCode(), ReportStatusEnum.APPROVED.getCode(),
+                ReportStatusEnum.CITY_AUDITING.getCode(), ReportStatusEnum.PROVINCE_AUDITING.getCode()));
         List<OverviewStatisticsDataDto> statisticList = overviewMapper.getStatisticList(statisticsDataQuery);
 
-        Integer constructionCount = statisticList.stream().mapToInt(item -> item.getConstructionCount() != null ? item.getConstructionCount() : 0).sum();
-        Integer investigationCount = statisticList.stream().mapToInt(item -> item.getInvestigationCount() != null ? item.getInvestigationCount() : 0).sum();
+        Integer constructionCount = statisticList.stream()
+                .mapToInt(item -> item.getConstructionCount() != null ? item.getConstructionCount() : 0).sum();
+        Integer investigationCount = statisticList.stream()
+                .mapToInt(item -> item.getInvestigationCount() != null ? item.getInvestigationCount() : 0).sum();
         statisticsDataVO.setConstructionCount(constructionCount);
         statisticsDataVO.setInvestigationCount(investigationCount);
         statisticsDataVO.setPositionChanges(investigationCount - constructionCount);
@@ -180,15 +184,13 @@ public class OverviewServiceImpl implements OverviewService {
                 "nature_code",
                 NatureDict::getNameByCode,
                 statisticsDataVO::setNatureDistributionDataList,
-                regionCode
-        );
+                regionCode);
 
         processCityDistributionData(
                 "industry_code",
                 IndustryDict::getNameByCode,
                 statisticsDataVO::setIndustryDistributionDataList,
-                regionCode
-        );
+                regionCode);
         return statisticsDataVO;
     }
 

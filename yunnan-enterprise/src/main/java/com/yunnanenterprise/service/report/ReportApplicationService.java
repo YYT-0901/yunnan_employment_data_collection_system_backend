@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import com.yunnanenterprise.dictionary.DictionaryService;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.binding.BindingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,6 +180,9 @@ public class ReportApplicationService {
         
         System.out.println("Found existing report - entering edit mode");
         EnterpriseReportInfo e = list.get(0);
+        System.out.println("Existing report_id: " + e.getReportId());
+        System.out.println("Existing report enterprise_id: " + e.getEnterpriseId()
+            + ", period_id: " + e.getPeriodId());
         ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
         ReportV0 vo = assembler.toVO(e, r);
         vo.setReportingPeriod(yyyyMm);
@@ -242,9 +246,11 @@ public class ReportApplicationService {
         // 找到小于当前period_id的最大period_id记录（即上一期）
         EnterpriseReportInfo previousReport = null;
         for (EnterpriseReportInfo report : historyList) {
-            System.out.println("checked report - period_id" + report.getPeriodId() + ", status:" + report.getStatus());
-            // 只考虑已审核通过或已归档的记录
-            if (report.getStatus() != null && (report.getStatus() == 3 || report.getStatus() == 4)) {
+            System.out.println("checked report - period_id" + report.getPeriodId()
+                + ", report_id:" + report.getReportId()
+                + ", status:" + report.getStatus());
+            // 只考虑已归档（status=4）的记录
+            if (report.getStatus() != null && report.getStatus() == 4) {
                 if (report.getPeriodId() < currentPeriodId) {
                     if (previousReport == null || report.getPeriodId() > previousReport.getPeriodId()) {
                         previousReport = report;
@@ -255,7 +261,7 @@ public class ReportApplicationService {
         }
         
         if (previousReport == null) {
-            System.out.println("没有找到符合条件的上一期报表（需要status=3或4，且period_id < " + currentPeriodId + "）");
+            System.out.println("没有找到符合条件的上一期报表（需要status=4，且period_id < " + currentPeriodId + "）");
             return null;
         }
 
@@ -573,7 +579,7 @@ public class ReportApplicationService {
     }
 
     public List<ReportV0> getReportHistory(String enterpriseId, String reportingPeriod) throws BusinessException {
-        if (!StringUtils.isNotBlank(reportingPeriod)) {
+        if (StringUtils.isBlank(reportingPeriod)) {
             throw new BusinessException("reporting_period 不能为空");
         }
         Integer periodId = getPeriodIdByInvestigateTime(reportingPeriod);
