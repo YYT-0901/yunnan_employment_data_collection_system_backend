@@ -39,46 +39,51 @@ public class ABaseController {
         return responseVO;
     }
 
-    protected void saveToken2Cookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie(Constants.TOKEN_KEY, token);
+    protected void saveToken2Cookie(HttpServletResponse response, String token, AccountTypeEnum accountType) {
+        Cookie cookie = new Cookie(getCookieName(accountType), token);
         cookie.setMaxAge(Constants.REDIS_KEY_EXPIRES_ONE_DAY / 1000 * 7);
         cookie.setPath("/");
         response.addCookie(cookie);
     }
 
     protected void cleanToken(HttpServletResponse response, AccountTypeEnum accountTypeEnum) {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return;
-        }
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(Constants.TOKEN_KEY)) {
-                if(accountTypeEnum == AccountTypeEnum.ENTERPRISE) {
-                    redisComponent.cleanEnterpriseTokenInfo(cookie.getValue());
-                } else if(accountTypeEnum == AccountTypeEnum.PROVINCE) {
-                    redisComponent.cleanProvinceTokenInfo(cookie.getValue());
-                } else if(accountTypeEnum == AccountTypeEnum.CITY) {
-                    redisComponent.cleanCityTokenInfo(cookie.getValue());
-                }
-                cookie.setMaxAge(0);
-                cookie.setPath("/");
-                response.addCookie(cookie);
-                break;
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+                .getRequest();
+        String token = getTokenFromCookie(request, accountTypeEnum);
+        if (token != null) {
+            if (accountTypeEnum == AccountTypeEnum.ENTERPRISE) {
+                redisComponent.cleanEnterpriseTokenInfo(token);
+            } else if (accountTypeEnum == AccountTypeEnum.PROVINCE) {
+                redisComponent.cleanProvinceTokenInfo(token);
+            } else if (accountTypeEnum == AccountTypeEnum.CITY) {
+                redisComponent.cleanCityTokenInfo(token);
             }
         }
+        Cookie cookie = new Cookie(getCookieName(accountTypeEnum), "");
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
     }
 
-    protected String getTokenFromCookie(HttpServletRequest request) {
+    protected String getTokenFromCookie(HttpServletRequest request, AccountTypeEnum accountTypeEnum) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             return null;
         }
+        String cookieName = getCookieName(accountTypeEnum);
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equalsIgnoreCase(Constants.TOKEN_KEY)) {
+            if (cookie.getName().equalsIgnoreCase(cookieName)) {
                 return cookie.getValue();
             }
         }
         return null;
+    }
+
+    private String getCookieName(AccountTypeEnum accountType) {
+        return switch (accountType) {
+            case ENTERPRISE -> Constants.TOKEN_KEY_ENTERPRISE;
+            case PROVINCE -> Constants.TOKEN_KEY_PROVINCE;
+            case CITY -> Constants.TOKEN_KEY_CITY;
+        };
     }
 }

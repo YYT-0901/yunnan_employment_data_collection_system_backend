@@ -8,6 +8,7 @@ import com.yunnancommon.entity.po.EnterpriseReportInfo;
 import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
 import com.yunnancommon.entity.vo.ReportInfoDetailVO;
 import com.yunnancommon.entity.vo.ResponseVO;
+import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.enums.ReportStatusEnum;
 import com.yunnancommon.service.EnterpriseReportInfoService;
 import com.yunnancommon.service.ReportInfoService;
@@ -34,9 +35,10 @@ public class AuditController extends ABaseController {
     private RedisComponent redisComponent;
 
     @PostMapping("/loadDataList")
-    public ResponseVO loadDataList(HttpServletRequest request, @RequestBody LoadReportDataDto loadReportDataDto)  {
+    public ResponseVO loadDataList(HttpServletRequest request, @RequestBody LoadReportDataDto loadReportDataDto) {
         EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
-        query.setEnterpriseRegion(redisComponent.getCityTokenInfo(getTokenFromCookie(request)).getCityCode());
+        String cityToken = getTokenFromCookie(request, AccountTypeEnum.CITY);
+        query.setEnterpriseRegion(redisComponent.getCityTokenInfo(cityToken).getCityCode());
         query.setPageNo(loadReportDataDto.getPage());
         query.setPageSize(loadReportDataDto.getPageSize());
         query.setEnterpriseIndustry(loadReportDataDto.getIndustry());

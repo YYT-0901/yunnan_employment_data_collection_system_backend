@@ -6,6 +6,7 @@ import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.po.ReportInfo;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
+import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.ReportInfoService;
 import com.yunnanenterprise.constants.ReportConstants;
@@ -293,6 +294,13 @@ public class ReportController extends ABaseController {
         return getSuccessResponseVO(app.getReportById(reportId));
     }
 
+    @GetMapping("/report/history")
+    public ResponseVO<List<ReportV0>> getReportHistory(HttpServletRequest request,
+            @RequestParam("reporting_period") String reportingPeriod) throws BusinessException {
+        String enterpriseId = getCurrentEnterpriseId(request);
+        return getSuccessResponseVO(app.getReportHistory(enterpriseId, reportingPeriod));
+    }
+
     /**
      * 获取当前登录企业ID（核心安全方法）
      * 
@@ -314,7 +322,7 @@ public class ReportController extends ABaseController {
      */
     private String getCurrentEnterpriseId(HttpServletRequest request) throws BusinessException {
         // 步骤1：从Cookie获取token
-        String token = getTokenFromCookie(request);
+        String token = getTokenFromCookie(request, AccountTypeEnum.ENTERPRISE);
         if (StringUtils.isBlank(token)) {
             throw new BusinessException("未登录或登录已过期，请重新登录");
         }

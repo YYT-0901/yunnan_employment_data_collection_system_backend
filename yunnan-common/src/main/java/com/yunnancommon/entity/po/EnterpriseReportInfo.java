@@ -87,6 +87,11 @@ public class EnterpriseReportInfo implements Serializable {
 	 */
 	private Integer enterpriseRegion;
 
+	/**
+	 * 当前调查期的版本数量（派生字段）
+	 */
+	private Integer versionCount;
+
 	public String getEnterpriseId() {
 		return enterpriseId;
 	}
@@ -191,8 +196,16 @@ public class EnterpriseReportInfo implements Serializable {
 		this.enterpriseRegion = enterpriseRegion;
 	}
 
+	public Integer getVersionCount() {
+		return versionCount;
+	}
+
+	public void setVersionCount(Integer versionCount) {
+		this.versionCount = versionCount;
+	}
+
 	@Override
 	public String toString() {
-		return "企业ID:" + (enterpriseId == null ? "空" : enterpriseId) + ",调查期ID:" + (periodId == null ? "空" : periodId) + ",数据填报ID:" + (reportId == null ? "空" : reportId) + ",旧数据填报ID:" + (oldReportId == null ? "空" : oldReportId) + ",退回原因:" + (reasonReturn == null ? "空" : reasonReturn) + ",状态: -1-未填报 0-已暂存 1-待市级审核 2-待省级审核 3-审核通过 4-已归档 5-驳回:" + (status == null ? "空" : status) + ",上报填报开始时间:" + (periodStartTime == null ? "空" : DateUtils.format(periodStartTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",上报填报结束时间:" + (periodEndTime == null ? "空" : DateUtils.format(periodEndTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",创建时间:" + (createdAt == null ? "空" : DateUtils.format(createdAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",更新时间:" + (updatedAt == null ? "空" : DateUtils.format(updatedAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",企业所属性质:" + (enterpriseNature == null ? "空" : enterpriseNature) + ",企业所属行业:" + (enterpriseIndustry == null ? "空" : enterpriseIndustry) + ",企业所属地区:" + (enterpriseRegion == null ? "空" : enterpriseRegion);
+		return "企业ID:" + (enterpriseId == null ? "空" : enterpriseId) + ",调查期ID:" + (periodId == null ? "空" : periodId) + ",数据填报ID:" + (reportId == null ? "空" : reportId) + ",旧数据填报ID:" + (oldReportId == null ? "空" : oldReportId) + ",退回原因:" + (reasonReturn == null ? "空" : reasonReturn) + ",状态: -1-未填报 0-已暂存 1-待市级审核 2-待省级审核 3-审核通过 4-已归档 5-驳回:" + (status == null ? "空" : status) + ",上报填报开始时间:" + (periodStartTime == null ? "空" : DateUtils.format(periodStartTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",上报填报结束时间:" + (periodEndTime == null ? "空" : DateUtils.format(periodEndTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",创建时间:" + (createdAt == null ? "空" : DateUtils.format(createdAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",更新时间:" + (updatedAt == null ? "空" : DateUtils.format(updatedAt, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern())) + ",企业所属性质:" + (enterpriseNature == null ? "空" : enterpriseNature) + ",企业所属行业:" + (enterpriseIndustry == null ? "空" : enterpriseIndustry) + ",企业所属地区:" + (enterpriseRegion == null ? "空" : enterpriseRegion) + ",版本数量:" + (versionCount == null ? "空" : versionCount);
 	}
 }

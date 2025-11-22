@@ -5,6 +5,7 @@ import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
 import com.yunnancommon.entity.vo.ResponseVO;
+import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.EnterpriseInfoService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +29,7 @@ public class EnterpriseController extends ABaseController {
      */
     @GetMapping("/loadAllEnterprise")
     public ResponseVO loadAllEnterprise(HttpServletRequest request, EnterpriseInfoQuery query) {
-        query.setRegion(redisComponent.getCityTokenInfo(getTokenFromCookie(request)).getCityCode());
+        query.setRegion(redisComponent.getCityTokenInfo(getTokenFromCookie(request, AccountTypeEnum.CITY)).getCityCode());
         return getSuccessResponseVO(enterpriseInfoService.findListByPage(query));
     }
 

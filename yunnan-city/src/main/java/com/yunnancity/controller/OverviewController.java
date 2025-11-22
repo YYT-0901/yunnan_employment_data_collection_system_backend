@@ -4,6 +4,7 @@ import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
+import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.OverviewService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +26,7 @@ public class OverviewController extends ABaseController {
 
     @GetMapping("/getStatisticsData")
     public ResponseVO getStatisticsData(HttpServletRequest request) throws BusinessException {
-        TokenInfoVO cityTokenInfo = redisComponent.getCityTokenInfo(getTokenFromCookie(request));
+        TokenInfoVO cityTokenInfo = redisComponent.getCityTokenInfo(getTokenFromCookie(request, AccountTypeEnum.CITY));
         return getSuccessResponseVO(overviewService.getCityStatisticsData(cityTokenInfo.getCityCode()));
     }
 }

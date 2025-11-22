@@ -30,6 +30,8 @@
 		<result column="enterprise_industry" property="enterpriseIndustry" />
 		<!--企业所属地区-->
 		<result column="enterprise_region" property="enterpriseRegion" />
+		<!--版本数量-->
+		<result column="version_count" property="versionCount" />
 	</resultMap>
 
 	<resultMap id="detail_result_map" type="com.yunnancommon.entity.vo.EnterpriseReportVO" extends="base_result_map">
@@ -143,7 +145,8 @@
 	<select id="selectList" resultMap="base_result_map">
 		select
 		<include refid="base_column_list" />
-		from enterprise_report_info
+		from enterprise_report_info eri
+		<include refid="query_condition" />
 		<if test="query.orderBy != null">order by ${query.orderBy}</if>
 		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
 	</select>
@@ -161,6 +164,44 @@
 		from enterprise_report_info eri
 		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
 		<include refid="query_condition" />
+	</select>
+
+	<select id="selectLatestByEnterprise" resultMap="base_result_map">
+		SELECT
+		eri.*,
+		(
+			SELECT COUNT(1)
+			FROM enterprise_report_info e2
+			WHERE e2.enterprise_id = eri.enterprise_id
+			  AND e2.period_id = eri.period_id
+		) AS version_count
+		FROM enterprise_report_info eri
+		WHERE eri.enterprise_id = #{enterpriseId}
+		  AND eri.report_id = (
+			SELECT e2.report_id
+			FROM enterprise_report_info e2
+			WHERE e2.enterprise_id = eri.enterprise_id
+			  AND e2.period_id = eri.period_id
+			ORDER BY e2.updated_at DESC, e2.report_id DESC
+			LIMIT 1
+		  )
+		ORDER BY eri.period_id DESC
+		LIMIT #{offset}, #{pageSize}
+	</select>
+
+	<select id="selectHistoryByEnterpriseAndPeriod" resultMap="base_result_map">
+		SELECT
+		eri.*,
+		(
+			SELECT COUNT(1)
+			FROM enterprise_report_info e2
+			WHERE e2.enterprise_id = eri.enterprise_id
+			  AND e2.period_id = eri.period_id
+		) AS version_count
+		FROM enterprise_report_info eri
+		WHERE eri.enterprise_id = #{enterpriseId}
+		  AND eri.period_id = #{periodId}
+		ORDER BY eri.updated_at DESC, eri.report_id DESC
 	</select>
 
 

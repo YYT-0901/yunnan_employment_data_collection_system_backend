@@ -4,6 +4,7 @@ import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
+import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.service.EnterpriseInfoService;
 import com.yunnancommon.component.RedisComponent;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +27,7 @@ public class InfoController extends ABaseController {
 
     @GetMapping("/get")
     public ResponseVO<EnterpriseInfo> getProfile(HttpServletRequest request) {
-        String token = getTokenFromCookie(request);
+        String token = getTokenFromCookie(request, AccountTypeEnum.ENTERPRISE);
         TokenInfoVO tokenInfoVO = redisComponent.getEnterpriseTokenInfo(token);
         String enterpriseId = tokenInfoVO.getEnterpriseInfo().getEnterpriseId();
         return getSuccessResponseVO(enterpriseInfoService.getEnterpriseInfoByEnterpriseId(enterpriseId));
@@ -34,7 +35,7 @@ public class InfoController extends ABaseController {
 
     @PostMapping("/submit")
     public ResponseVO submitProfile(HttpServletRequest request, @RequestBody EnterpriseInfo enterpriseInfo) {
-        String token = getTokenFromCookie(request);
+        String token = getTokenFromCookie(request, AccountTypeEnum.ENTERPRISE);
         TokenInfoVO tokenInfoVO = redisComponent.getEnterpriseTokenInfo(token);
         String enterpriseId = tokenInfoVO.getEnterpriseInfo().getEnterpriseId();
         enterpriseInfo.setEnterpriseId(enterpriseId);
@@ -45,7 +46,7 @@ public class InfoController extends ABaseController {
 
     @PutMapping("/update")
     public ResponseVO updateProfile(HttpServletRequest request, @RequestBody EnterpriseInfo enterpriseInfo) {
-        String token = getTokenFromCookie(request);
+        String token = getTokenFromCookie(request, AccountTypeEnum.ENTERPRISE);
         TokenInfoVO tokenInfoVO = redisComponent.getEnterpriseTokenInfo(token);
         String enterpriseId = tokenInfoVO.getEnterpriseInfo().getEnterpriseId();
         EnterpriseInfo oldInfo = enterpriseInfoService.getEnterpriseInfoByEnterpriseId(enterpriseId);
@@ -73,7 +74,7 @@ public class InfoController extends ABaseController {
 
     @GetMapping("/check-status")
     public ResponseVO checkStatus(HttpServletRequest request) {
-        String token = getTokenFromCookie(request);
+        String token = getTokenFromCookie(request, AccountTypeEnum.ENTERPRISE);
         TokenInfoVO tokenInfoVO = redisComponent.getEnterpriseTokenInfo(token);
         String enterpriseId = tokenInfoVO.getEnterpriseInfo().getEnterpriseId();
         EnterpriseInfo enterpriseInfo = enterpriseInfoService.getEnterpriseInfoByEnterpriseId(enterpriseId);
@@ -83,4 +84,3 @@ public class InfoController extends ABaseController {
         return getSuccessResponseVO(enterpriseInfo.getStatus());
     }
 }
-

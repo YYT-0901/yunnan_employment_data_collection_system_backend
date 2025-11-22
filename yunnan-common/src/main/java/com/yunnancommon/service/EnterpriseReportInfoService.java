@@ -1,6 +1,5 @@
 package com.yunnancommon.service;
 
-
 import com.yunnancommon.entity.vo.CurrentVO;
 import com.yunnancommon.entity.vo.EnterpriseReportVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
@@ -8,11 +7,7 @@ import com.yunnancommon.entity.po.EnterpriseReportInfo;
 import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
 
 import java.util.List;
-/**
- * @Description:企业上报信息表Service
- * @auther:group2
- * @date:2025/10/22
- */
+
 public interface EnterpriseReportInfoService {
 
 	/**
@@ -48,22 +43,28 @@ public interface EnterpriseReportInfoService {
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId查询
 	 */
-	EnterpriseReportInfo getEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Long periodId, String reportId);
+	EnterpriseReportInfo getEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Long periodId,
+			String reportId);
 
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId更新
 	 */
-	Integer updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(EnterpriseReportInfo bean, String enterpriseId, Long periodId, String reportId);
+	Integer updateEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(EnterpriseReportInfo bean,
+			String enterpriseId, Long periodId, String reportId);
 
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId删除
 	 */
-	Integer deleteEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Long periodId, String reportId);
-
+	Integer deleteEnterpriseReportInfoByEnterpriseIdAndPeriodIdAndReportId(String enterpriseId, Long periodId,
+			String reportId);
 
 	PaginationResultVO<EnterpriseReportVO> findListByPageWithAssociatedEnterpriseName(EnterpriseReportInfoQuery query);
 
-    void getStatisticCount(CurrentVO currentVO);
+	void getStatisticCount(CurrentVO currentVO);
 
 	void getCityStatisticCount(CurrentVO currentVO, Integer cityCode);
+
+	List<EnterpriseReportInfo> findLatestByEnterprise(String enterpriseId, Integer pageNo, Integer pageSize);
+
+	List<EnterpriseReportInfo> findHistoryByEnterpriseAndPeriod(String enterpriseId, Long periodId);
 }

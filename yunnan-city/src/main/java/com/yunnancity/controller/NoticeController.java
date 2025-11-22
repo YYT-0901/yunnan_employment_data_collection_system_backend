@@ -8,6 +8,7 @@ import com.yunnancommon.entity.po.NoticeReadInfo;
 import com.yunnancommon.entity.query.NoticeInfoQuery;
 import com.yunnancommon.entity.vo.CurrentVO;
 import com.yunnancommon.entity.vo.ResponseVO;
+import com.yunnancommon.entity.vo.TokenInfoVO;
 import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.enums.DateTimePatternEnum;
 import com.yunnancommon.enums.NoticeTypeEnum;
@@ -74,7 +75,8 @@ public class NoticeController extends ABaseController {
     public ResponseVO read(HttpServletRequest request, @PathVariable Long id) {
         NoticeReadInfo noticeReadInfo = new NoticeReadInfo();
         noticeReadInfo.setNoticeId(id);
-        noticeReadInfo.setUsername(redisComponent.getCityTokenInfo(getTokenFromCookie(request)).getUsername());
+        String cityToken = getTokenFromCookie(request, AccountTypeEnum.CITY);
+        noticeReadInfo.setUsername(redisComponent.getCityTokenInfo(cityToken).getUsername());
         noticeReadInfo.setReadTime(new Date());
         noticeReadInfo.setUserType(AccountTypeEnum.PROVINCE.getCode());
         noticeReadInfoService.add(noticeReadInfo);
@@ -89,8 +91,10 @@ public class NoticeController extends ABaseController {
     @GetMapping("/current")
     public ResponseVO getCurrentInfo(HttpServletRequest request) {
         CurrentVO currentVO = new CurrentVO();
-        noticeInfoService.getCityCurrentNoticeInfo(redisComponent.getCityTokenInfo(getTokenFromCookie(request)).getUsername(), currentVO);
-        enterpriseReportInfoService.getCityStatisticCount(currentVO, redisComponent.getCityTokenInfo(getTokenFromCookie(request)).getCityCode());
+        String cityToken = getTokenFromCookie(request, AccountTypeEnum.CITY);
+        TokenInfoVO cityTokenInfo = redisComponent.getCityTokenInfo(cityToken);
+        noticeInfoService.getCityCurrentNoticeInfo(cityTokenInfo.getUsername(), currentVO);
+        enterpriseReportInfoService.getCityStatisticCount(currentVO, cityTokenInfo.getCityCode());
         return getSuccessResponseVO(currentVO);
     }
 

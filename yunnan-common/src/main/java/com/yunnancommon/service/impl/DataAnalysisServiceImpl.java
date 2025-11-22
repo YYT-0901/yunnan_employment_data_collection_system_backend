@@ -47,7 +47,7 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
      * 取样分析实现
      *
      * 【实现步骤】
-     * 1. 参数预处理：设置默认状态为已审核（3,4）
+     * 1. 参数预处理：设置默认状态为已归档（4）
      * 2. 展开地区codes：如果用户选择了某个市，展开其下所有区县和街道
      * 3. 查询数据库：调用Mapper获取各地区企业数量
      * 4. 计算占比：企业数量 / 总企业数 × 100%
@@ -60,8 +60,8 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
 
         // 1. 参数预处理
         if (query.getStatuses() == null || query.getStatuses().isEmpty()) {
-            // 默认只统计已审核通过的数据
-            query.setStatuses(Arrays.asList(3, 4));
+            // 默认只统计已归档的数据
+            query.setStatuses(Arrays.asList(4));
         }
 
         // 2. 展开地区codes（如果用户选择了父级地区，需要包含所有子级）
@@ -222,8 +222,8 @@ public class DataAnalysisServiceImpl implements DataAnalysisService {
     private void preprocessQuery(AnalysisQueryDto query) {
         // 设置默认状态
         if (query.getStatuses() == null || query.getStatuses().isEmpty()) {
-            // 只统计审核通过(3)和已归档(4)的数据
-            query.setStatuses(Arrays.asList(3, 4));
+            // 只统计已归档(4)的数据
+            query.setStatuses(Arrays.asList(4));
         }
 
         // 展开地区codes
