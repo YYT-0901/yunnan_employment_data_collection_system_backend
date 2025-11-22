@@ -5,6 +5,7 @@ import com.yunnancommon.entity.vo.EnterpriseReportVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.po.EnterpriseReportInfo;
 import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
+import com.yunnancommon.entity.vo.XmlReportVO;
 
 import java.util.List;
 
@@ -64,6 +65,8 @@ public interface EnterpriseReportInfoService {
 
 	void getCityStatisticCount(CurrentVO currentVO, Integer cityCode);
 
+	List<XmlReportVO> getEnterpriseReportInfoByStatusAndPeriodId(Integer status, Long periodId);
+}
 	List<EnterpriseReportInfo> findLatestByEnterprise(String enterpriseId, Integer pageNo, Integer pageSize);
 
 	List<EnterpriseReportInfo> findHistoryByEnterpriseAndPeriod(String enterpriseId, Long periodId);

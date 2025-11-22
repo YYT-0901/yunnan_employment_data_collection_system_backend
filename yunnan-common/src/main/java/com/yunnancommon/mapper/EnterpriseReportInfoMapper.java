@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import com.yunnancommon.entity.dto.AnalysisQueryDto;
 
+import com.yunnancommon.entity.vo.XmlReportVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -58,6 +59,7 @@ public interface EnterpriseReportInfoMapper extends BaseMapper<EnterpriseReportI
 	 */
 	List<Map<String, Object>> selectTrendData(@Param("query") AnalysisQueryDto query);
 
+    List<XmlReportVO> selectListWithAssociatedEnterpriseNameAndReportInfo(@Param("status") Integer status, @Param("periodId") Long periodId);
 	List<EnterpriseReportInfo> selectLatestByEnterprise(@Param("enterpriseId") String enterpriseId,
 			@Param("offset") Integer offset, @Param("pageSize") Integer pageSize);
 
