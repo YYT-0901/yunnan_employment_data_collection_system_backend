@@ -6,6 +6,7 @@ import com.yunnancommon.entity.query.EnterpriseInfoQuery;
 import com.yunnancommon.entity.query.SimplePage;
 import com.yunnancommon.entity.vo.CurrentVO;
 import com.yunnancommon.entity.vo.EnterpriseReportVO;
+import com.yunnancommon.entity.vo.XmlReportVO;
 import com.yunnancommon.enums.EnterpriseStatusEnum;
 import com.yunnancommon.enums.PageSize;
 import com.yunnancommon.entity.vo.PaginationResultVO;
@@ -15,6 +16,7 @@ import com.yunnancommon.enums.ReportStatusEnum;
 import com.yunnancommon.mapper.EnterpriseInfoMapper;
 import com.yunnancommon.mapper.EnterpriseReportInfoMapper;
 import com.yunnancommon.service.EnterpriseReportInfoService;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -152,5 +154,10 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
         query.setStatus(ReportStatusEnum.CITY_AUDITING.getCode());
         query.setEnterpriseRegion(cityCode);
         currentVO.setAuditDataCount(this.enterpriseReportInfoMapper.selectCount(query));
+    }
+
+    @Override
+    public List<XmlReportVO> getEnterpriseReportInfoByStatusAndPeriodId(Integer status, Long periodId) {
+        return this.enterpriseReportInfoMapper.selectListWithAssociatedEnterpriseNameAndReportInfo(status, periodId);
     }
 }

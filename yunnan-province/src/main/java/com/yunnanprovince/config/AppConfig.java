@@ -12,4 +12,7 @@ public class AppConfig {
 
     @Value("${admin.password:}")
     private String password;
+
+    @Value("${project.xml_folder:./xml}")
+    private String xmlFolderPath;  // 添加XML文件父路径字段，默认值为./xml
 }
