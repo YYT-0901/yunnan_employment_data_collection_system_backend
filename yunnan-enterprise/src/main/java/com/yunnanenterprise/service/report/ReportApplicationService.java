@@ -961,4 +961,63 @@ public class ReportApplicationService {
         reportV0.setPrimaryReasonDesc(reportInfo.getReason3Desc());
         return reportV0;
     }
+
+    /**
+     * 获取企业就业人数趋势数据
+     * 
+     * 业务逻辑：
+     * 1. 获取企业最近的12期报表（按调查期倒序）
+     * 2. 过滤掉没有调查期人数的报表
+     * 3. 补充调查期名称
+     * 4. 按时间正序排列返回
+     * 
+     * @param enterpriseId 企业ID
+     * @return 趋势数据列表
+     */
+    public List<Map<String, Object>> getEmploymentTrend(String enterpriseId) {
+        // 获取最近12期报表
+        List<EnterpriseReportInfo> list = enterpriseReportInfoService.findLatestByEnterprise(enterpriseId, 1, 12);
+
+        if (list == null || list.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 收集 periodId 以批量查询 PeriodInfo
+        Map<Integer, PeriodInfo> periodInfoMap = new HashMap<>();
+        for (EnterpriseReportInfo e : list) {
+            if (e != null && e.getPeriodId() != null) {
+                Integer pid = e.getPeriodId().intValue();
+                periodInfoMap.computeIfAbsent(pid, id -> periodInfoService.getPeriodInfoByPeriodId(Long.valueOf(id)));
+            }
+        }
+
+        List<Map<String, Object>> trendList = new ArrayList<>();
+        for (EnterpriseReportInfo e : list) {
+            if (e == null) continue;
+
+            // 获取报表详情（为了拿人数）
+            ReportInfo r = reportInfoService.getReportInfoByReportId(e.getReportId());
+            if (r == null || r.getInvestigationCount() == null) {
+                continue; // 跳过没有人数的数据
+            }
+
+            PeriodInfo p = periodInfoMap.get(e.getPeriodId().intValue());
+            String periodName = (p != null) ? p.getInvestigateTime() : "未知期次";
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("period", periodName);
+            item.put("count", r.getInvestigationCount());
+            trendList.add(item);
+        }
+
+        // 按调查期名称排序（假设格式为 YYYY-MM，可以直接字符串排序）
+        trendList.sort((a, b) -> {
+            String p1 = (String) a.get("period");
+            String p2 = (String) b.get("period");
+            return p1.compareTo(p2);
+        });
+
+        return trendList;
+    }
 }
+
