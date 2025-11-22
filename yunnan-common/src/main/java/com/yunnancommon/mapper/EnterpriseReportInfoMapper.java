@@ -10,18 +10,22 @@ import org.apache.ibatis.annotations.Param;
 
 import com.yunnancommon.entity.vo.EnterpriseReportVO;
 
+import com.yunnancommon.entity.po.EnterpriseReportInfo;
+import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
+
 @Mapper
-public interface EnterpriseReportInfoMapper<T, P> extends BaseMapper {
+public interface EnterpriseReportInfoMapper extends BaseMapper<EnterpriseReportInfo, EnterpriseReportInfoQuery> {
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId查询
 	 */
-	T selectByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId,
+	EnterpriseReportInfo selectByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId,
 			@Param("periodId") Long periodId, @Param("reportId") String reportId);
 
 	/**
 	 * 根据EnterpriseIdAndPeriodIdAndReportId更新
 	 */
-	Integer updateByEnterpriseIdAndPeriodIdAndReportId(@Param("bean") T t, @Param("enterpriseId") String enterpriseId,
+	Integer updateByEnterpriseIdAndPeriodIdAndReportId(@Param("bean") EnterpriseReportInfo t,
+			@Param("enterpriseId") String enterpriseId,
 			@Param("periodId") Long periodId, @Param("reportId") String reportId);
 
 	/**
@@ -30,10 +34,15 @@ public interface EnterpriseReportInfoMapper<T, P> extends BaseMapper {
 	Integer deleteByEnterpriseIdAndPeriodIdAndReportId(@Param("enterpriseId") String enterpriseId,
 			@Param("periodId") Long periodId, @Param("reportId") String reportId);
 
-	List<EnterpriseReportVO> selectListWithAssociated(@Param("query") P p);
+	@Override
+	List<EnterpriseReportInfo> selectList(@Param("query") EnterpriseReportInfoQuery query);
 
+	@Override
+	Integer selectCount(@Param("query") EnterpriseReportInfoQuery query);
 
-	Integer selectCountWithAssociated(@Param("query") P p);
+	List<EnterpriseReportVO> selectListWithAssociated(@Param("query") EnterpriseReportInfoQuery p);
+
+	Integer selectCountWithAssociated(@Param("query") EnterpriseReportInfoQuery p);
 
 	/**
 	 * 取样分析 - 按地区统计企业数量
@@ -51,4 +60,9 @@ public interface EnterpriseReportInfoMapper<T, P> extends BaseMapper {
 	List<Map<String, Object>> selectTrendData(@Param("query") AnalysisQueryDto query);
 
     List<XmlReportVO> selectListWithAssociatedEnterpriseNameAndReportInfo(@Param("status") Integer status, @Param("periodId") Long periodId);
+	List<EnterpriseReportInfo> selectLatestByEnterprise(@Param("enterpriseId") String enterpriseId,
+			@Param("offset") Integer offset, @Param("pageSize") Integer pageSize);
+
+	List<EnterpriseReportInfo> selectHistoryByEnterpriseAndPeriod(@Param("enterpriseId") String enterpriseId,
+			@Param("periodId") Long periodId);
 }

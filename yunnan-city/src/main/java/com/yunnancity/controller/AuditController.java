@@ -48,9 +48,10 @@ public class AuditController extends ABaseController {
     private PeriodInfoService periodInfoService;
 
     @PostMapping("/loadDataList")
-    public ResponseVO loadDataList(HttpServletRequest request, @RequestBody LoadReportDataDto loadReportDataDto)  {
+    public ResponseVO loadDataList(HttpServletRequest request, @RequestBody LoadReportDataDto loadReportDataDto) {
         EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
-        query.setEnterpriseRegion(redisComponent.getCityTokenInfo(getTokenFromCookie(request)).getCityCode());
+        String cityToken = getTokenFromCookie(request, AccountTypeEnum.CITY);
+        query.setEnterpriseRegion(redisComponent.getCityTokenInfo(cityToken).getCityCode());
         query.setPageNo(loadReportDataDto.getPage());
         query.setPageSize(loadReportDataDto.getPageSize());
         query.setEnterpriseIndustry(loadReportDataDto.getIndustry());

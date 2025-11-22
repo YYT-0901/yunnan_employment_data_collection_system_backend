@@ -6,6 +6,7 @@ import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.po.ReportInfo;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
+import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.ReportInfoService;
 import com.yunnanenterprise.constants.ReportConstants;
@@ -28,24 +29,24 @@ import java.util.Map;
  * 设计思路（老手的思考过程）：
  * 
  * 1. 职责定位：
- *    - 处理HTTP请求和响应
- *    - 从Token获取当前登录企业ID（权限验证）
- *    - 参数基础校验
- *    - 调用Service层处理业务逻辑
+ * - 处理HTTP请求和响应
+ * - 从Token获取当前登录企业ID（权限验证）
+ * - 参数基础校验
+ * - 调用Service层处理业务逻辑
  * 
  * 2. 接口设计（企业端专用）：
- *    - GET  /api/enterprise/periods/current - 获取当前可填报的调查期列表
- *    - GET  /api/enterprise/report - 获取/创建当前报表
- *    - POST /api/enterprise/report/draft - 暂存报表
- *    - POST /api/enterprise/report/submit - 提交报表
- *    - POST /api/enterprise/report/resubmit - 驳回后重新提交
- *    - GET  /api/enterprise/report/audit-history - 查看审核历史
- *    - GET  /api/enterprise/reports - 获取报表列表
+ * - GET /api/enterprise/periods/current - 获取当前可填报的调查期列表
+ * - GET /api/enterprise/report - 获取/创建当前报表
+ * - POST /api/enterprise/report/draft - 暂存报表
+ * - POST /api/enterprise/report/submit - 提交报表
+ * - POST /api/enterprise/report/resubmit - 驳回后重新提交
+ * - GET /api/enterprise/report/audit-history - 查看审核历史
+ * - GET /api/enterprise/reports - 获取报表列表
  * 
  * 3. 安全设计：
- *    - 每个接口都从Cookie获取Token
- *    - 从Redis获取登录企业信息
- *    - 确保企业只能操作自己的数据
+ * - 每个接口都从Cookie获取Token
+ * - 从Redis获取登录企业信息
+ * - 确保企业只能操作自己的数据
  * 
  * @author group2
  * @date 2025-01-27
@@ -55,11 +56,9 @@ import java.util.Map;
 public class ReportController extends ABaseController {
 
     private final ReportApplicationService app;
-    
+
     @Resource
     private RedisComponent redisComponent;
-
-
 
     public ReportController(ReportApplicationService app) {
         this.app = app;
@@ -79,13 +78,13 @@ public class ReportController extends ABaseController {
     public ResponseVO<Map<String, Object>> getCurrentPeriods(HttpServletRequest request) throws BusinessException {
         // 步骤1：获取当前登录企业ID（验证登录状态）
         String enterpriseId = getCurrentEnterpriseId(request);
-        
+
         // 步骤2：调用Service查询进行中的调查期
         Map<String, Object> result = app.getCurrentPeriods();
-        
+
         return getSuccessResponseVO(result);
     }
-    
+
     /**
      * 获取/创建当前报表（兼容原接口，但增加Token验证）
      * 
@@ -96,21 +95,21 @@ public class ReportController extends ABaseController {
      * 4. 如果不存在，自动创建空报表
      * 5. 返回报表详情
      * 
-     * @param request HTTP请求
+     * @param request         HTTP请求
      * @param reportingPeriod 调查期（格式：YYYY-MM）
      * @return 报表详情
      */
     @GetMapping("/report")
     public ResponseVO<ReportV0> get(HttpServletRequest request,
-                                    @RequestParam("reporting_period") String reportingPeriod) throws BusinessException {
+            @RequestParam("reporting_period") String reportingPeriod) throws BusinessException {
         // 参数校验
         if (!org.springframework.util.StringUtils.hasText(reportingPeriod)) {
             throw new IllegalArgumentException("reporting_period 不能为空");
         }
-        
+
         // 从Token获取当前登录企业ID（安全：企业只能查自己的报表）
         String enterpriseId = getCurrentEnterpriseId(request);
-        
+
         // 调用Service（Service会检查窗口时间、按需创建报表）
         ReportV0 data = app.getByEnterpriseAndPeriod(enterpriseId, reportingPeriod);
         return getSuccessResponseVO(data);
@@ -130,17 +129,17 @@ public class ReportController extends ABaseController {
      * @return 暂存结果
      */
     @PostMapping("/report/draft")
-    public ResponseVO<String> saveDraft(HttpServletRequest request, 
-                                        @Valid @RequestBody ReportCommand command) throws BusinessException {
+    public ResponseVO<String> saveDraft(HttpServletRequest request,
+            @Valid @RequestBody ReportCommand command) throws BusinessException {
         // 从Token获取当前登录企业ID
         String enterpriseId = getCurrentEnterpriseId(request);
-        
+
         // 设置企业ID到command（覆盖前端传来的值，安全考虑）
         command.setEnterpriseId(enterpriseId);
-        
+
         // 参数校验
         validateCommandBasics(command);
-        
+
         // 调用Service（Service会检查窗口时间、状态等）
         app.saveDraft(command);
         return getSuccessResponseVO("暂存成功");
@@ -156,32 +155,33 @@ public class ReportController extends ABaseController {
      * 4. 更新状态为"待市级审核"（status=1）
      * 5. 需要幂等键防重复提交
      * 
-     * @param request HTTP请求
-     * @param command 报表数据
+     * @param request        HTTP请求
+     * @param command        报表数据
      * @param idempotencyKey 幂等键（防重提交，24小时有效）
      * @return 提交结果
      */
     @PostMapping("/report/submit")
     public ResponseVO<String> submit(HttpServletRequest request,
-                                     @Valid @RequestBody ReportCommand command,
-                                     @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) throws BusinessException {
+            @Valid @RequestBody ReportCommand command,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey)
+            throws BusinessException {
         // 校验幂等键
         if (StringUtils.isBlank(idempotencyKey)) {
             throw new BusinessException("请求头缺少 Idempotency-Key");
         }
-        
+
         // 从Token获取当前登录企业ID
         String enterpriseId = getCurrentEnterpriseId(request);
         command.setEnterpriseId(enterpriseId);
-        
+
         // 参数校验
         validateCommandBasics(command);
-        
+
         // 调用Service（Service会做严格校验、幂等性检查）
         app.submit(command, idempotencyKey);
         return getSuccessResponseVO("提交成功，等待市级审核");
     }
-    
+
     /**
      * 驳回后重新提交
      * 
@@ -192,24 +192,25 @@ public class ReportController extends ABaseController {
      * 4. old_report_id 指向旧版本
      * 5. 需要幂等键
      * 
-     * @param request HTTP请求
-     * @param command 报表数据
+     * @param request        HTTP请求
+     * @param command        报表数据
      * @param idempotencyKey 幂等键
      * @return 提交结果
      */
     @PostMapping("/report/resubmit")
     public ResponseVO<String> resubmit(HttpServletRequest request,
-                                       @Valid @RequestBody ReportCommand command,
-                                       @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) throws BusinessException {
+            @Valid @RequestBody ReportCommand command,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey)
+            throws BusinessException {
         if (StringUtils.isBlank(idempotencyKey)) {
             throw new BusinessException("请求头缺少 Idempotency-Key");
         }
-        
+
         String enterpriseId = getCurrentEnterpriseId(request);
         command.setEnterpriseId(enterpriseId);
-        
+
         validateCommandBasics(command);
-        
+
         // 调用Service（Service会创建新版本）
         app.resubmit(command, idempotencyKey);
         return getSuccessResponseVO("重新提交成功，等待审核");
@@ -247,7 +248,7 @@ public class ReportController extends ABaseController {
      * 查询该企业在指定调查期的所有审核记录（包括市级和省级）
      * 按审核时间倒序排列
      * 
-     * @param request HTTP请求
+     * @param request         HTTP请求
      * @param reportingPeriod 调查期
      * @return 审核历史列表
      */
@@ -255,22 +256,22 @@ public class ReportController extends ABaseController {
     public ResponseVO<Map<String, Object>> getAuditHistory(
             HttpServletRequest request,
             @RequestParam("reporting_period") String reportingPeriod) throws BusinessException {
-        
+
         if (!org.springframework.util.StringUtils.hasText(reportingPeriod)) {
             throw new IllegalArgumentException("reporting_period 不能为空");
         }
-        
+
         String enterpriseId = getCurrentEnterpriseId(request);
-        
+
         Map<String, Object> result = app.getAuditHistory(enterpriseId, reportingPeriod);
         return getSuccessResponseVO(result);
     }
-    
+
     /**
      * 获取企业的报表列表（增加Token验证）
      * 
-     * @param request HTTP请求
-     * @param pageNo 页码（可选，默认1）
+     * @param request  HTTP请求
+     * @param pageNo   页码（可选，默认1）
      * @param pageSize 每页数量（可选，默认20）
      * @return 报表列表
      */
@@ -279,10 +280,10 @@ public class ReportController extends ABaseController {
             HttpServletRequest request,
             @RequestParam(value = "page_no", defaultValue = "1") Integer pageNo,
             @RequestParam(value = "page_size", defaultValue = "20") Integer pageSize) throws BusinessException {
-        
+
         // 从Token获取企业ID（安全：只能查自己的报表）
         String enterpriseId = getCurrentEnterpriseId(request);
-        
+
         List<ReportV0> list = app.getReportList(enterpriseId, pageNo, pageSize);
         return getSuccessResponseVO(list);
     }
@@ -291,6 +292,26 @@ public class ReportController extends ABaseController {
     public ResponseVO<ReportV0> getReportById(
             @PathVariable("reportId") String reportId) throws BusinessException {
         return getSuccessResponseVO(app.getReportById(reportId));
+    }
+
+    @GetMapping("/report/history")
+    public ResponseVO<List<ReportV0>> getReportHistory(HttpServletRequest request,
+            @RequestParam("reporting_period") String reportingPeriod) throws BusinessException {
+        String enterpriseId = getCurrentEnterpriseId(request);
+        return getSuccessResponseVO(app.getReportHistory(enterpriseId, reportingPeriod));
+    }
+
+    /**
+     * 获取就业人数趋势数据（用于首页图表）
+     * 
+     * @param request HTTP请求
+     * @return 趋势数据列表
+     */
+    @GetMapping("/report/trend")
+    public ResponseVO<List<Map<String, Object>>> getEmploymentTrend(HttpServletRequest request)
+            throws BusinessException {
+        String enterpriseId = getCurrentEnterpriseId(request);
+        return getSuccessResponseVO(app.getEmploymentTrend(enterpriseId));
     }
 
     /**
@@ -314,24 +335,24 @@ public class ReportController extends ABaseController {
      */
     private String getCurrentEnterpriseId(HttpServletRequest request) throws BusinessException {
         // 步骤1：从Cookie获取token
-        String token = getTokenFromCookie(request);
+        String token = getTokenFromCookie(request, AccountTypeEnum.ENTERPRISE);
         if (StringUtils.isBlank(token)) {
             throw new BusinessException("未登录或登录已过期，请重新登录");
         }
-        
+
         // 步骤2：从Redis获取TokenInfo
         // Redis key格式：yunnan:token:enterprise:{token}
         TokenInfoVO tokenInfo = redisComponent.getEnterpriseTokenInfo(token);
         if (tokenInfo == null) {
             throw new BusinessException("未登录或登录已过期，请重新登录");
         }
-        
+
         // 步骤3：获取EnterpriseInfo
         EnterpriseInfo enterpriseInfo = tokenInfo.getEnterpriseInfo();
         if (enterpriseInfo == null || StringUtils.isBlank(enterpriseInfo.getEnterpriseId())) {
             throw new BusinessException("企业信息获取失败，请重新登录");
         }
-        
+
         // 步骤4：返回企业ID
         return enterpriseInfo.getEnterpriseId();
     }

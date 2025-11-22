@@ -140,6 +140,7 @@ public class ReportAssembler {
             v.setPeriodStartTime(e.getPeriodStartTime() != null ? fmt.format(e.getPeriodStartTime()) : null);
             v.setPeriodEndTime(e.getPeriodEndTime() != null ? fmt.format(e.getPeriodEndTime()) : null);
             v.setReasonReturn(e.getReasonReturn());
+            v.setVersionCount(e.getVersionCount());
         }
         return v;
     }

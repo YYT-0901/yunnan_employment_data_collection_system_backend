@@ -5,7 +5,6 @@ import com.yunnancommon.entity.dto.DistributionData;
 import com.yunnancommon.entity.dto.OverviewStatisticsDataDto;
 import com.yunnancommon.entity.dto.ProgressData;
 import com.yunnancommon.entity.po.EnterpriseInfo;
-import com.yunnancommon.entity.po.EnterpriseReportInfo;
 import com.yunnancommon.entity.po.PeriodInfo;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
 import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
@@ -44,7 +43,7 @@ public class OverviewServiceImpl implements OverviewService {
     @Resource
     private PeriodInfoMapper<PeriodInfo, PeriodInfoQuery> periodInfoMapper;
     @Resource
-    private EnterpriseReportInfoMapper<EnterpriseReportInfo, EnterpriseReportInfoQuery> enterpriseReportInfoMapper;
+    private EnterpriseReportInfoMapper enterpriseReportInfoMapper;
     @Resource
     private EnterpriseInfoMapper<EnterpriseInfo, EnterpriseInfoQuery> enterpriseInfoMapper;
 
@@ -68,11 +67,14 @@ public class OverviewServiceImpl implements OverviewService {
 
         StatisticsDataQuery statisticsDataQuery = new StatisticsDataQuery();
         statisticsDataQuery.setPeriodId(periodInfo.getPeriodId());
-        statisticsDataQuery.setStatus(List.of(ReportStatusEnum.ARCHIVED.getCode(), ReportStatusEnum.APPROVED.getCode(), ReportStatusEnum.CITY_AUDITING.getCode(), ReportStatusEnum.PROVINCE_AUDITING.getCode()));
+        statisticsDataQuery.setStatus(List.of(ReportStatusEnum.ARCHIVED.getCode(), ReportStatusEnum.APPROVED.getCode(),
+                ReportStatusEnum.CITY_AUDITING.getCode(), ReportStatusEnum.PROVINCE_AUDITING.getCode()));
         List<OverviewStatisticsDataDto> statisticList = overviewMapper.getStatisticList(statisticsDataQuery);
 
-        Integer constructionCount = statisticList.stream().mapToInt(item -> item.getConstructionCount() != null ? item.getConstructionCount() : 0).sum();
-        Integer investigationCount = statisticList.stream().mapToInt(item -> item.getInvestigationCount() != null ? item.getInvestigationCount() : 0).sum();
+        Integer constructionCount = statisticList.stream()
+                .mapToInt(item -> item.getConstructionCount() != null ? item.getConstructionCount() : 0).sum();
+        Integer investigationCount = statisticList.stream()
+                .mapToInt(item -> item.getInvestigationCount() != null ? item.getInvestigationCount() : 0).sum();
         statisticsDataVO.setConstructionCount(constructionCount);
         statisticsDataVO.setInvestigationCount(investigationCount);
         statisticsDataVO.setPositionChanges(investigationCount - constructionCount);
@@ -86,7 +88,8 @@ public class OverviewServiceImpl implements OverviewService {
             enterpriseInfoQuery.setRegionCode(city.getCode());
             Integer totalCount = enterpriseInfoMapper.selectCount(enterpriseInfoQuery);
             progressData.setTotal(totalCount);
-            Integer currentCount = (int) statisticList.stream().filter(item -> city.getCode().equals(item.getEnterpriseRegion())).count();
+            Integer currentCount = (int) statisticList.stream()
+                    .filter(item -> city.getCode().equals(item.getEnterpriseRegion())).count();
             progressData.setValue(currentCount);
 
             // 防止 totalCount 为 0 导致除零异常
@@ -104,20 +107,90 @@ public class OverviewServiceImpl implements OverviewService {
         processDistributionData(
                 "region_code",
                 CityDict::getNameByCode,
-                statisticsDataVO::setRegionDistributionDataList
-        );
+                statisticsDataVO::setRegionDistributionDataList);
 
         processDistributionData(
                 "nature_code",
                 NatureDict::getNameByCode,
-                statisticsDataVO::setNatureDistributionDataList  // 修正：使用正确的setter
+                statisticsDataVO::setNatureDistributionDataList // 修正：使用正确的setter
         );
 
         processDistributionData(
                 "industry_code",
                 IndustryDict::getNameByCode,
-                statisticsDataVO::setIndustryDistributionDataList
-        );
+                statisticsDataVO::setIndustryDistributionDataList);
+        return statisticsDataVO;
+    }
+
+    @Override
+    public StatisticsDataVO getCityStatisticsData(Integer regionCode) throws BusinessException {
+        StatisticsDataVO statisticsDataVO = new StatisticsDataVO();
+        EnterpriseInfoQuery query = new EnterpriseInfoQuery();
+        query.setRegionCode(regionCode);
+        statisticsDataVO.setEnterpriseTotal(enterpriseInfoMapper.selectCount(query));
+
+        // 获取当前时间信息 格式为(yyyy-MM)
+        String investigateTime = DateUtils.format(new Date(), Constants.PATTERN_INVESTIGATE_TIME);
+        PeriodInfo periodInfo = periodInfoMapper.selectByInvestigateTime(investigateTime);
+        if (periodInfo == null) {
+            throw new BusinessException("本月调查期不存在");
+        }
+
+        // 本月上报数量
+        EnterpriseReportInfoQuery enterpriseReportInfoQuery = new EnterpriseReportInfoQuery();
+        enterpriseReportInfoQuery.setPeriodId(periodInfo.getPeriodId());
+        enterpriseReportInfoQuery.setEnterpriseRegion(regionCode);
+        statisticsDataVO.setCurrentReportCount(enterpriseReportInfoMapper.selectCount(enterpriseReportInfoQuery));
+
+        StatisticsDataQuery statisticsDataQuery = new StatisticsDataQuery();
+        statisticsDataQuery.setPeriodId(periodInfo.getPeriodId());
+        statisticsDataQuery.setEnterpriseRegion(regionCode);
+        statisticsDataQuery.setStatus(List.of(ReportStatusEnum.ARCHIVED.getCode(), ReportStatusEnum.APPROVED.getCode(),
+                ReportStatusEnum.CITY_AUDITING.getCode(), ReportStatusEnum.PROVINCE_AUDITING.getCode()));
+        List<OverviewStatisticsDataDto> statisticList = overviewMapper.getStatisticList(statisticsDataQuery);
+
+        Integer constructionCount = statisticList.stream()
+                .mapToInt(item -> item.getConstructionCount() != null ? item.getConstructionCount() : 0).sum();
+        Integer investigationCount = statisticList.stream()
+                .mapToInt(item -> item.getInvestigationCount() != null ? item.getInvestigationCount() : 0).sum();
+        statisticsDataVO.setConstructionCount(constructionCount);
+        statisticsDataVO.setInvestigationCount(investigationCount);
+        statisticsDataVO.setPositionChanges(investigationCount - constructionCount);
+
+        // 本月各地市上报进度数据
+        List<ProgressData> progressDataList = new ArrayList<>();
+
+        ProgressData progressData = new ProgressData();
+        progressData.setCity(CityDict.getNameByCode(regionCode));
+        EnterpriseInfoQuery enterpriseInfoQuery = new EnterpriseInfoQuery();
+        enterpriseInfoQuery.setRegionCode(regionCode);
+        Integer totalCount = enterpriseInfoMapper.selectCount(enterpriseInfoQuery);
+        progressData.setTotal(totalCount);
+        Integer currentCount = statisticList.size();
+        progressData.setValue(currentCount);
+
+        // 防止 totalCount 为 0 导致除零异常
+        if (totalCount != 0) {
+            progressData.setPercentage(currentCount * 100.0 / totalCount);
+        } else {
+            progressData.setPercentage(0.0);
+        }
+
+        progressDataList.add(progressData);
+
+        statisticsDataVO.setProgressDataList(progressDataList);
+
+        processCityDistributionData(
+                "nature_code",
+                NatureDict::getNameByCode,
+                statisticsDataVO::setNatureDistributionDataList,
+                regionCode);
+
+        processCityDistributionData(
+                "industry_code",
+                IndustryDict::getNameByCode,
+                statisticsDataVO::setIndustryDistributionDataList,
+                regionCode);
         return statisticsDataVO;
     }
 

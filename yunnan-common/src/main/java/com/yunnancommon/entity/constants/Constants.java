@@ -3,6 +3,9 @@ package com.yunnancommon.entity.constants;
 public class Constants {
     public static final String TOKEN_ADMIN_HEADER = "X-Token-Admin";
     public static final String TOKEN_KEY = "token";
+    public static final String TOKEN_KEY_ENTERPRISE = "token_enterprise";
+    public static final String TOKEN_KEY_PROVINCE = "token_province";
+    public static final String TOKEN_KEY_CITY = "token_city";
     public static final Integer REDIS_KEY_EXPIRES_ONE_MIN = 60000;
     public static final Integer REDIS_KEY_EXPIRES_ONE_DAY = REDIS_KEY_EXPIRES_ONE_MIN * 1440;
 

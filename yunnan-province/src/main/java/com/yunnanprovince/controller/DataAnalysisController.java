@@ -9,10 +9,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.StringUtils;
 
 import com.yunnancommon.controller.ABaseController;
+import jakarta.validation.Valid;
 import com.yunnancommon.entity.dto.AnalysisQueryDto;
 import com.yunnancommon.entity.vo.ResponseVO;
+import com.yunnancommon.enums.ResponseCodeEnum;
+import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.DataAnalysisService;
 import com.yunnancommon.service.DruidQueryService;
 
@@ -30,7 +34,7 @@ public class DataAnalysisController extends ABaseController {
 
     // 取样分析API
     @PostMapping("/sampling")
-    public ResponseVO sampling(@RequestBody AnalysisQueryDto query) {
+    public ResponseVO sampling(@Valid @RequestBody AnalysisQueryDto query) {
         try {
             logger.info("收到取样分析请求，参数：{}", query);
             return getSuccessResponseVO(dataAnalysisService.getSamplingAnalysis(query));
@@ -42,21 +46,24 @@ public class DataAnalysisController extends ABaseController {
 
     // 对比分析API
     @PostMapping("/comparison")
-    public ResponseVO comparison(@RequestBody AnalysisQueryDto query) {
+    public ResponseVO comparison(@Valid @RequestBody AnalysisQueryDto query) throws BusinessException {
         try {
             logger.info("收到对比分析请求，参数：{}", query);
 
             // 参数验证
             if (query.getPeriodIds() == null || query.getPeriodIds().size() != 2) {
-                return getErrorResponseVO("对比分析需要选择2个调查期");
+                throw new BusinessException(ResponseCodeEnum.CODE_400.getCode(), "对比分析需要选择2个调查期");
             }
 
-            if (query.getGroupBy() == null || query.getGroupBy().isEmpty()) {
-                return getErrorResponseVO("对比分析需要指定分组维度");
+            if (!StringUtils.hasText(query.getGroupBy())) {
+                throw new BusinessException(ResponseCodeEnum.CODE_400.getCode(), "对比分析需要指定分组维度");
             }
 
             return getSuccessResponseVO(dataAnalysisService.getComparisonAnalysis(query));
 
+        } catch (BusinessException e) {
+            logger.warn("对比分析参数校验失败: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             logger.error("对比分析失败", e);
             return getErrorResponseVO(e.getMessage());
@@ -65,7 +72,7 @@ public class DataAnalysisController extends ABaseController {
 
     // 趋势分析API
     @PostMapping("/trend")
-    public ResponseVO trend(@RequestBody AnalysisQueryDto query) {
+    public ResponseVO trend(@Valid @RequestBody AnalysisQueryDto query) {
         try {
             logger.info("收到趋势分析请求，参数：{}", query);
             return getSuccessResponseVO(dataAnalysisService.getTrendAnalysis(query));
@@ -110,7 +117,7 @@ public class DataAnalysisController extends ABaseController {
      * }
      */
     @PostMapping("/multiDimensional")
-    public ResponseVO multiDimensional(@RequestBody AnalysisQueryDto query) {
+    public ResponseVO multiDimensional(@Valid @RequestBody AnalysisQueryDto query) {
         try {
             logger.info("收到多维分析请求，参数：{}", query);
             

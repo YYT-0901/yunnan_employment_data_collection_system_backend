@@ -82,7 +82,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         
         for (Cookie cookie : cookies) {
-            if (Constants.TOKEN_KEY.equalsIgnoreCase(cookie.getName())) {
+            if (Constants.TOKEN_KEY_ENTERPRISE.equalsIgnoreCase(cookie.getName())) {
                 return cookie.getValue();
             }
         }
@@ -111,4 +111,3 @@ public class AuthInterceptor implements HandlerInterceptor {
         response.getWriter().flush();
     }
 }
-
