@@ -34,6 +34,23 @@
 		<result column="version_count" property="versionCount" />
 	</resultMap>
 
+	<resultMap id="xml_report_vo_result_map" type="com.yunnancommon.entity.vo.XmlReportVO" extends="base_result_map">
+		<!--企业名称-->
+		<result column="enterprise_name" property="enterpriseName" />
+
+		<!--ReportInfo-->
+		<result column="construction_count" property="constructionCount" />
+		<result column="investigation_count" property="investigationCount" />
+		<result column="reduction_type" property="reductionType" />
+		<result column="reason1" property="reason1" />
+		<result column="reason1_desc" property="reason1Desc" />
+		<result column="reason2" property="reason2" />
+		<result column="reason2_desc" property="reason2Desc" />
+		<result column="reason3" property="reason3" />
+		<result column="reason3_desc" property="reason3Desc" />
+		<result column="other_reason" property="otherReason" />
+	</resultMap>
+
 	<resultMap id="detail_result_map" type="com.yunnancommon.entity.vo.EnterpriseReportVO" extends="base_result_map">
 		<result column="enterprise_name" property="enterpriseName" />
 		<result column="construction_count" property="constructionCount" />
@@ -131,6 +148,9 @@
 		<if test="query.enterpriseNameFuzzy != null and query.enterpriseNameFuzzy != ''">
 			and ei.name like concat('%',#{query.enterpriseNameFuzzy},'%')
 		</if>
+		<if test="query.investigateTime != null and query.investigateTime != ''">
+			and pi.investigate_time = #{query.investigateTime}
+		</if>
 	</sql>
 
 	<!--通用查询条件-->
@@ -142,13 +162,55 @@
 	</sql>
 
 	<!--查询列表-->
-	<select id="selectList" resultMap="base_result_map">
+	 <select id="selectList" resultMap="base_result_map">
 		select
 		<include refid="base_column_list" />
 		from enterprise_report_info eri
 		<include refid="query_condition" />
 		<if test="query.orderBy != null">order by ${query.orderBy}</if>
 		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+
+	<select id="selectListWithAssociatedEnterpriseNameAndReportInfo" resultMap="xml_report_vo_result_map">
+		SELECT
+			-- EnterpriseReportInfo所有字段
+			eri.enterprise_id,
+			eri.period_id,
+			eri.report_id,
+			eri.old_report_id,
+			eri.reason_return,
+			eri.status,
+			eri.period_start_time,
+			eri.period_end_time,
+			eri.created_at,
+			eri.updated_at,
+			eri.enterprise_nature,
+			eri.enterprise_industry,
+			eri.enterprise_region,
+
+			-- ReportInfo所有字段
+			ri.construction_count,
+			ri.investigation_count,
+			ri.reduction_type,
+			ri.reason1,
+			ri.reason1_desc,
+			ri.reason2,
+			ri.reason2_desc,
+			ri.reason3,
+			ri.reason3_desc,
+			ri.other_reason,
+
+			-- EnterpriseInfo的企业名称
+			ei.name AS enterprise_name
+		FROM
+			enterprise_report_info eri
+				JOIN
+			report_info ri ON eri.report_id = ri.report_id
+				JOIN
+			enterprise_info ei ON eri.enterprise_id = ei.enterprise_id
+		WHERE
+			eri.status = #{status}
+		  AND eri.period_id = #{periodId}
 	</select>
 
 
@@ -163,6 +225,8 @@
 		select count(1)
 		from enterprise_report_info eri
 		left join enterprise_info ei on eri.enterprise_id = ei.enterprise_id
+		LEFT JOIN report_info ri ON eri.report_id = ri.report_id
+		LEFT JOIN period_info pi ON eri.period_id = pi.period_id
 		<include refid="query_condition" />
 	</select>
 
