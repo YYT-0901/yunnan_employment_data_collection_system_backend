@@ -53,7 +53,7 @@ public class AppInterceptor implements HandlerInterceptor {
             return null;
         }
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equalsIgnoreCase(Constants.TOKEN_KEY)) {
+            if (cookie.getName().equalsIgnoreCase(Constants.TOKEN_KEY_CITY)) {
                 return cookie.getValue();
             }
         }

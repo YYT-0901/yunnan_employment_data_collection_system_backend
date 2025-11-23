@@ -76,6 +76,7 @@ public class NoticeController extends ABaseController {
     public ResponseVO add(@RequestBody NoticeAddDto noticeAddDto) {
         NoticeInfo noticeInfo = new NoticeInfo();
         BeanUtils.copyProperties(noticeAddDto, noticeInfo);
+        noticeInfo.setPublisher(appConfig.getUsername());
         noticeInfo.setNoticeId(null);
         noticeInfo.setPublishTime(noticeInfo.getStartTime());
         noticeInfo.setReadCount(0);

@@ -10,6 +10,7 @@ import com.yunnancommon.entity.query.EnterpriseReportInfoQuery;
 import com.yunnancommon.entity.query.PeriodInfoQuery;
 import com.yunnancommon.entity.vo.ReportInfoDetailVO;
 import com.yunnancommon.entity.vo.ResponseVO;
+import com.yunnancommon.enums.AccountTypeEnum;
 import com.yunnancommon.enums.ReportAuditLevelEnum;
 import com.yunnancommon.enums.ReportAuditResult;
 import com.yunnancommon.enums.ReportStatusEnum;
@@ -79,7 +80,7 @@ public class AuditController extends ABaseController {
         auditHistory.setPeriodId(enterpriseInfoReportDto.getPeriodId());
         auditHistory.setReportId(enterpriseInfoReportDto.getReportId());
         auditHistory.setAuditLevel(ReportAuditLevelEnum.CITY.getCode());
-        auditHistory.setAuditor(redisComponent.getCityTokenInfo(getTokenFromCookie(request)).getUsername());
+        auditHistory.setAuditor(redisComponent.getCityTokenInfo(getTokenFromCookie(request, AccountTypeEnum.CITY)).getUsername());
         auditHistory.setAuditResult(ReportAuditResult.APPROVED.getCode());
         auditHistory.setAuditTime(new Date());
         reportAuditHistoryService.add(auditHistory);
@@ -103,7 +104,7 @@ public class AuditController extends ABaseController {
         auditHistory.setPeriodId(enterpriseInfoReportDto.getPeriodId());
         auditHistory.setReportId(enterpriseInfoReportDto.getReportId());
         auditHistory.setAuditLevel(ReportAuditLevelEnum.CITY.getCode());
-        auditHistory.setAuditor(redisComponent.getCityTokenInfo(getTokenFromCookie(request)).getUsername());
+        auditHistory.setAuditor(redisComponent.getCityTokenInfo(getTokenFromCookie(request, AccountTypeEnum.CITY)).getUsername());
         auditHistory.setAuditResult(ReportAuditResult.REJECTED.getCode());
         auditHistory.setAuditTime(new Date());
         reportAuditHistoryService.add(auditHistory);

@@ -66,7 +66,7 @@ public interface EnterpriseReportInfoService {
 	void getCityStatisticCount(CurrentVO currentVO, Integer cityCode);
 
 	List<XmlReportVO> getEnterpriseReportInfoByStatusAndPeriodId(Integer status, Long periodId);
-}
+
 	List<EnterpriseReportInfo> findLatestByEnterprise(String enterpriseId, Integer pageNo, Integer pageSize);
 
 	List<EnterpriseReportInfo> findHistoryByEnterpriseAndPeriod(String enterpriseId, Long periodId);

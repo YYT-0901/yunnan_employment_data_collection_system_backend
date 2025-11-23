@@ -4,18 +4,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yunnancommon.entity.constants.Constants;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.enums.ResponseCodeEnum;
+import com.yunnancommon.exception.BusinessException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import com.yunnancommon.component.RedisComponent;
+import jakarta.servlet.http.Cookie;
 
 @Component
 public class AppInterceptor implements HandlerInterceptor {
 
     private final static String URL_ACCOUNT = "/account";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    @jakarta.annotation.Resource
+    private RedisComponent redisComponent;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -62,7 +67,7 @@ public class AppInterceptor implements HandlerInterceptor {
             return null;
         }
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equalsIgnoreCase(Constants.TOKEN_KEY)) {
+            if (cookie.getName().equalsIgnoreCase(Constants.TOKEN_KEY_PROVINCE)) {
                 return cookie.getValue();
             }
         }

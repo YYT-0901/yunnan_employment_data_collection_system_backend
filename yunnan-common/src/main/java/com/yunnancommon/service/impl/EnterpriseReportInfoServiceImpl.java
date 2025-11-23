@@ -163,7 +163,8 @@ public class EnterpriseReportInfoServiceImpl implements EnterpriseReportInfoServ
     public List<XmlReportVO> getEnterpriseReportInfoByStatusAndPeriodId(Integer status, Long periodId) {
         return this.enterpriseReportInfoMapper.selectListWithAssociatedEnterpriseNameAndReportInfo(status, periodId);
     }
-}
+
+    @Override
     public List<EnterpriseReportInfo> findLatestByEnterprise(String enterpriseId, Integer pageNo, Integer pageSize) {
         if (pageNo == null || pageNo < 1) {
             pageNo = 1;
