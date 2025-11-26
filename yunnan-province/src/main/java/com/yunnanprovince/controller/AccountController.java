@@ -249,7 +249,7 @@ public class AccountController extends ABaseController {
             if (node != null) {
                 if (node.getParentId() != null && node.getParentId() != 0) {
                     entQuery.setRegion(selectedRegion);           // 县完整代码
-                    entQuery.setRegionCode(node.getParentId());   // 所属市（一级分类）
+                    entQuery.setRegionCode(null);                 // 县筛选只用 region
                 } else {
                     entQuery.setRegion(null);
                     entQuery.setRegionCode(selectedRegion);       // 市（一级分类）

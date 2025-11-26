@@ -140,10 +140,10 @@
 				and e.name = #{enterpriseQuery.name}
 			</if>
 			<if test="enterpriseQuery.region != null">
-				and e.region = #{enterpriseQuery.region}
+				and e.region like concat(#{enterpriseQuery.region},'%')
 			</if>
 			<if test="enterpriseQuery.regionCode != null">
-				and e.region_code = #{enterpriseQuery.regionCode}
+				and e.region_code like concat(#{enterpriseQuery.regionCode},'%')
 			</if>
 			<if test="enterpriseQuery.nature != null">
 				and e.nature = #{enterpriseQuery.nature}
