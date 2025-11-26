@@ -141,11 +141,9 @@
 			</if>
 			<if test="enterpriseQuery.region != null">
 				and e.region like concat(#{enterpriseQuery.region},'%')
-				and length(e.region) = length(#{enterpriseQuery.region}) + 2
 			</if>
 			<if test="enterpriseQuery.regionCode != null">
 				and e.region_code like concat(#{enterpriseQuery.regionCode},'%')
-				and length(e.region_code) = length(#{enterpriseQuery.regionCode}) + 4
 			</if>
 			<if test="enterpriseQuery.nature != null">
 				and e.nature = #{enterpriseQuery.nature}
