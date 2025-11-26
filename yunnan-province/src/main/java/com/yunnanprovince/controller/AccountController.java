@@ -19,6 +19,7 @@ import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.AccountInfoService;
 import com.yunnancommon.service.EnterpriseInfoService;
 import com.yunnancommon.utils.DateUtils;
+import com.yunnancommon.utils.RegionUtils;
 import com.yunnancommon.utils.TokenUtils;
 import com.yunnanprovince.config.AppConfig;
 import java.io.BufferedWriter;
@@ -223,7 +224,12 @@ public class AccountController extends ABaseController {
         accountQuery.setUsername(dto.getUsername());
         accountQuery.setUsernameFuzzy(dto.getUsernameFuzzy());
         accountQuery.setType(dto.getUserType());
-        accountQuery.setCityCode(dto.getCityCode());
+        // 仅在筛选市账号时才带上 cityCode，避免企业账号被 city_code 条件过滤
+        if (dto.getUserType() != null && AccountTypeEnum.CITY.getCode().equals(dto.getUserType())) {
+            accountQuery.setCityCode(dto.getCityCode());
+        } else {
+            accountQuery.setCityCode(null);
+        }
         accountQuery.setStatus(dto.getDataStatus());
         accountQuery.setCreatedAtStart(range.start);
         accountQuery.setCreatedAtEnd(range.end);
@@ -234,10 +240,28 @@ public class AccountController extends ABaseController {
         EnterpriseInfoQuery entQuery = new EnterpriseInfoQuery();
         entQuery.setNameFuzzy(dto.getUnitNameFuzzy());
         entQuery.setName(dto.getUnitName());
-        entQuery.setRegion(dto.getCityCode());        // adjust if region codes differ
-        entQuery.setRegionCode(dto.getCountyCode());
-        entQuery.setNature(dto.getUnitNature());
-        entQuery.setIndustry(dto.getIndustry());
+
+        // 地区：前端可能只传一个地区code（市或县）。县→region，市→regionCode。
+        Integer selectedRegion = dto.getRegionCode() != null ? dto.getRegionCode()
+                : (dto.getCountyCode() != null ? dto.getCountyCode() : dto.getCityCode());
+        if (selectedRegion != null) {
+            RegionUtils.RegionNode node = RegionUtils.getRegionByCode(selectedRegion);
+            if (node != null) {
+                if (node.getParentId() != null && node.getParentId() != 0) {
+                    entQuery.setRegion(selectedRegion);           // 县完整代码
+                    entQuery.setRegionCode(node.getParentId());   // 所属市（一级分类）
+                } else {
+                    entQuery.setRegion(null);
+                    entQuery.setRegionCode(selectedRegion);       // 市（一级分类）
+                }
+            }
+        }
+
+        // 性质/行业：按一级分类字段匹配
+        entQuery.setNature(null);
+        entQuery.setNatureCode(dto.getUnitNature());
+        entQuery.setIndustry(null);
+        entQuery.setIndustryCode(dto.getIndustry());
 
         return new QueryParams(accountQuery, entQuery);
     }

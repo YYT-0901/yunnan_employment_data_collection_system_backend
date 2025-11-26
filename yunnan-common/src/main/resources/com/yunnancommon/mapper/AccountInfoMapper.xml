@@ -148,8 +148,14 @@
 			<if test="enterpriseQuery.nature != null">
 				and e.nature = #{enterpriseQuery.nature}
 			</if>
+			<if test="enterpriseQuery.natureCode != null">
+				and e.nature_code = #{enterpriseQuery.natureCode}
+			</if>
 			<if test="enterpriseQuery.industry != null">
 				and e.industry = #{enterpriseQuery.industry}
+			</if>
+			<if test="enterpriseQuery.industryCode != null">
+				and e.industry_code = #{enterpriseQuery.industryCode}
 			</if>
 			<if test="enterpriseQuery.status != null">
 				and e.status = #{enterpriseQuery.status}

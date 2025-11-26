@@ -22,6 +22,7 @@ public class AccountSearchDto {
     private Integer cityCode;      // 所属地市
     private Integer countyCode;    // 所属市县/区县
     private Integer areaCode;      // 所处区域（如有单独维度）
+    private Integer regionCode;    // 选中的地区（市或县，统一入口）
     private Integer dataStatus;    // 数据状态（账号或企业状态）
     private Integer unitNature;    // 单位性质
     private Integer industry;      // 所属行业
