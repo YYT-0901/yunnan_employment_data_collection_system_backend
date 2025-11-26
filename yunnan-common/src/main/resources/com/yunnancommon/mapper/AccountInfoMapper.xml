@@ -80,6 +80,102 @@
 		</if>
 	</sql>
 
+	<!--基础查询条件（带别名，用于关联查询）-->
+	<sql id="base_query_condition_with_alias">
+		<if test="query.username != null and query.username != ''">
+			and a.username = #{query.username}
+		</if>
+		<if test="query.password != null and query.password != ''">
+			and a.password = #{query.password}
+		</if>
+		<if test="query.type != null">
+			and a.type = #{query.type}
+		</if>
+		<if test="query.enterpriseId != null and query.enterpriseId != ''">
+			and a.enterprise_id = #{query.enterpriseId}
+		</if>
+		<if test="query.cityCode != null">
+			and a.city_code = #{query.cityCode}
+		</if>
+		<if test="query.lastLoginTime != null">
+			and a.last_login_time = #{query.lastLoginTime}
+		</if>
+		<if test="query.status != null">
+			and a.status = #{query.status}
+		</if>
+		<if test="query.createdAt != null">
+			and a.created_at = #{query.createdAt}
+		</if>
+	</sql>
+
+	<!--扩展查询条件（带别名，用于关联查询）-->
+	<sql id="base_query_condition_extend_with_alias">
+		<if test="query.usernameFuzzy != null and query.usernameFuzzy != ''">
+			 and a.username like concat('%',#{query.usernameFuzzy},'%')
+		</if>
+		<if test="query.passwordFuzzy != null and query.passwordFuzzy != ''">
+			 and a.password like concat('%',#{query.passwordFuzzy},'%')
+		</if>
+		<if test="query.enterpriseIdFuzzy != null and query.enterpriseIdFuzzy != ''">
+			 and a.enterprise_id like concat('%',#{query.enterpriseIdFuzzy},'%')
+		</if>
+		<if test="query.lastLoginTimeStart != null and query.lastLoginTimeStart != ''">
+			<![CDATA[ and a.last_login_time >= str_to_date(#{query.lastLoginTimeStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.lastLoginTimeEnd != null and query.lastLoginTimeEnd != ''">
+			<![CDATA[ and a.last_login_time < date_add(str_to_date(#{query.lastLoginTimeEnd}, '%Y-%m-%d'), interval 1 day) ]]>
+		</if>
+		<if test="query.createdAtStart != null and query.createdAtStart != ''">
+			<![CDATA[ and a.created_at >= str_to_date(#{query.createdAtStart}, '%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
+			<![CDATA[ and a.created_at < date_add(str_to_date(#{query.createdAtEnd}, '%Y-%m-%d'), interval 1 day) ]]>
+		</if>
+	</sql>
+
+	<!--企业信息查询条件（用于关联查询）-->
+	<sql id="enterprise_query_condition">
+		<if test="enterpriseQuery != null">
+			<if test="enterpriseQuery.name != null and enterpriseQuery.name != ''">
+				and e.name = #{enterpriseQuery.name}
+			</if>
+			<if test="enterpriseQuery.region != null">
+				and e.region = #{enterpriseQuery.region}
+			</if>
+			<if test="enterpriseQuery.regionCode != null">
+				and e.region_code = #{enterpriseQuery.regionCode}
+			</if>
+			<if test="enterpriseQuery.nature != null">
+				and e.nature = #{enterpriseQuery.nature}
+			</if>
+			<if test="enterpriseQuery.industry != null">
+				and e.industry = #{enterpriseQuery.industry}
+			</if>
+			<if test="enterpriseQuery.status != null">
+				and e.status = #{enterpriseQuery.status}
+			</if>
+		</if>
+	</sql>
+
+	<!--企业信息扩展查询条件（用于关联查询）-->
+	<sql id="enterprise_query_condition_extend">
+		<if test="enterpriseQuery != null">
+			<if test="enterpriseQuery.nameFuzzy != null and enterpriseQuery.nameFuzzy != ''">
+				 and e.name like concat('%',#{enterpriseQuery.nameFuzzy},'%')
+			</if>
+		</if>
+	</sql>
+
+	<!--通用查询条件（关联查询）-->
+	<sql id="query_condition_with_enterprise">
+	<where>
+		<include refid="base_query_condition_with_alias" />
+		<include refid="base_query_condition_extend_with_alias" />
+		<include refid="enterprise_query_condition" />
+		<include refid="enterprise_query_condition_extend" />
+	</where>
+	</sql>
+
 	<!--通用查询条件-->
 	<sql id="query_condition">
 	<where>
@@ -106,13 +202,22 @@
 		<include refid="query_condition" />
 	</select>
 
+	<select id="selectCountWithEnterprise" resultType="java.lang.Integer">
+		select count(1)
+		from account_info a
+		left join enterprise_info e on a.enterprise_id = e.enterprise_id
+		<include refid="query_condition_with_enterprise" />
+	</select>
+
 	<select id="findListByParamWithAssociatedEnterpriseInfo"
 			resultType="com.yunnancommon.entity.vo.AccountEnterpriseVO">
 		select a.username, a.password, a.type, a.enterprise_id as enterpriseId, a.city_code as cityCode, a.last_login_time as lastLoginTime, a.status, a.created_at as createdAt,
-		e.org_code as orgCode, e.name, e.region, e.nature, e.industry, e.industry_desc as industryDesc, e.contact_name as contactName, e.address, e.postal_code as postalCode, e.phone_num as phoneNum, e.fax_num as faxNum, e.email
+		e.org_code as orgCode, e.name, e.name as enterpriseName, e.region, e.nature, e.industry, e.industry_desc as industryDesc, e.contact_name as contactName, e.address, e.postal_code as postalCode, e.phone_num as phoneNum, e.fax_num as faxNum, e.email
 		from account_info a
 		left join enterprise_info e on a.enterprise_id = e.enterprise_id
-		<include refid="query_condition" />
+		<include refid="query_condition_with_enterprise" />
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
 	</select>
 
 

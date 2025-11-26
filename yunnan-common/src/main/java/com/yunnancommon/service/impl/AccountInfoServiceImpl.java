@@ -25,11 +25,7 @@ import javax.annotation.Resource;
 
 import java.util.Date;
 import java.util.List;
-/**
- * @Description:账号信息表ServiceImpl
- * @auther:group2
- * @date:2025/10/22
- */
+
 @Service("accountInfoService")
 public class AccountInfoServiceImpl implements AccountInfoService {
 
@@ -73,14 +69,24 @@ public class AccountInfoServiceImpl implements AccountInfoService {
 	}
 
 	@Override
-	public PaginationResultVO<AccountEnterpriseVO> findListByPageWithAssociated(AccountInfoQuery query) {
-		Integer count = this.findCountByParam(query);
-		Integer pageSize = query.getPageSize() == null ? PageSize.SIZE15.getSize(): query.getPageSize();
-		SimplePage page = new SimplePage(query.getPageNo(), count, pageSize);
-		query.setSimplePage(page);
-		List<AccountEnterpriseVO> list = this.accountInfoMapper.findListByParamWithAssociatedEnterpriseInfo(query);
+	public PaginationResultVO<AccountEnterpriseVO> findListByPageWithAssociated(AccountInfoQuery accountQuery, EnterpriseInfoQuery enterpriseQuery) {
+		Integer count = this.findCountWithAssociated(accountQuery, enterpriseQuery);
+		Integer pageSize = accountQuery.getPageSize() == null ? PageSize.SIZE15.getSize(): accountQuery.getPageSize();
+		SimplePage page = new SimplePage(accountQuery.getPageNo(), count, pageSize);
+		accountQuery.setSimplePage(page);
+		List<AccountEnterpriseVO> list = this.accountInfoMapper.findListByParamWithAssociatedEnterpriseInfo(accountQuery, enterpriseQuery);
 		PaginationResultVO<AccountEnterpriseVO> result = new PaginationResultVO<AccountEnterpriseVO>(count, page.getPageSize(), page.getPageNo(), page.getPageTotal(), list);
 		return result;
+	}
+
+	@Override
+	public List<AccountEnterpriseVO> findListWithAssociated(AccountInfoQuery accountQuery, EnterpriseInfoQuery enterpriseQuery) {
+		return this.accountInfoMapper.findListByParamWithAssociatedEnterpriseInfo(accountQuery, enterpriseQuery);
+	}
+
+	@Override
+	public Integer findCountWithAssociated(AccountInfoQuery accountQuery, EnterpriseInfoQuery enterpriseQuery) {
+		return this.accountInfoMapper.selectCountWithEnterprise(accountQuery, enterpriseQuery);
 	}
 
 	/**

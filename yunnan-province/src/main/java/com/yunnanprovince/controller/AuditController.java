@@ -16,6 +16,7 @@ import com.yunnancommon.enums.ReportAuditResult;
 import com.yunnancommon.enums.ReportStatusEnum;
 import com.yunnancommon.mapper.EnterpriseReportInfoMapper;
 import com.yunnancommon.service.EnterpriseReportInfoService;
+import com.yunnancommon.service.EnterpriseAnalysisDataService;
 import com.yunnancommon.service.PeriodInfoService;
 import com.yunnancommon.service.ReportAuditHistoryService;
 import com.yunnancommon.service.ReportInfoService;
@@ -58,6 +59,9 @@ public class AuditController extends ABaseController {
     @Resource
     private AppConfig appConfig;
 
+    @Resource
+    private EnterpriseAnalysisDataService enterpriseAnalysisDataService;
+
     @PostMapping("/loadDataList")
     public ResponseVO loadDataList(@RequestBody LoadReportDataDto loadReportDataDto) {
         EnterpriseReportInfoQuery query = new EnterpriseReportInfoQuery();
@@ -95,6 +99,13 @@ public class AuditController extends ABaseController {
         auditHistory.setAuditResult(ReportAuditResult.APPROVED.getCode());
         auditHistory.setAuditTime(new Date());
         reportAuditHistoryService.add(auditHistory);
+
+        // 审核通过后写入/更新 enterprise_analysis_data
+        enterpriseAnalysisDataService.writeFromReport(
+                enterpriseInfoReportDto.getEnterpriseId(),
+                enterpriseInfoReportDto.getPeriodId(),
+                enterpriseInfoReportDto.getReportId()
+        );
         return getSuccessResponseVO(null);
     }
 

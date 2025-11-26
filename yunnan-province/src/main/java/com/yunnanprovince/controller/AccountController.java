@@ -2,15 +2,14 @@ package com.yunnanprovince.controller;
 
 import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
+import com.yunnancommon.entity.dto.AccountSearchDto;
 import com.yunnancommon.entity.dto.ChangeStatusDto;
 import com.yunnancommon.entity.dto.CreateAccountDto;
 import com.yunnancommon.entity.dto.LoginDto;
 import com.yunnancommon.entity.po.AccountInfo;
-import com.yunnancommon.entity.po.EnterpriseInfo;
-import com.yunnancommon.entity.po.PeriodInfo;
 import com.yunnancommon.entity.query.AccountInfoQuery;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
-import com.yunnancommon.entity.query.PeriodInfoQuery;
+import com.yunnancommon.entity.vo.AccountEnterpriseVO;
 import com.yunnancommon.entity.vo.CreatedAccountVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.vo.ResponseVO;
@@ -19,20 +18,24 @@ import com.yunnancommon.enums.ResponseCodeEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.AccountInfoService;
 import com.yunnancommon.service.EnterpriseInfoService;
-import com.yunnancommon.service.PeriodInfoService;
-import com.yunnancommon.service.impl.EnterpriseInfoServiceImpl;
 import com.yunnancommon.utils.DateUtils;
 import com.yunnancommon.utils.TokenUtils;
 import com.yunnanprovince.config.AppConfig;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotEmpty;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/account")
@@ -46,8 +49,6 @@ public class AccountController extends ABaseController {
     private EnterpriseInfoService enterpriseInfoService;
     @Resource
     private AccountInfoService accountInfoService;
-    @Resource
-    private PeriodInfoService periodInfoService;
 
     @PostMapping("/login")
     public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @RequestBody LoginDto loginDto) throws BusinessException {
@@ -103,7 +104,7 @@ public class AccountController extends ABaseController {
     @GetMapping("/loadAllEnterpriseAccount")
     public ResponseVO loadAllEnterpriseAccount(AccountInfoQuery query) {
         query.setType(AccountTypeEnum.ENTERPRISE.getCode());
-        return getSuccessResponseVO(accountInfoService.findListByPageWithAssociated(query));
+        return getSuccessResponseVO(accountInfoService.findListByPageWithAssociated(query, null));
     }
 
     /**
@@ -148,6 +149,176 @@ public class AccountController extends ABaseController {
             if (!StringUtils.isEmpty(token)) {
                 redisComponent.cleanProvinceTokenInfo(token);
             }
+        }
+    }
+
+    @PostMapping("/search")
+    public ResponseVO searchAccounts(@RequestBody AccountSearchDto dto) throws BusinessException {
+        QueryParams params = buildQueries(dto);
+        PaginationResultVO<AccountEnterpriseVO> page =
+            accountInfoService.findListByPageWithAssociated(params.accountQuery, params.enterpriseQuery);
+        return getSuccessResponseVO(page);
+    }
+
+    /**
+     * 导出账号列表
+     */
+    @PostMapping("/export")
+    public void exportAccounts(@RequestBody AccountSearchDto dto, HttpServletResponse response) throws BusinessException {
+        QueryParams params = buildQueries(dto);
+        int total = accountInfoService.findCountWithAssociated(params.accountQuery, params.enterpriseQuery);
+        int exportLimit = 50000;
+        if (total > exportLimit) {
+            throw new BusinessException("导出数据量过大，请缩小筛选范围（上限" + exportLimit + "条）");
+        }
+        List<AccountEnterpriseVO> list = accountInfoService.findListWithAssociated(params.accountQuery, params.enterpriseQuery);
+        writeCsv(response, list);
+    }
+
+    private String allowOrderBy(String orderBy) {
+        if (StringUtils.isBlank(orderBy)) return null;
+        // whitelist columns to prevent SQL injection
+        switch (orderBy) {
+            case "created_at desc":
+                return "a.created_at desc";
+            case "created_at asc":
+                return "a.created_at asc";
+            case "last_login_time desc":
+                return "a.last_login_time desc";
+            case "last_login_time asc":
+                return "a.last_login_time asc";
+            default:
+                return null;
+        }
+    }
+
+    private LocalDateRange normalizeDateRange(AccountSearchDto dto) {
+        // Returns strings formatted yyyy-MM-dd to plug into AccountInfoQuery
+        if (StringUtils.isNotBlank(dto.getStatMonth())) {
+            YearMonth ym = YearMonth.parse(dto.getStatMonth());
+            return new LocalDateRange(ym.atDay(1).toString(), ym.atEndOfMonth().toString());
+        }
+        if (StringUtils.isNotBlank(dto.getStatQuarter())) {
+            String[] parts = dto.getStatQuarter().split("-Q");
+            int year = Integer.parseInt(parts[0]);
+            int q = Integer.parseInt(parts[1]);
+            int startMonth = (q - 1) * 3 + 1;
+            LocalDate start = LocalDate.of(year, startMonth, 1);
+            LocalDate end = start.plusMonths(3).minusDays(1);
+            return new LocalDateRange(start.toString(), end.toString());
+        }
+        return new LocalDateRange(dto.getStartDate(), dto.getEndDate());
+    }
+
+    private QueryParams buildQueries(AccountSearchDto dto) throws BusinessException {
+        try {
+            dto.validate();
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessException(ex.getMessage());
+        }
+
+        LocalDateRange range = normalizeDateRange(dto);
+
+        AccountInfoQuery accountQuery = new AccountInfoQuery();
+        accountQuery.setUsername(dto.getUsername());
+        accountQuery.setUsernameFuzzy(dto.getUsernameFuzzy());
+        accountQuery.setType(dto.getUserType());
+        accountQuery.setCityCode(dto.getCityCode());
+        accountQuery.setStatus(dto.getDataStatus());
+        accountQuery.setCreatedAtStart(range.start);
+        accountQuery.setCreatedAtEnd(range.end);
+        accountQuery.setPageNo(dto.getPageNo());
+        accountQuery.setPageSize(dto.getPageSize());
+        accountQuery.setOrderBy(allowOrderBy(dto.getOrderBy())); // allowlist only
+
+        EnterpriseInfoQuery entQuery = new EnterpriseInfoQuery();
+        entQuery.setNameFuzzy(dto.getUnitNameFuzzy());
+        entQuery.setName(dto.getUnitName());
+        entQuery.setRegion(dto.getCityCode());        // adjust if region codes differ
+        entQuery.setRegionCode(dto.getCountyCode());
+        entQuery.setNature(dto.getUnitNature());
+        entQuery.setIndustry(dto.getIndustry());
+
+        return new QueryParams(accountQuery, entQuery);
+    }
+
+    private void writeCsv(HttpServletResponse response, List<AccountEnterpriseVO> data) throws BusinessException {
+        try {
+            String fileName = URLEncoder.encode("account_export.csv", StandardCharsets.UTF_8)
+                    .replaceAll("\\+", "%20");
+            response.setContentType("text/csv; charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8))) {
+                writer.write('\ufeff'); // BOM for Excel compatibility
+                writer.write("登录账号,账号类型,单位名称,市编码,区县编码,状态,创建时间,最后登录时间,所属行业,单位性质");
+                writer.newLine();
+                for (AccountEnterpriseVO vo : data) {
+                    writer.write(String.join(",",
+                            csvCell(vo.getUsername()),
+                            csvCell(formatAccountType(vo.getType())),
+                            csvCell(StringUtils.defaultString(vo.getName(), vo.getEnterpriseName())),
+                            csvCell(stringOrEmpty(vo.getCityCode())),
+                            csvCell(stringOrEmpty(vo.getRegion())),
+                            csvCell(stringOrEmpty(vo.getStatus())),
+                            csvCell(formatDate(vo.getCreatedAt())),
+                            csvCell(formatDate(vo.getLastLoginTime())),
+                            csvCell(stringOrEmpty(vo.getIndustry())),
+                            csvCell(stringOrEmpty(vo.getNature()))
+                    ));
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            throw new BusinessException("导出失败", e);
+        }
+    }
+
+    private String csvCell(String value) {
+        if (value == null) {
+            return "";
+        }
+        String escaped = value.replace("\"", "\"\"");
+        if (escaped.contains(",") || escaped.contains("\"") || escaped.contains("\n") || escaped.contains("\r")) {
+            return "\"" + escaped + "\"";
+        }
+        return escaped;
+    }
+
+    private String stringOrEmpty(Object value) {
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    private String formatDate(Date date) {
+        return date == null ? "" : DateUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+    }
+
+    private String formatAccountType(Integer type) {
+        if (type == null) {
+            return "";
+        }
+        if (AccountTypeEnum.CITY.getCode().equals(type)) {
+            return "市账号";
+        }
+        if (AccountTypeEnum.ENTERPRISE.getCode().equals(type)) {
+            return "企业账号";
+        }
+        return String.valueOf(type);
+    }
+
+    private static class LocalDateRange {
+        final String start;
+        final String end;
+        LocalDateRange(String start, String end) { this.start = start; this.end = end; }
+    }
+
+    private static class QueryParams {
+        final AccountInfoQuery accountQuery;
+        final EnterpriseInfoQuery enterpriseQuery;
+
+        QueryParams(AccountInfoQuery accountQuery, EnterpriseInfoQuery enterpriseQuery) {
+            this.accountQuery = accountQuery;
+            this.enterpriseQuery = enterpriseQuery;
         }
     }
 }
