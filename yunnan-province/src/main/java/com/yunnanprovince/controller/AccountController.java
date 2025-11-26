@@ -1,16 +1,17 @@
 package com.yunnanprovince.controller;
 
+import com.yunnancommon.annotation.OperationLog;
 import com.yunnancommon.component.RedisComponent;
 import com.yunnancommon.controller.ABaseController;
+import com.yunnancommon.entity.dto.AccountSearchDto;
 import com.yunnancommon.entity.dto.ChangeStatusDto;
 import com.yunnancommon.entity.dto.CreateAccountDto;
 import com.yunnancommon.entity.dto.LoginDto;
 import com.yunnancommon.entity.po.AccountInfo;
 import com.yunnancommon.entity.po.EnterpriseInfo;
-import com.yunnancommon.entity.po.PeriodInfo;
 import com.yunnancommon.entity.query.AccountInfoQuery;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
-import com.yunnancommon.entity.query.PeriodInfoQuery;
+import com.yunnancommon.entity.vo.AccountEnterpriseVO;
 import com.yunnancommon.entity.vo.CreatedAccountVO;
 import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.vo.ResponseVO;
@@ -19,21 +20,32 @@ import com.yunnancommon.enums.ResponseCodeEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.AccountInfoService;
 import com.yunnancommon.service.EnterpriseInfoService;
-import com.yunnancommon.service.PeriodInfoService;
-import com.yunnancommon.service.impl.EnterpriseInfoServiceImpl;
 import com.yunnancommon.utils.DateUtils;
+import com.yunnancommon.utils.DictUtils;
+import com.yunnancommon.utils.RegionUtils;
 import com.yunnancommon.utils.TokenUtils;
-import com.yunnancommon.annotation.OperationLog;
 import com.yunnanprovince.config.AppConfig;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotEmpty;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Date;
+import java.util.List;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/account")
@@ -47,8 +59,6 @@ public class AccountController extends ABaseController {
     private EnterpriseInfoService enterpriseInfoService;
     @Resource
     private AccountInfoService accountInfoService;
-    @Resource
-    private PeriodInfoService periodInfoService;
 
     @PostMapping("/login")
     public ResponseVO login(HttpServletRequest request, HttpServletResponse response, @RequestBody LoginDto loginDto) throws BusinessException {
@@ -79,7 +89,7 @@ public class AccountController extends ABaseController {
 
     /**
      * 新增账号(企业,市)
-     * */
+     */
     @OperationLog(module = "企业管理", operation = "创建账号")
     @PostMapping("/createAccount")
     public ResponseVO createAccount(HttpServletRequest request, @RequestBody CreateAccountDto createAccountDto) throws BusinessException {
@@ -99,7 +109,8 @@ public class AccountController extends ABaseController {
                     request.setAttribute("enterpriseId", eidFromBody);
                 }
             }
-        } catch (Exception ignore) {}
+        } catch (Exception ignore) {
+        }
         CreatedAccountVO createdAccountVO = null;
         if (AccountTypeEnum.ENTERPRISE.getCode().equals(type)) {
             createdAccountVO = enterpriseInfoService.createEnterpriseAccount(createAccountDto.getEnterpriseInfo());
@@ -112,7 +123,8 @@ public class AccountController extends ABaseController {
                         request.setAttribute("enterpriseId", eid);
                     }
                 }
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         } else {
             createdAccountVO = enterpriseInfoService.createCityAccount(createAccountDto.getCityCode());
         }
@@ -148,7 +160,7 @@ public class AccountController extends ABaseController {
     public ResponseVO changeStatus(@RequestBody ChangeStatusDto changeStatusDto) throws BusinessException {
         AccountInfo accountInfo = new AccountInfo();
         accountInfo.setStatus(changeStatusDto.getStatus());
-        accountInfoService.updateAccountInfoByUsername(accountInfo,  changeStatusDto.getUsername());
+        accountInfoService.updateAccountInfoByUsername(accountInfo, changeStatusDto.getUsername());
         return getSuccessResponseVO(null);
     }
 
@@ -232,5 +244,286 @@ public class AccountController extends ABaseController {
 
         enterpriseInfoService.updateEnterpriseInfoByEnterpriseId(bean, enterpriseId);
         return getSuccessResponseVO(null);
+    }
+
+    @PostMapping("/search")
+    public ResponseVO searchAccounts(@RequestBody AccountSearchDto dto) throws BusinessException {
+        QueryParams params = buildQueries(dto);
+        PaginationResultVO<AccountEnterpriseVO> page =
+                accountInfoService.findListByPageWithAssociated(params.accountQuery, params.enterpriseQuery);
+        return getSuccessResponseVO(page);
+    }
+
+    /**
+     * 导出账号列表
+     */
+    @PostMapping("/export")
+    public void exportAccounts(@RequestBody AccountSearchDto dto, HttpServletResponse response) throws BusinessException {
+        QueryParams params = buildQueries(dto);
+        int total = accountInfoService.findCountWithAssociated(params.accountQuery, params.enterpriseQuery);
+        int exportLimit = 50000;
+        if (total > exportLimit) {
+            throw new BusinessException("导出数据量过大，请缩小筛选范围（上限" + exportLimit + "条）");
+        }
+        List<AccountEnterpriseVO> list = accountInfoService.findListWithAssociated(params.accountQuery, params.enterpriseQuery);
+        writeCsv(response, list);
+    }
+
+    private String allowOrderBy(String orderBy) {
+        if (StringUtils.isBlank(orderBy)) return null;
+        // whitelist columns to prevent SQL injection
+        switch (orderBy) {
+            case "created_at desc":
+                return "a.created_at desc";
+            case "created_at asc":
+                return "a.created_at asc";
+            case "last_login_time desc":
+                return "a.last_login_time desc";
+            case "last_login_time asc":
+                return "a.last_login_time asc";
+            default:
+                return null;
+        }
+    }
+
+    private LocalDateRange normalizeDateRange(AccountSearchDto dto) {
+        // Returns strings formatted yyyy-MM-dd to plug into AccountInfoQuery
+        if (StringUtils.isNotBlank(dto.getStatMonth())) {
+            YearMonth ym = YearMonth.parse(dto.getStatMonth());
+            return new LocalDateRange(ym.atDay(1).toString(), ym.atEndOfMonth().toString());
+        }
+        if (StringUtils.isNotBlank(dto.getStatQuarter())) {
+            String[] parts = dto.getStatQuarter().split("-Q");
+            int year = Integer.parseInt(parts[0]);
+            int q = Integer.parseInt(parts[1]);
+            int startMonth = (q - 1) * 3 + 1;
+            LocalDate start = LocalDate.of(year, startMonth, 1);
+            LocalDate end = start.plusMonths(3).minusDays(1);
+            return new LocalDateRange(start.toString(), end.toString());
+        }
+        return new LocalDateRange(dto.getStartDate(), dto.getEndDate());
+    }
+
+    private QueryParams buildQueries(AccountSearchDto dto) throws BusinessException {
+        try {
+            dto.validate();
+        } catch (IllegalArgumentException ex) {
+            throw new BusinessException(ex.getMessage());
+        }
+
+        LocalDateRange range = normalizeDateRange(dto);
+
+        AccountInfoQuery accountQuery = new AccountInfoQuery();
+        accountQuery.setUsername(dto.getUsername());
+        accountQuery.setUsernameFuzzy(dto.getUsernameFuzzy());
+        accountQuery.setType(dto.getUserType());
+        // 仅在筛选市账号时才带上 cityCode，避免企业账号被 city_code 条件过滤
+        if (dto.getUserType() != null && AccountTypeEnum.CITY.getCode().equals(dto.getUserType())) {
+            accountQuery.setCityCode(dto.getCityCode());
+        } else {
+            accountQuery.setCityCode(null);
+        }
+        accountQuery.setStatus(dto.getDataStatus());
+        accountQuery.setCreatedAtStart(range.start);
+        accountQuery.setCreatedAtEnd(range.end);
+        accountQuery.setPageNo(dto.getPageNo());
+        accountQuery.setPageSize(dto.getPageSize());
+        accountQuery.setOrderBy(allowOrderBy(dto.getOrderBy())); // allowlist only
+
+        EnterpriseInfoQuery entQuery = new EnterpriseInfoQuery();
+        entQuery.setNameFuzzy(dto.getUnitNameFuzzy());
+        entQuery.setName(dto.getUnitName());
+
+        // 地区：前端可能只传一个地区code（市或县）。县→region，市→regionCode。
+        Integer selectedRegion = dto.getRegionCode() != null ? dto.getRegionCode()
+                : (dto.getCountyCode() != null ? dto.getCountyCode() : dto.getCityCode());
+        if (selectedRegion != null) {
+            RegionUtils.RegionNode node = RegionUtils.getRegionByCode(selectedRegion);
+            if (node != null) {
+                if (node.getParentId() != null && node.getParentId() != 0) {
+                    entQuery.setRegion(selectedRegion);           // 县完整代码
+                    entQuery.setRegionCode(null);                 // 县筛选只用 region
+                } else {
+                    entQuery.setRegion(null);
+                    entQuery.setRegionCode(selectedRegion);       // 市（一级分类）
+                }
+            }
+        }
+
+        // 性质/行业：按一级分类字段匹配
+        entQuery.setNature(null);
+        entQuery.setNatureCode(dto.getUnitNature());
+        entQuery.setIndustry(null);
+        entQuery.setIndustryCode(dto.getIndustry());
+
+        return new QueryParams(accountQuery, entQuery);
+    }
+
+    private void writeCsv(HttpServletResponse response, List<AccountEnterpriseVO> data) throws BusinessException {
+        try {
+            String fileName = URLEncoder.encode("account_export.csv", StandardCharsets.UTF_8)
+                    .replaceAll("\\+", "%20");
+            response.setContentType("text/csv; charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8))) {
+                writer.write('\ufeff'); // BOM for Excel compatibility
+                writer.write("登录账号,账号类型,单位名称,地市,区县,街道,状态,创建时间,最后登录时间,所属行业,单位性质");
+                writer.newLine();
+                for (AccountEnterpriseVO vo : data) {
+                    RegionDisplay regionDisplay = resolveRegion(vo.getRegion(), vo.getCityCode());
+                    String industryName = resolveIndustryName(vo);
+                    String natureName = resolveNatureName(vo);
+                    writer.write(String.join(",",
+                            csvCell(vo.getUsername()),
+                            csvCell(formatAccountType(vo.getType())),
+                            csvCell(StringUtils.defaultString(vo.getName(), vo.getEnterpriseName())),
+                            csvCell(regionDisplay.cityName),
+                            csvCell(regionDisplay.countyName),
+                            csvCell(regionDisplay.streetName),
+                            csvCell(formatStatus(vo.getStatus())),
+                            csvCell(formatDate(vo.getCreatedAt())),
+                            csvCell(formatDate(vo.getLastLoginTime())),
+                            csvCell(industryName),
+                            csvCell(natureName)
+                    ));
+                    writer.newLine();
+                }
+            }
+        } catch (IOException e) {
+            throw new BusinessException("导出失败", e);
+        }
+    }
+
+    private String csvCell(String value) {
+        if (value == null) {
+            return "";
+        }
+        String escaped = value.replace("\"", "\"\"");
+        if (escaped.contains(",") || escaped.contains("\"") || escaped.contains("\n") || escaped.contains("\r")) {
+            return "\"" + escaped + "\"";
+        }
+        return escaped;
+    }
+
+    private String stringOrEmpty(Object value) {
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    private RegionDisplay resolveRegion(Integer regionCode, Integer cityCode) {
+        RegionDisplay rd = new RegionDisplay();
+        RegionUtils.RegionNode node = regionCode != null ? RegionUtils.getRegionByCode(regionCode) : null;
+        if (node == null && cityCode != null) {
+            node = RegionUtils.getRegionByCode(cityCode);
+        }
+
+        // Build path top->leaf
+        java.util.LinkedList<RegionUtils.RegionNode> path = new java.util.LinkedList<>();
+        while (node != null) {
+            path.addFirst(node);
+            if (node.getParentId() == null || node.getParentId() == 0) {
+                break;
+            }
+            node = RegionUtils.getRegionByCode(node.getParentId());
+        }
+
+        if (!path.isEmpty()) {
+            rd.cityName = path.getFirst().getName();
+            if (path.size() > 1) {
+                rd.countyName = path.get(1).getName();
+            }
+            if (path.size() > 2) {
+                rd.streetName = path.getLast().getName();
+            }
+        }
+        return rd;
+    }
+
+    private String resolveIndustryName(AccountEnterpriseVO vo) {
+        Integer code = pickDictCode(vo.getIndustryCode(), vo.getIndustry(), DictUtils::getEnterpriseIndustryName);
+        return code == null ? "" : DictUtils.getEnterpriseIndustryName(String.valueOf(code));
+    }
+
+    private String resolveNatureName(AccountEnterpriseVO vo) {
+        Integer code = pickDictCode(vo.getNatureCode(), vo.getNature(), DictUtils::getEnterpriseNatureName);
+        return code == null ? "" : DictUtils.getEnterpriseNatureName(String.valueOf(code));
+    }
+
+    private Integer pickDictCode(Integer primary, Integer fallback, Function<String, String> dictLookup) {
+        if (primary != null && StringUtils.isNotBlank(dictLookup.apply(String.valueOf(primary)))) {
+            return primary;
+        }
+        if (fallback == null) {
+            return null;
+        }
+        int current = fallback;
+        // Collapse child codes (e.g. 1901) to their top-level bucket (19) for dictionary lookup
+        for (int i = 0; i < 5; i++) {
+            String key = String.valueOf(current);
+            if (StringUtils.isNotBlank(dictLookup.apply(key))) {
+                return current;
+            }
+            if (Math.abs(current) < 10) {
+                break;
+            }
+            current = current / 100;
+        }
+        return null;
+    }
+
+    private static class RegionDisplay {
+        String cityName = "";
+        String countyName = "";
+        String streetName = "";
+    }
+
+    private String formatDate(Date date) {
+        return date == null ? "" : DateUtils.format(date, "yyyy-MM-dd HH:mm:ss");
+    }
+
+    private String formatAccountType(Integer type) {
+        if (type == null) {
+            return "";
+        }
+        if (AccountTypeEnum.CITY.getCode().equals(type)) {
+            return "市账号";
+        }
+        if (AccountTypeEnum.ENTERPRISE.getCode().equals(type)) {
+            return "企业账号";
+        }
+        return String.valueOf(type);
+    }
+
+    private String formatStatus(Integer status) {
+        if (status == null) {
+            return "";
+        }
+        if (status == 0) {
+            return "正常";
+        }
+        if (status == 1) {
+            return "停用";
+        }
+        return String.valueOf(status);
+    }
+
+    private static class LocalDateRange {
+        final String start;
+        final String end;
+
+        LocalDateRange(String start, String end) {
+            this.start = start;
+            this.end = end;
+        }
+    }
+
+    private static class QueryParams {
+        final AccountInfoQuery accountQuery;
+        final EnterpriseInfoQuery enterpriseQuery;
+
+        QueryParams(AccountInfoQuery accountQuery, EnterpriseInfoQuery enterpriseQuery) {
+            this.accountQuery = accountQuery;
+            this.enterpriseQuery = enterpriseQuery;
+        }
     }
 }

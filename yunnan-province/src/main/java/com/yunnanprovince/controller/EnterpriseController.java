@@ -78,5 +78,4 @@ public class EnterpriseController extends ABaseController {
         }
         return getSuccessResponseVO(null);
     }
-
 }
