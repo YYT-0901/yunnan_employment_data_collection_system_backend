@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunnancommon.mapper.EnterpriseAnalysisDataMapper">
+
+    <insert id="upsertFromReport">
+        INSERT INTO enterprise_analysis_data (
+            period_id, enterprise_id, report_id,
+            region, region_code, industry, industry_code, nature, nature_code,
+            construction_employed, employed_count, unemployed_count, unemployment_rate,
+            created_time, updated_time
+        )
+        SELECT
+            eri.period_id,
+            eri.enterprise_id,
+            eri.report_id,
+            ei.region, ei.region_code, ei.industry, ei.industry_code, ei.nature, ei.nature_code,
+            ri.construction_count,
+            ri.investigation_count,
+            GREATEST(0, ri.construction_count - ri.investigation_count) AS unemployed_count,
+            ROUND((ri.construction_count - ri.investigation_count) / NULLIF(ri.construction_count,0) * 100, 2) AS unemployment_rate,
+            NOW(), NOW()
+        FROM enterprise_report_info eri
+        JOIN enterprise_info ei ON ei.enterprise_id = eri.enterprise_id
+        JOIN report_info ri ON ri.report_id = eri.report_id
+        WHERE eri.enterprise_id = #{enterpriseId}
+          AND eri.period_id = #{periodId}
+          AND eri.report_id = #{reportId}
+          AND eri.status IN (#{approvedStatus}, #{archivedStatus})
+        ON DUPLICATE KEY UPDATE
+            report_id = VALUES(report_id),
+            region = VALUES(region),
+            region_code = VALUES(region_code),
+            industry = VALUES(industry),
+            industry_code = VALUES(industry_code),
+            nature = VALUES(nature),
+            nature_code = VALUES(nature_code),
+            construction_employed = VALUES(construction_employed),
+            employed_count = VALUES(employed_count),
+            unemployed_count = VALUES(unemployed_count),
+            unemployment_rate = VALUES(unemployment_rate),
+            updated_time = NOW()
+    </insert>
+</mapper>

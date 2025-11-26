@@ -280,4 +280,11 @@ public class RegionUtils {
         return result;
     }
 
+    public static RegionNode getRegionByCode(Integer code) {
+        if (code == null) {
+            return null;
+        }
+        return regionMap.get(code);
+    }
+
 }

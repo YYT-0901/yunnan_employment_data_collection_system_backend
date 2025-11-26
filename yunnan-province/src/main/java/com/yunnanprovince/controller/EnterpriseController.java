@@ -4,6 +4,7 @@ import com.yunnancommon.controller.ABaseController;
 import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
 import com.yunnancommon.entity.vo.ResponseVO;
+import com.yunnancommon.enums.EnterpriseStatusEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.EnterpriseInfoService;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +67,25 @@ public class EnterpriseController extends ABaseController {
         Integer result = enterpriseInfoService.deleteEnterpriseInfoByEnterpriseId(enterpriseId);
         if (result == 0) {
             throw new BusinessException("删除企业失败");
+        }
+        return getSuccessResponseVO(null);
+    }
+
+    /**
+     * 修改企业状态
+     */
+    @PostMapping("/changeEnterpriseStatus")
+    public ResponseVO changeEnterpriseStatus(@RequestParam("enterpriseId") String enterpriseId,
+                                             @RequestParam("status") Integer status) throws BusinessException {
+        if (EnterpriseStatusEnum.getNameByCode(status) == null) {
+            throw new BusinessException("状态值不合法");
+        }
+        EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
+        enterpriseInfo.setStatus(status);
+        enterpriseInfo.setUpdatedAt(new Date());
+        Integer result = enterpriseInfoService.updateEnterpriseInfoByEnterpriseId(enterpriseInfo, enterpriseId);
+        if (result == 0) {
+            throw new BusinessException("企业不存在或状态未变更");
         }
         return getSuccessResponseVO(null);
     }
