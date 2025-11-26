@@ -20,6 +20,7 @@ import com.yunnancommon.service.AccountInfoService;
 import com.yunnancommon.service.EnterpriseInfoService;
 import com.yunnancommon.utils.DateUtils;
 import com.yunnancommon.utils.RegionUtils;
+import com.yunnancommon.utils.DictUtils;
 import com.yunnancommon.utils.TokenUtils;
 import com.yunnanprovince.config.AppConfig;
 import java.io.BufferedWriter;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/account")
@@ -275,20 +277,24 @@ public class AccountController extends ABaseController {
             try (BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8))) {
                 writer.write('\ufeff'); // BOM for Excel compatibility
-                writer.write("登录账号,账号类型,单位名称,市编码,区县编码,状态,创建时间,最后登录时间,所属行业,单位性质");
+                writer.write("登录账号,账号类型,单位名称,地市,区县,街道,状态,创建时间,最后登录时间,所属行业,单位性质");
                 writer.newLine();
                 for (AccountEnterpriseVO vo : data) {
+                    RegionDisplay regionDisplay = resolveRegion(vo.getRegion(), vo.getCityCode());
+                    String industryName = resolveIndustryName(vo);
+                    String natureName = resolveNatureName(vo);
                     writer.write(String.join(",",
                             csvCell(vo.getUsername()),
                             csvCell(formatAccountType(vo.getType())),
                             csvCell(StringUtils.defaultString(vo.getName(), vo.getEnterpriseName())),
-                            csvCell(stringOrEmpty(vo.getCityCode())),
-                            csvCell(stringOrEmpty(vo.getRegion())),
-                            csvCell(stringOrEmpty(vo.getStatus())),
+                            csvCell(regionDisplay.cityName),
+                            csvCell(regionDisplay.countyName),
+                            csvCell(regionDisplay.streetName),
+                            csvCell(formatStatus(vo.getStatus())),
                             csvCell(formatDate(vo.getCreatedAt())),
                             csvCell(formatDate(vo.getLastLoginTime())),
-                            csvCell(stringOrEmpty(vo.getIndustry())),
-                            csvCell(stringOrEmpty(vo.getNature()))
+                            csvCell(industryName),
+                            csvCell(natureName)
                     ));
                     writer.newLine();
                 }
@@ -313,6 +319,73 @@ public class AccountController extends ABaseController {
         return value == null ? "" : String.valueOf(value);
     }
 
+    private RegionDisplay resolveRegion(Integer regionCode, Integer cityCode) {
+        RegionDisplay rd = new RegionDisplay();
+        RegionUtils.RegionNode node = regionCode != null ? RegionUtils.getRegionByCode(regionCode) : null;
+        if (node == null && cityCode != null) {
+            node = RegionUtils.getRegionByCode(cityCode);
+        }
+
+        // Build path top->leaf
+        java.util.LinkedList<RegionUtils.RegionNode> path = new java.util.LinkedList<>();
+        while (node != null) {
+            path.addFirst(node);
+            if (node.getParentId() == null || node.getParentId() == 0) {
+                break;
+            }
+            node = RegionUtils.getRegionByCode(node.getParentId());
+        }
+
+        if (!path.isEmpty()) {
+            rd.cityName = path.getFirst().getName();
+            if (path.size() > 1) {
+                rd.countyName = path.get(1).getName();
+            }
+            if (path.size() > 2) {
+                rd.streetName = path.getLast().getName();
+            }
+        }
+        return rd;
+    }
+
+    private String resolveIndustryName(AccountEnterpriseVO vo) {
+        Integer code = pickDictCode(vo.getIndustryCode(), vo.getIndustry(), DictUtils::getEnterpriseIndustryName);
+        return code == null ? "" : DictUtils.getEnterpriseIndustryName(String.valueOf(code));
+    }
+
+    private String resolveNatureName(AccountEnterpriseVO vo) {
+        Integer code = pickDictCode(vo.getNatureCode(), vo.getNature(), DictUtils::getEnterpriseNatureName);
+        return code == null ? "" : DictUtils.getEnterpriseNatureName(String.valueOf(code));
+    }
+
+    private Integer pickDictCode(Integer primary, Integer fallback, Function<String, String> dictLookup) {
+        if (primary != null && StringUtils.isNotBlank(dictLookup.apply(String.valueOf(primary)))) {
+            return primary;
+        }
+        if (fallback == null) {
+            return null;
+        }
+        int current = fallback;
+        // Collapse child codes (e.g. 1901) to their top-level bucket (19) for dictionary lookup
+        for (int i = 0; i < 5; i++) {
+            String key = String.valueOf(current);
+            if (StringUtils.isNotBlank(dictLookup.apply(key))) {
+                return current;
+            }
+            if (Math.abs(current) < 10) {
+                break;
+            }
+            current = current / 100;
+        }
+        return null;
+    }
+
+    private static class RegionDisplay {
+        String cityName = "";
+        String countyName = "";
+        String streetName = "";
+    }
+
     private String formatDate(Date date) {
         return date == null ? "" : DateUtils.format(date, "yyyy-MM-dd HH:mm:ss");
     }
@@ -328,6 +401,19 @@ public class AccountController extends ABaseController {
             return "企业账号";
         }
         return String.valueOf(type);
+    }
+
+    private String formatStatus(Integer status) {
+        if (status == null) {
+            return "";
+        }
+        if (status == 0) {
+            return "正常";
+        }
+        if (status == 1) {
+            return "停用";
+        }
+        return String.valueOf(status);
     }
 
     private static class LocalDateRange {
