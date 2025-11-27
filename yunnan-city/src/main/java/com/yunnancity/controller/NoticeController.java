@@ -7,6 +7,7 @@ import com.yunnancommon.entity.po.NoticeInfo;
 import com.yunnancommon.entity.po.NoticeReadInfo;
 import com.yunnancommon.entity.query.NoticeInfoQuery;
 import com.yunnancommon.entity.vo.CurrentVO;
+import com.yunnancommon.entity.vo.PaginationResultVO;
 import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.entity.vo.TokenInfoVO;
 import com.yunnancommon.enums.AccountTypeEnum;
@@ -25,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.Date;
+import java.util.*;
 
 @RestController
 @RequestMapping("/notice")
@@ -53,17 +54,79 @@ public class NoticeController extends ABaseController {
                               @RequestParam(required = false) String startTime,
                               @RequestParam(required = false) String endTime) {
 
-        NoticeInfoQuery query = new NoticeInfoQuery();
-        query.setTitle(title);
-        query.setIsImportant(isImportant);
-        query.setNoticeStatus(NoticeTypeEnum.CITY.getCode());
-        query.setPublisher(publisher);
-        query.setStatus(status);
-        query.setPageNo(page);
-        query.setPageSize(pageSize);
-        query.setStartTimeEnd(startTime);
-        query.setEndTimeStart(endTime);
-        return getSuccessResponseVO(noticeInfoService.findListByPage(query));
+        // 当noticeStatus为null时，查询状态为1和3的数据
+        if (noticeStatus == null) {
+            // 查询全部人可见(1)和市级可见(3)的通知
+            // 由于不修改共用代码，我们需要分别查询然后合并
+
+            // 先创建基础查询对象
+            NoticeInfoQuery query1 = new NoticeInfoQuery();
+            query1.setTitle(title);
+            query1.setIsImportant(isImportant);
+            query1.setPublisher(publisher);
+            query1.setStatus(status);
+            query1.setPageNo(page);
+            query1.setPageSize(pageSize);
+            query1.setStartTimeEnd(startTime);
+            query1.setEndTimeStart(endTime);
+
+            // 查询状态为1的数据
+            query1.setNoticeStatus(NoticeTypeEnum.ALL.getCode());
+            PaginationResultVO<NoticeInfo> allNoticeResult = noticeInfoService.findListByPage(query1);
+
+            // 创建第二个查询对象（避免修改同一个对象）
+            NoticeInfoQuery query2 = new NoticeInfoQuery();
+            query2.setTitle(title);
+            query2.setIsImportant(isImportant);
+            query2.setPublisher(publisher);
+            query2.setStatus(status);
+            query2.setPageNo(page);
+            query2.setPageSize(pageSize);
+            query2.setStartTimeEnd(startTime);
+            query2.setEndTimeStart(endTime);
+
+            // 查询状态为3的数据
+            query2.setNoticeStatus(NoticeTypeEnum.CITY.getCode());
+            PaginationResultVO<NoticeInfo> cityNoticeResult = noticeInfoService.findListByPage(query2);
+
+            // 合并结果
+            List<NoticeInfo> mergedList = new ArrayList<>();
+            if (allNoticeResult.getList() != null) {
+                mergedList.addAll(allNoticeResult.getList());
+            }
+            if (cityNoticeResult.getList() != null) {
+                mergedList.addAll(cityNoticeResult.getList());
+            }
+
+            // 去重处理
+            Set<Long> noticeIdSet = new HashSet<>();
+            List<NoticeInfo> distinctList = new ArrayList<>();
+            for (NoticeInfo notice : mergedList) {
+                if (noticeIdSet.add(notice.getNoticeId())) {
+                    distinctList.add(notice);
+                }
+            }
+
+            // 创建新的分页结果
+            int totalCount = (int) (allNoticeResult.getTotalCount() + cityNoticeResult.getTotalCount() - (mergedList.size() - distinctList.size()));
+            int pageTotal = (int) Math.ceil((double) totalCount / pageSize);
+            PaginationResultVO<NoticeInfo> result = new PaginationResultVO<>(totalCount, pageSize, page, pageTotal, distinctList);
+
+            return getSuccessResponseVO(result);
+        } else {
+            // 如果前端传入了noticeStatus，则使用常规查询
+            NoticeInfoQuery query = new NoticeInfoQuery();
+            query.setTitle(title);
+            query.setIsImportant(isImportant);
+            query.setNoticeStatus(noticeStatus);
+            query.setPublisher(publisher);
+            query.setStatus(status);
+            query.setPageNo(page);
+            query.setPageSize(pageSize);
+            query.setStartTimeEnd(startTime);
+            query.setEndTimeStart(endTime);
+            return getSuccessResponseVO(noticeInfoService.findListByPage(query));
+        }
     }
 
     @GetMapping("/{id}/detail")

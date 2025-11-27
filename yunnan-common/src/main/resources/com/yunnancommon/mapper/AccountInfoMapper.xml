@@ -88,6 +88,37 @@
 	</where>
 	</sql>
 
+	<!--带表别名的查询条件-->
+	<sql id="query_condition_with_alias">
+	<where>
+		<if test="query.username != null and query.username != ''">
+			and a.username = #{query.username}
+		</if>
+		<if test="query.password != null and query.password != ''">
+			and a.password = #{query.password}
+		</if>
+		<if test="query.type != null">
+			and a.type = #{query.type}
+		</if>
+		<if test="query.enterpriseId != null and query.enterpriseId != ''">
+			and a.enterprise_id = #{query.enterpriseId}
+		</if>
+		<if test="query.cityCode != null">
+			and a.city_code = #{query.cityCode}
+		</if>
+		<if test="query.lastLoginTime != null">
+			and a.last_login_time = #{query.lastLoginTime}
+		</if>
+		<if test="query.status != null">
+			and a.status = #{query.status}
+		</if>
+		<if test="query.createdAt != null">
+			and a.created_at = #{query.createdAt}
+		</if>
+		<include refid="base_query_condition_extend" />
+	</where>
+	</sql>
+
 	<!--查询列表-->
 	<select id="selectList" resultMap="base_result_map">
 		select
@@ -112,7 +143,7 @@
 		e.org_code as orgCode, e.name, e.region, e.nature, e.industry, e.industry_desc as industryDesc, e.contact_name as contactName, e.address, e.postal_code as postalCode, e.phone_num as phoneNum, e.fax_num as faxNum, e.email
 		from account_info a
 		left join enterprise_info e on a.enterprise_id = e.enterprise_id
-		<include refid="query_condition" />
+		<include refid="query_condition_with_alias" />
 	</select>
 
 

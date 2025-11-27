@@ -53,7 +53,7 @@ public class NoticeController extends ABaseController {
         query.setTitle(title);
         query.setIsImportant(isImportant);
         query.setNoticeStatus(noticeStatus);
-        query.setPublisher(publisher);
+        query.setPublisherFuzzy(publisher);
         query.setStatus(status);
         query.setPageNo(page);
         query.setPageSize(pageSize);

@@ -166,12 +166,6 @@ public class EnterpriseInfoServiceImpl implements EnterpriseInfoService {
 		if(enterpriseInfo.getRegion() != null) {
 			enterpriseInfo.setRegionCode(StringTools.getTopCategoryCode(enterpriseInfo.getRegion(), Constants.REGION));
 		}
-		if(enterpriseInfo.getNature() != null) {
-			enterpriseInfo.setNatureCode(StringTools.getTopCategoryCode(enterpriseInfo.getNature(), Constants.NATURE));
-		}
-		if(enterpriseInfo.getIndustry() != null) {
-			enterpriseInfo.setIndustryCode(StringTools.getTopCategoryCode(enterpriseInfo.getIndustry(), Constants.INDUSTRY));
-		}
         enterpriseInfo.setStatus(EnterpriseStatusEnum.CREATED.getCode());
         this.enterpriseInfoMapper.insert(enterpriseInfo);
 
