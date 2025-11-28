@@ -29,7 +29,35 @@ public class LogInfoServiceImpl implements LogInfoService {
 	 */
 	@Override
 	public List<LogInfo> findListByParam(LogInfoQuery query) {
-		return this.logInfoMapper.selectList(query);
+		List<LogInfo> list = this.logInfoMapper.selectList(query);
+		if (list != null) {
+			for (LogInfo logInfo : list) {
+				fillEnterpriseIdFromParams(logInfo);
+			}
+		}
+		return list;
+	}
+
+	/**
+	 * 辅助方法：如果 enterpriseId 为空，尝试从 requestParams 中解析
+	 */
+	private void fillEnterpriseIdFromParams(LogInfo logInfo) {
+		if (logInfo == null) return;
+		if (logInfo.getEnterpriseId() == null && logInfo.getRequestParams() != null) {
+			String params = logInfo.getRequestParams();
+			String prefix = "企业ID：";
+			int start = params.indexOf(prefix);
+			if (start != -1) {
+				int end = params.indexOf("；", start);
+				if (end == -1) {
+					end = params.length();
+				}
+				String eid = params.substring(start + prefix.length(), end).trim();
+				if (!eid.isEmpty()) {
+					logInfo.setEnterpriseId(eid);
+				}
+			}
+		}
 	}
 
 	/**
@@ -89,7 +117,9 @@ public class LogInfoServiceImpl implements LogInfoService {
 	 */
 	@Override
 	public LogInfo getLogInfoByLogId(Long logId) {
-		return this.logInfoMapper.selectByLogId(logId);
+		LogInfo logInfo = this.logInfoMapper.selectByLogId(logId);
+		fillEnterpriseIdFromParams(logInfo);
+		return logInfo;
 	}
 
 	/**
