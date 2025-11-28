@@ -1,5 +1,6 @@
 package com.yunnancommon.mapper;
 
+import com.yunnancommon.entity.query.EnterpriseInfoQuery;
 import com.yunnancommon.entity.vo.AccountEnterpriseVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -30,5 +31,7 @@ public interface AccountInfoMapper<T, P> extends BaseMapper {
 	Integer deleteByUsername(@Param("username") String username);
 
 
-    List<AccountEnterpriseVO> findListByParamWithAssociatedEnterpriseInfo(@Param("query") P p);
+    List<AccountEnterpriseVO> findListByParamWithAssociatedEnterpriseInfo(@Param("query") P p, @Param("enterpriseQuery") EnterpriseInfoQuery enterpriseQuery);
+
+    Integer selectCountWithEnterprise(@Param("query") P p, @Param("enterpriseQuery") EnterpriseInfoQuery enterpriseQuery);
 }

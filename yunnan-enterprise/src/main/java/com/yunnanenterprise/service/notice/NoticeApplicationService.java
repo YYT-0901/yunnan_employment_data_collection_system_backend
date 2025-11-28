@@ -130,8 +130,19 @@ public class NoticeApplicationService {
             // 即使插入失败（比如已经读过），也不影响查看
             // 这里捕获异常是为了不影响主流程
         }
+
+        // 4. 累加阅读次数（幂等失败不影响主流程）
+        try {
+            int nextReadCount = (notice.getReadCount() == null ? 0 : notice.getReadCount()) + 1;
+            notice.setReadCount(nextReadCount); // 确保返回值也显示最新次数
+            NoticeInfo updateBean = new NoticeInfo();
+            updateBean.setReadCount(nextReadCount);
+            noticeInfoService.updateNoticeInfoByNoticeId(updateBean, noticeId);
+        } catch (Exception ignore) {
+            // 记录数更新失败不影响阅读体验
+        }
         
-        // 4. 转换并返回
+        // 5. 转换并返回
         return convertToVO(notice);
     }
 

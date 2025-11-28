@@ -7,11 +7,7 @@ import com.yunnancommon.entity.po.EnterpriseInfo;
 import com.yunnancommon.entity.query.EnterpriseInfoQuery;
 
 import java.util.List;
-/**
- * @Description:企业信息表Service
- * @auther:group2
- * @date:2025/11/04
- */
+
 public interface EnterpriseInfoService {
 
 	/**

@@ -65,5 +65,9 @@ public interface AccountInfoService {
     TokenInfoVO login(String account, String password) throws BusinessException;
     TokenInfoVO cityLogin(String account, String password) throws BusinessException;
 
-	PaginationResultVO<AccountEnterpriseVO> findListByPageWithAssociated(AccountInfoQuery query);
+	PaginationResultVO<AccountEnterpriseVO> findListByPageWithAssociated(AccountInfoQuery accountQuery, EnterpriseInfoQuery enterpriseQuery);
+
+	List<AccountEnterpriseVO> findListWithAssociated(AccountInfoQuery accountQuery, EnterpriseInfoQuery enterpriseQuery);
+
+	Integer findCountWithAssociated(AccountInfoQuery accountQuery, EnterpriseInfoQuery enterpriseQuery);
 }
