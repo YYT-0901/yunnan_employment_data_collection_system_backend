@@ -128,7 +128,7 @@ public class AccountController extends ABaseController {
     @GetMapping("/loadAllEnterpriseAccount")
     public ResponseVO loadAllEnterpriseAccount(AccountInfoQuery query) {
         query.setType(AccountTypeEnum.ENTERPRISE.getCode());
-        return getSuccessResponseVO(accountInfoService.findListByPageWithAssociated(query));
+        return getSuccessResponseVO(accountInfoService.findListByPageWithAssociated(query, new EnterpriseInfoQuery()));
     }
 
     /**
