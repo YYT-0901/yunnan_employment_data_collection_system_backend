@@ -7,7 +7,9 @@ import com.yunnancommon.entity.vo.ResponseVO;
 import com.yunnancommon.enums.EnterpriseStatusEnum;
 import com.yunnancommon.exception.BusinessException;
 import com.yunnancommon.service.EnterpriseInfoService;
+import com.yunnancommon.annotation.OperationLog;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -39,8 +41,11 @@ public class EnterpriseController extends ABaseController {
     /**
      * 更新企业信息
      */
+    @OperationLog(module = "企业管理", operation = "更新企业信息")
     @PutMapping("/updateEnterprise/{enterpriseId}")
-    public ResponseVO updateEnterprise(@PathVariable String enterpriseId, @RequestBody EnterpriseInfo enterpriseInfo) throws BusinessException {
+    public ResponseVO updateEnterprise(HttpServletRequest request, @PathVariable String enterpriseId, @RequestBody EnterpriseInfo enterpriseInfo) throws BusinessException {
+        // 暴露 enterpriseId 给日志切面
+        request.setAttribute("enterpriseId", enterpriseId);
         enterpriseInfo.setUpdatedAt(new Date());
         // 更新地区、性质、行业的一级分类代码
         if (enterpriseInfo.getRegion() != null) {
@@ -62,8 +67,11 @@ public class EnterpriseController extends ABaseController {
     /**
      * 删除企业
      */
-    @DeleteMapping("/deleteEnterprise/{enterpriseId}")
-    public ResponseVO deleteEnterprise(@PathVariable String enterpriseId) throws BusinessException {
+    @OperationLog(module = "企业管理", operation = "删除企业")
+    @RequestMapping(value = "/deleteEnterprise/{enterpriseId}", method = {RequestMethod.DELETE, RequestMethod.POST})
+    public ResponseVO deleteEnterprise(HttpServletRequest request, @PathVariable String enterpriseId) throws BusinessException {
+        // 暴露 enterpriseId 给日志切面
+        request.setAttribute("enterpriseId", enterpriseId);
         Integer result = enterpriseInfoService.deleteEnterpriseInfoByEnterpriseId(enterpriseId);
         if (result == 0) {
             throw new BusinessException("删除企业失败");

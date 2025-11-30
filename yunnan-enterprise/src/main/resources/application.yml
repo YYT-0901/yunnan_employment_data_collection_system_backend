@@ -36,7 +36,7 @@ spring:
     driver-class-name: org.apache.calcite.avatica.remote.Driver
 
 project:
-  folder: ./yunnan
+  folder: C:\\Users\\zhang\\Desktop\\大创项目\\云南\\yunnan_employment_data_collection_system_backend
 
 log:
   root:

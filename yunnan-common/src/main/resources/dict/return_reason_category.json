@@ -1,0 +1,7 @@
+[
+  {"code": "INCOMPLETE", "name": "资料不齐全"},
+  {"code": "WRONG_INFO", "name": "信息填写有误"},
+  {"code": "INVALID_CONTACT", "name": "联系方式无效"},
+  {"code": "CERT_ISSUE", "name": "资质证明问题"},
+  {"code": "OTHER", "name": "其他"}
+]

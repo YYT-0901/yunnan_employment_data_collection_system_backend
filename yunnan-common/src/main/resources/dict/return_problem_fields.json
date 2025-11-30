@@ -1,0 +1,11 @@
+[
+  {"key": "natureCode", "label": "所属性质"},
+  {"key": "industryCode", "label": "所属行业"},
+  {"key": "businessDetail", "label": "经营业务详情"},
+  {"key": "contactName", "label": "联系人名称"},
+  {"key": "contactPhone", "label": "联系电话"},
+  {"key": "postCode", "label": "邮政编码"},
+  {"key": "faxNumber", "label": "传真号"},
+  {"key": "contactAddress", "label": "联系人地址"},
+  {"key": "contactEmail", "label": "邮箱"}
+]
