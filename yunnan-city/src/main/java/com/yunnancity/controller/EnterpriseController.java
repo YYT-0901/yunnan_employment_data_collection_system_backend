@@ -29,7 +29,8 @@ public class EnterpriseController extends ABaseController {
      */
     @GetMapping("/loadAllEnterprise")
     public ResponseVO loadAllEnterprise(HttpServletRequest request, EnterpriseInfoQuery query) {
-        query.setRegion(redisComponent.getCityTokenInfo(getTokenFromCookie(request, AccountTypeEnum.CITY)).getCityCode());
+        // 按市级账号所在城市过滤企业。企业表的region字段是区县编码，regionCode才是市级编码
+        query.setRegionCode(redisComponent.getCityTokenInfo(getTokenFromCookie(request, AccountTypeEnum.CITY)).getCityCode());
         return getSuccessResponseVO(enterpriseInfoService.findListByPage(query));
     }
 
