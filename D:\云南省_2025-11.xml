@@ -3,21 +3,21 @@
 <yunnan_report>
   <header>
     <province_name>云南省</province_name>
-    <report_time>2025-11-25 14:49:48</report_time>
+    <report_time>2025-12-01 19:53:52</report_time>
     <investigate_period>2025-11</investigate_period>
   </header>
   <summary_info>
-    <total_enterprise_count>4</total_enterprise_count>
-    <total_employment_count>1141</total_employment_count>
-    <total_investigation_count>453</total_investigation_count>
+    <total_enterprise_count>5</total_enterprise_count>
+    <total_employment_count>1250</total_employment_count>
+    <total_investigation_count>552</total_investigation_count>
     <involved_city_count>4</involved_city_count>
   </summary_info>
   <city_data_list>
     <city_data>
       <city_name>保山市</city_name>
-      <enterprise_count>1</enterprise_count>
-      <total_employment>279</total_employment>
-      <total_investigation>200</total_investigation>
+      <enterprise_count>2</enterprise_count>
+      <total_employment>388</total_employment>
+      <total_investigation>299</total_investigation>
     </city_data>
     <city_data>
       <city_name>大理白族自治州</city_name>
@@ -47,6 +47,16 @@
         <investigation_count>200</investigation_count>
         <enterprise_nature>外商投资企业</enterprise_nature>
         <enterprise_industry>居民服务、修理和其他服务业</enterprise_industry>
+        <reduction_type>关闭破产</reduction_type>
+        <reason1>产业结构调整</reason1>
+        <reason1_desc>1111</reason1_desc>
+      </enterprise_data>
+      <enterprise_data>
+        <enterprise_name>Enterprise 00185</enterprise_name>
+        <construction_count>109</construction_count>
+        <investigation_count>99</investigation_count>
+        <enterprise_nature>个体工商户</enterprise_nature>
+        <enterprise_industry>交通运输、仓储和邮政业</enterprise_industry>
         <reduction_type>关闭破产</reduction_type>
         <reason1>产业结构调整</reason1>
         <reason1_desc>1111</reason1_desc>
