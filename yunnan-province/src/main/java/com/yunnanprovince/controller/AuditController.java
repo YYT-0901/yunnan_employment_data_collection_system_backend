@@ -128,6 +128,7 @@ public class AuditController extends ABaseController {
         auditHistory.setAuditLevel(ReportAuditLevelEnum.PROVINCIAL.getCode());
         auditHistory.setAuditor(appConfig.getUsername());
         auditHistory.setAuditResult(ReportAuditResult.REJECTED.getCode());
+        auditHistory.setAuditOpinion(enterpriseInfoReportDto.getRejectReason());
         auditHistory.setAuditTime(new Date());
         reportAuditHistoryService.add(auditHistory);
         return getSuccessResponseVO(null);

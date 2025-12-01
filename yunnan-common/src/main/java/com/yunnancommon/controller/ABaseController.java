@@ -67,15 +67,25 @@ public class ABaseController {
 
     protected String getTokenFromCookie(HttpServletRequest request, AccountTypeEnum accountTypeEnum) {
         Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        String cookieName = getCookieName(accountTypeEnum);
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equalsIgnoreCase(cookieName)) {
-                return cookie.getValue();
+        if (cookies != null) {
+            String cookieName = getCookieName(accountTypeEnum);
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equalsIgnoreCase(cookieName)) {
+                    return cookie.getValue();
+                }
             }
         }
+        
+        String token = request.getHeader("token");
+        if (token != null && !token.isEmpty()) {
+            return token;
+        }
+        
+        String auth = request.getHeader("Authorization");
+        if (auth != null && auth.startsWith("Bearer ")) {
+            return auth.substring(7);
+        }
+        
         return null;
     }
 

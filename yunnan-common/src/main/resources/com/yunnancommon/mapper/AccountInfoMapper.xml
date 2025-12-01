@@ -141,11 +141,9 @@
 			</if>
 			<if test="enterpriseQuery.region != null">
 				and e.region like concat(#{enterpriseQuery.region},'%')
-				and length(e.region) = length(#{enterpriseQuery.region}) + 2
 			</if>
 			<if test="enterpriseQuery.regionCode != null">
 				and e.region_code like concat(#{enterpriseQuery.regionCode},'%')
-				and length(e.region_code) = length(#{enterpriseQuery.regionCode}) + 4
 			</if>
 			<if test="enterpriseQuery.nature != null">
 				and e.nature = #{enterpriseQuery.nature}
@@ -254,7 +252,9 @@
 		e.org_code as orgCode, e.name, e.name as enterpriseName, e.region, e.region_code as regionCode, e.nature, e.nature_code as natureCode, e.industry, e.industry_code as industryCode, e.industry_desc as industryDesc, e.contact_name as contactName, e.address, e.postal_code as postalCode, e.phone_num as phoneNum, e.fax_num as faxNum, e.email
 		from account_info a
 		left join enterprise_info e on a.enterprise_id = e.enterprise_id
-		<include refid="query_condition_with_alias" />
+		<include refid="query_condition_with_enterprise" />
+		<if test="query.orderBy != null">order by ${query.orderBy}</if>
+		<if test="query.simplePage != null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
 	</select>
 
 

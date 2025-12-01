@@ -106,6 +106,7 @@ public class AuditController extends ABaseController {
         auditHistory.setAuditLevel(ReportAuditLevelEnum.CITY.getCode());
         auditHistory.setAuditor(redisComponent.getCityTokenInfo(getTokenFromCookie(request, AccountTypeEnum.CITY)).getUsername());
         auditHistory.setAuditResult(ReportAuditResult.REJECTED.getCode());
+        auditHistory.setAuditOpinion(enterpriseInfoReportDto.getRejectReason());
         auditHistory.setAuditTime(new Date());
         reportAuditHistoryService.add(auditHistory);
         return getSuccessResponseVO(null);
