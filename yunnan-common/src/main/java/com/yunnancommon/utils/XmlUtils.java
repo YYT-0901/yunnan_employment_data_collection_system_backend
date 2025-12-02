@@ -10,6 +10,7 @@ import org.dom4j.io.XMLWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,13 +39,7 @@ public class XmlUtils {
             // 1. 创建header部分
             createHeaderSection(yunnanReport, investigateTime);
 
-            // 2. 创建汇总信息部分
-            createSummarySection(yunnanReport, xmlReportVOList);
-
-            // 3. 创建市级数据列表部分
-            createCityDataSection(yunnanReport, xmlReportVOList);
-
-            // 4. 创建企业上报数据部分
+            // 2. 创建企业上报数据部分
             createEnterpriseDataSection(yunnanReport, xmlReportVOList);
 
             // 格式化输出
@@ -231,13 +226,17 @@ public class XmlUtils {
             List<XmlReportVO> cityReports = entry.getValue();
 
             Element cityEnterpriseGroup = enterpriseDataList.addElement("city_enterprise_group");
+            // 添加city_name和city_code
+            cityEnterpriseGroup.addElement("city_code").setText(String.valueOf(cityCode));
             cityEnterpriseGroup.addElement("city_name").setText(DictUtils.getCityName(String.valueOf(cityCode)));
 
             // 为每个企业创建数据
             for (XmlReportVO report : cityReports) {
                 Element enterpriseData = cityEnterpriseGroup.addElement("enterprise_data");
 
-                // 企业基本信息
+                // 企业基本信息 - 添加report_id和enterprise_id
+                enterpriseData.addElement("enterprise_id").setText(report.getEnterpriseId() != null ? report.getEnterpriseId() : "");
+                enterpriseData.addElement("report_id").setText(report.getReportId() != null ? report.getReportId() : "");
                 enterpriseData.addElement("enterprise_name").setText(report.getEnterpriseName() != null ? report.getEnterpriseName() : "");
 
                 // 就业和调查数据
