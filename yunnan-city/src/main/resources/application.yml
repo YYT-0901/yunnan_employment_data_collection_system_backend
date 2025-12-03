@@ -6,9 +6,9 @@ spring:
       max-file-size: 10MB
       max-request-size: 15MB
   datasource:
-    url: jdbc:mysql://127.0.0.1:3307/yunnan_database_test_1?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3307/yunnan_system?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
     username: root
-    password: 1234567890
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       pool-name: HikariCPDatasource
@@ -36,7 +36,7 @@ spring:
       timeout: 2000
 
 project:
-  folder: C:\\Users\\zhang\\Desktop\\大创项目\\云南\\yunnan_employment_data_collection_system_backend
+  folder: ./yunnan
 
 log:
   root:

@@ -29,30 +29,34 @@ public class XmlUtils {
      * @param outputPath 输出文件路径（可选，为null时仅返回XML字符串）
      * @return 生成的XML字符串
      */
-    public static String  generateXml(List<XmlReportVO> xmlReportVOList, String investigateTime, String outputPath) {
+    public static String generateXml(List<XmlReportVO> xmlReportVOList, String investigateTime, String outputPath) {
         try {
             // 创建文档对象
             Document document = DocumentHelper.createDocument();
             // 创建根元素
             Element yunnanReport = document.addElement("yunnan_report");
-
-            // 1. 创建header部分
-            createHeaderSection(yunnanReport, investigateTime);
-
+    
+            // 1. 创建header部分 - 从第一个数据中获取periodId
+            Long periodId = null;
+            if (xmlReportVOList != null && !xmlReportVOList.isEmpty()) {
+                periodId = xmlReportVOList.get(0).getPeriodId();
+            }
+            createHeaderSection(yunnanReport, investigateTime, periodId);
+    
             // 2. 创建企业上报数据部分
             createEnterpriseDataSection(yunnanReport, xmlReportVOList);
-
+    
             // 格式化输出
             OutputFormat format = OutputFormat.createPrettyPrint();
             format.setEncoding("UTF-8");
-
+    
             // 如果指定了输出路径，保存到文件
             if (outputPath != null && !outputPath.isEmpty()) {
                 XMLWriter fileWriter = null;
                 try {
                     // 添加自动生成文件名的逻辑
                     String filePath = outputPath;
-
+    
                     // 检查是否只是目录路径（以/或\结尾）
                     if (filePath.endsWith("/") || filePath.endsWith("\\")) {
                         // 生成文件名：省份_调查期_年月日_时分秒.xml
@@ -62,17 +66,17 @@ public class XmlUtils {
                         String fileName = String.format("%s_%s.xml", province, safeInvestigateTime);
                         filePath += fileName;
                     }
-
+    
                     // 确保使用正确的文件分隔符
                     filePath = filePath.replace('/', File.separatorChar);
-
+    
                     // 确保目录存在
                     File file = new File(filePath);
                     File parentDir = file.getParentFile();
                     if (parentDir != null && !parentDir.exists()) {
                         parentDir.mkdirs();
                     }
-
+    
                     fileWriter = new XMLWriter(new FileWriter(filePath), format);
                     fileWriter.write(document);
                     System.out.println("XML已保存到: " + filePath);
@@ -89,7 +93,7 @@ public class XmlUtils {
                     }
                 }
             }
-
+    
             // 返回XML字符串
             StringWriter stringWriter = new StringWriter();
             XMLWriter xmlWriter = null;
@@ -108,7 +112,7 @@ public class XmlUtils {
                     }
                 }
             }
-
+    
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("生成XML报告失败: " + e.getMessage(), e);
@@ -128,15 +132,20 @@ public class XmlUtils {
     /**
      * 创建header部分
      */
-    private static void createHeaderSection(Element parent, String investigateTime) {
+    private static void createHeaderSection(Element parent, String investigateTime, Long periodId) {
         Element header = parent.addElement("header");
-
+    
         // 省份名称
         header.addElement("province_name").setText("云南省");
-
+    
         // 上报时间
         header.addElement("report_time").setText(DATE_FORMAT.format(new Date()));
 
+        // 添加period_id
+        if (periodId != null) {
+            header.addElement("period_id").setText(String.valueOf(periodId));
+        }
+    
         // 调查期
         header.addElement("investigate_period").setText(investigateTime);
     }
